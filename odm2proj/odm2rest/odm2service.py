@@ -16,8 +16,8 @@ class Service:
         self.engine = 'mysql'
         self.address = 'localhost'
         self.db = 'ODM2'
-        self.user = 'cinergi'
-        self.password = 'cinergi'
+        self.user = 'xxx'
+        self.password = 'xxx'
 
         self.items = []
         self.accept = ''

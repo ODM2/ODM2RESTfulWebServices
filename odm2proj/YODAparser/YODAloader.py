@@ -12,7 +12,7 @@ from time import strftime
 import inspect
 import codecs
 
-conn = dbconnection.createConnection('mysql', 'localhost', 'ODM2', 'cinergi', 'cinergi')
+conn = dbconnection.createConnection('mysql', 'localhost', 'ODM2', 'xxx', 'xxx')
 yoda_service = yodaservice(conn)
 
 class obj(object):
