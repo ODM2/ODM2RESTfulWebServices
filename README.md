@@ -1,4 +1,4 @@
-ODM2 REST Based Web Services
+ODM2 RESTful Web Services
 ====
 
 A Python RESTful web service inteface for accessing an ODM2 database via Django rest swagger APIs.
