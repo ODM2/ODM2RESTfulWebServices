@@ -1,0 +1,9 @@
+#In a file, "ODM2PythonAPI/ODM2/models.py" 
+  -- Fixed the spelling error (ResultDateTimeUTCOfffset ==> ResultDateTimeUTCOffset)
+  -- Added "cv_relationshiptype" class
+  -- in the class "SamplingFeatureExternalIdentifiers", add the type, "Integer".
+  -- in the class "Specimens", replace "BIT" type with "Boolean" type.
+
+#In ODM2 database schema, "ODM2_for_MySQL.sql"
+  -- Added "AUTO_INCREMENT" constraint in the table, "externalidentifiersystems" and "spatialoffsets"
+  -- Replaced "BIT" type with "TINYINT (1)" type as the bool type.
