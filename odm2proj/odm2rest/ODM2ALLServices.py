@@ -8,6 +8,7 @@ from ODM2.base import serviceBase
 from ODM2.models import *
 import datetime as dt
 from ODM2.apiCustomType import Geometry
+from sqlalchemy import func
 
 class odm2Service(serviceBase):
 
@@ -219,21 +220,63 @@ class odm2Service(serviceBase):
     """
     Time Series Values
     """
-    def getTimeSeriesResultValuesByResultID(self, resultID, page, page_size):
+
+    def getCountForTimeSeriesResultValuesByResultID(self, resultID):
+        try:
+            rows = self._session.query(func.count(TimeSeriesResultValues.ResultID)).\
+                   filter_by(ResultID=resultID).\
+                   scalar()
+            return rows
+        except:
+            return None
+            
+    def getTimeSeriesResultValuesByResultID(self, resultID):
         try:
             q=self._session.query(TimeSeriesResultValues).\
-                filter_by(ResultID=resultID).order_by(TimeSeriesResultValues.ValueDateTime).offset(page*page_size).limit(page_size).all()
+               filter_by(ResultID=resultID).\
+               order_by(TimeSeriesResultValues.ValueDateTime).all()
             return q
         except:
             return None
 
 
-    def getMeasurementResultValuesByResultID(self, resultID, page, page_size):
+    def getTimeSeriesResultValuesByResultIDByPage(self, resultID, page, page_size):
         try:
-            q=self._session.query(MeasurementResultValues).filter_by(ResultID=resultID).order_by(MeasurementResultValues.ValueDateTime).offset(page*page_size).limit(page_size).all()
+            q=self._session.query(TimeSeriesResultValues).\
+               filter_by(ResultID=resultID).\
+               order_by(TimeSeriesResultValues.ValueDateTime).offset(page*page_size).limit(page_size).all()
             return q
         except:
             return None
+
+    def getCountForMeasurementResultValuesByResultID(self, resultID):
+        try:
+            rows = self._session.query(func.count(MeasurementResultValues.ResultID)).\
+                   filter_by(ResultID=resultID).\
+                   scalar()
+            return rows
+        except:
+            return None
+
+    def getMeasurementResultValuesByResultID(self, resultID):
+        try:
+            q=self._session.query(MeasurementResultValues).\
+               filter_by(ResultID=resultID).\
+               order_by(MeasurementResultValues.ValueDateTime).all()
+            return q
+        except:
+            return None
+
+    def getMeasurementResultValuesByResultIDByPage(self, resultID, page, page_size):
+        try:
+            q=self._session.query(MeasurementResultValues).\
+               filter_by(ResultID=resultID).\
+               order_by(MeasurementResultValues.ValueDateTime).\
+               offset(page*page_size).limit(page_size).all()
+            return q
+        except:
+            return None
+
 
     """
     RelatedActions

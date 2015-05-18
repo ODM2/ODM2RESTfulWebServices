@@ -91,9 +91,17 @@ class ValuesViewSet(APIView):
         items = None
 
         if ts.ResultTypeCV == 'Time series coverage':
-            items = readConn.getTimeSeriesResultValuesByResultID(ts.ResultID, page, page_size)
+            count = readConn.getCountForTimeSeriesResultValuesByResultID(ts.ResultID)
+            if count > 1000:
+                items = readConn.getTimeSeriesResultValuesByResultIDByPage(ts.ResultID, page, page_size)
+            else:
+                items = readConn.getTimeSeriesResultValuesByResultID(ts.ResultID)
         elif ts.ResultTypeCV == 'Measurement':
-            items = readConn.getMeasurementResultValuesByResultID(ts.ResultID, page, page_size)            
+            count = readConn.getMeasurementResultValuesByResultID(ts.ResultID)            
+            if count > 1000:
+                items = readConn.getMeasurementResultValuesByResultIDByPage(ts.ResultID, page, page_size)            
+            else:
+                items = readConn.getMeasurementResultValuesByResultID(ts.ResultID)            
 
         if items == None or len(items) == 0:
             return Response('time series data is not available.',
@@ -324,7 +332,7 @@ class MultipleRepresentations(Service):
 
         return response
 
-    def yaml_measurementdata(self, items, conn, conn2):
+    def yaml_measurementdata(self, items, conn):
 
         response = HttpResponse(content_type='application/yaml')
         response['Content-Disposition'] = 'attachment; filename="values.yaml"'
@@ -335,142 +343,126 @@ class MultipleRepresentations(Service):
         #response.write("YODA:\n")
         #response.write('- {Version: 1.0.0, Profile: TimeSeries, CreationTool: NULL, DateCreated: "2015-03-19", DateUpdated: "2015-03-19"}\n\n')
 
-        tsrv_data = '' 
-        flag = True
-
         for value in items:
+            r = u'Result: &ResultID%03d\n' % value.ResultID
+            r += u'   ResultUUID: "%s"\n' % value.MeasurementResultObj.ResultObj.ResultUUID
+            r += u'   ResultTypeCV: \'%s\'\n' % value.MeasurementResultObj.ResultObj.ResultTypeCV
+            r += u'   ResultDateTime: "%s"\n' % str(value.MeasurementResultObj.ResultObj.ResultDateTime)
+            r += u'   ResultDateTimeUTCOffset: %d\n' % value.MeasurementResultObj.ResultObj.ResultDateTimeUTCOffset
+            r += u'   StatusCV: %s\n' % value.MeasurementResultObj.ResultObj.StatusCV
+            r += u'   SampledMediumCV: %s\n' % value.MeasurementResultObj.ResultObj.SampledMediumCV
+            r += u'   ValueCount: %d\n' % value.MeasurementResultObj.ResultObj.ValueCount
 
-            if flag:
+            r += u'   FeatureAction: \n'
+            r += u'       SamplingFeature:\n'
+            r += u'           SamplingFeatureID: %d\n' % value.MeasurementResultObj.ResultObj.FeatureActionObj.SamplingFeatureObj.SamplingFeatureID
+            r += u'           SamplingFeatureCode: %s\n' % value.MeasurementResultObj.ResultObj.FeatureActionObj.SamplingFeatureObj.SamplingFeatureCode
+            r += u'           SamplingFeatureName: "%s"\n' % value.MeasurementResultObj.ResultObj.FeatureActionObj.SamplingFeatureObj.SamplingFeatureName
+            r += u'           Elevation_m: %s\n' % str(value.MeasurementResultObj.ResultObj.FeatureActionObj.SamplingFeatureObj.Elevation_m)
 
-                r = u'Result: &ResultID%03d\n' % value.MeasurementResultObj.ResultID
-                r += u'   ResultUUID: "%s"\n' % value.MeasurementResultObj.ResultUUID
-                r += u'   ResultTypeCV: \'%s\'\n' % value.MeasurementResultObj.ResultTypeCV
-                r += u'   ResultDateTime: "%s"\n' % str(value.MeasurementResultObj.ResultDateTime)
-                r += u'   ResultDateTimeUTCOffset: %d\n' % value.MeasurementResultObj.ResultDateTimeUTCOffset
-                r += u'   StatusCV: %s\n' % value.MeasurementResultObj.StatusCV
-                r += u'   SampledMediumCV: %s\n' % value.MeasurementResultObj.SampledMediumCV
-                r += u'   ValueCount: %d\n' % value.MeasurementResultObj.ValueCount
+            r += u'           Action:\n'
+            r += u'               ActionID: %d\n' % value.MeasurementResultObj.ResultObj.FeatureActionObj.ActionObj.ActionID
+            r += u'               BeginDateTime: "%s"\n' % str(value.MeasurementResultObj.ResultObj.FeatureActionObj.ActionObj.BeginDateTime)
+            r += u'               BeginDateTimeUTCOffset: %d\n' % value.MeasurementResultObj.ResultObj.FeatureActionObj.ActionObj.BeginDateTimeUTCOffset
+            r += u'               EndDateTime: "%s"\n' % str(value.MeasurementResultObj.ResultObj.FeatureActionObj.ActionObj.EndDateTime)
+            r += u'               EndDateTimeUTCOffset: %s\n' % str(value.MeasurementResultObj.ResultObj.FeatureActionObj.ActionObj.EndDateTimeUTCOffset)
+            r += u'               Method:\n'
+            r += u'                   MethodID: %d\n' % value.MeasurementResultObj.ResultObj.FeatureActionObj.ActionObj.MethodObj.MethodID
+            r += u'                   MethodCode: %s\n' % value.MeasurementResultObj.ResultObj.FeatureActionObj.ActionObj.MethodObj.MethodCode
+            r += u'                   MethodName: %s\n' % value.MeasurementResultObj.ResultObj.FeatureActionObj.ActionObj.MethodObj.MethodName
+            raction = conn.getRelatedActionsByActionID(value.MeasurementResultObj.ResultObj.FeatureActionObj.ActionObj.ActionID)
+            if raction != None:
+                r += u'   RelatedActions:\n'
+                for x in raction:
+                    r += u'       RelationshipTypeCV: %s\n' % x.RelationshipTypeCV
+                    r += u'       RelatedActionID:\n'
+                    r += u'           BeginDateTime: "%s"\n' % str(x.RelatedActionObj.BeginDateTime)
+                    r += u'           BeginDateTimeUTCOffset: %d\n' % x.RelatedActionObj.BeginDateTimeUTCOffset
+                    r += u'           EndDateTime: "%s"\n' % str(x.RelatedActionObj.EndDateTime)
+                    r += u'           EndDateTimeUTCOffset: %s\n' % str(x.RelatedActionObj.EndDateTimeUTCOffset)
+                    r += u'           Method:\n'
+                    r += u'               MethodID: %d\n' % x.RelatedActionObj.MethodObj.MethodID
+                    r += u'               MethodCode: %s\n' % x.RelatedActionObj.MethodObj.MethodCode
+                    r += u'               MethodName: %s\n' % x.RelatedActionObj.MethodObj.MethodName
 
-                r += u'   FeatureAction: \n'
-                r += u'       SamplingFeature:\n'
-                r += u'           SamplingFeatureID: %d\n' % value.MeasurementResultObj.FeatureActionObj.SamplingFeatureObj.SamplingFeatureID
-                r += u'           SamplingFeatureCode: %s\n' % value.MeasurementResultObj.FeatureActionObj.SamplingFeatureObj.SamplingFeatureCode
-                r += u'           SamplingFeatureName: "%s"\n' % value.MeasurementResultObj.FeatureActionObj.SamplingFeatureObj.SamplingFeatureName
-                r += u'           Elevation_m: %s\n' % str(value.MeasurementResultObj.FeatureActionObj.SamplingFeatureObj.Elevation_m)
+            sfid = value.MeasurementResultObj.ResultObj.FeatureActionObj.SamplingFeatureObj.SamplingFeatureID
+            site = conn.getSiteBySFId(sfid)
+            if site != None:
+                r += u'   Site:\n'
+                r += u'       SiteTypeCV: %s\n' % site.SiteTypeCV
+                r += u'       Latitude: %f\n' % site.Latitude
+                r += u'       Longitude: %f\n' % site.Longitude
+                r += u'       SpatialReference:\n'
+                r += u'           SRSID: %d\n' % site.SpatialReferenceObj.SpatialReferenceID
+                r += u'           SRSCode: "%s"\n' % site.SpatialReferenceObj.SRSCode
+                r += u'           SRSName: %s\n' % site.SpatialReferenceObj.SRSName
 
-                r += u'           Action:\n'
-                r += u'               ActionID: %d\n' % value.MeasurementResultObj.FeatureActionObj.ActionObj.ActionID
-                r += u'               BeginDateTime: "%s"\n' % str(value.MeasurementResultObj.FeatureActionObj.ActionObj.BeginDateTime)
-                r += u'               BeginDateTimeUTCOffset: %d\n' % value.MeasurementResultObj.FeatureActionObj.ActionObj.BeginDateTimeUTCOffset
-                r += u'               EndDateTime: "%s"\n' % str(value.MeasurementResultObj.FeatureActionObj.ActionObj.EndDateTime)
-                r += u'               EndDateTimeUTCOffset: %d\n' % value.MeasurementResultObj.FeatureActionObj.ActionObj.EndDateTimeUTCOffset
-                r += u'               Method:\n'
-                r += u'                   MethodID: %d\n' % value.MeasurementResultObj.FeatureActionObj.ActionObj.MethodObj.MethodID
-                r += u'                   MethodCode: %s\n' % value.MeasurementResultObj.FeatureActionObj.ActionObj.MethodObj.MethodCode
-                r += u'                   MethodName: %s\n' % value.MeasurementResultObj.FeatureActionObj.ActionObj.MethodObj.MethodName
-                raction = conn.getRelatedActionsByActionID(value.MeasurementResultObj.FeatureActionObj.ActionObj.ActionID)
-                if raction != None:
-                    r += u'   RelatedActions:\n'
-                    for x in raction:
-                        r += u'       RelationshipTypeCV: %s\n' % x.RelationshipTypeCV
-                        r += u'       RelatedActionID:\n'
-                        r += u'           BeginDateTime: "%s"\n' % str(x.RelatedActionObj.BeginDateTime)
-                        r += u'           BeginDateTimeUTCOffset: %d\n' % x.RelatedActionObj.BeginDateTimeUTCOffset
-                        r += u'           EndDateTime: "%s"\n' % str(x.RelatedActionObj.EndDateTime)
-                        r += u'           EndDateTimeUTCOffset: %d\n' % x.RelatedActionObj.EndDateTimeUTCOffset
-                        r += u'           Method:\n'
-                        r += u'               MethodID: %d\n' % x.RelatedActionObj.MethodObj.MethodID
-                        r += u'               MethodCode: %s\n' % x.RelatedActionObj.MethodObj.MethodCode
-                        r += u'               MethodName: %s\n' % x.RelatedActionObj.MethodObj.MethodName
+            r += u'   Variable:\n'
+            r += u'       VariableID: %d\n' % value.MeasurementResultObj.ResultObj.VariableObj.VariableID
+            r += u'       VariableCode: %s\n' % value.MeasurementResultObj.ResultObj.VariableObj.VariableCode
+            r += u'       VariableNameCV: %s\n' % value.MeasurementResultObj.ResultObj.VariableObj.VariableNameCV
+            r += u'       NoDataValue: %d\n' % value.MeasurementResultObj.ResultObj.VariableObj.NoDataValue
 
-                sfid = value.MeasurementResultObj.FeatureActionObj.SamplingFeatureObj.SamplingFeatureID
-                site = conn.getSiteBySFId(sfid)
-                if site != None:
-                    r += u'   Site:\n'
-                    r += u'       SiteTypeCV: %s\n' % site.SiteTypeCV
-                    r += u'       Latitude: %f\n' % site.Latitude
-                    r += u'       Longitude: %f\n' % site.Longitude
-                    r += u'       SpatialReference:\n'
-                    r += u'           SRSID: %d\n' % site.SpatialReferenceObj.SpatialReferenceID
-                    r += u'           SRSCode: "%s"\n' % site.SpatialReferenceObj.SRSCode
-                    r += u'           SRSName: %s\n' % site.SpatialReferenceObj.SRSName
+            r += u'   Unit:\n'
+            r += u'       UnitID: %d\n' % value.MeasurementResultObj.ResultObj.UnitsObj.UnitsID
+            r += u'       UnitsAbbreviation: %s\n' % value.MeasurementResultObj.ResultObj.UnitsObj.UnitsAbbreviation
+            r += u'       UnitsName: %s\n' % value.MeasurementResultObj.ResultObj.UnitsObj.UnitsName
 
-                r += u'   Variable:\n'
-                r += u'       VariableID: %d\n' % value.MeasurementResultObj.VariableObj.VariableID
-                r += u'       VariableCode: %s\n' % value.MeasurementResultObj.VariableObj.VariableCode
-                r += u'       VariableNameCV: %s\n' % value.MeasurementResultObj.VariableObj.VariableNameCV
-                r += u'       NoDataValue: %d\n' % value.MeasurementResultObj.VariableObj.NoDataValue
+            r += u'   ProcessingLevel:\n'
+            r += u'       ProcessingLevelID: %d\n' % value.MeasurementResultObj.ResultObj.ProcessingLevelObj.ProcessingLevelID
+            r += u'       ProcessingLevelCode: "%s"\n' % value.MeasurementResultObj.ResultObj.ProcessingLevelObj.ProcessingLevelCode
 
-                r += u'   Unit:\n'
-                r += u'       UnitID: %d\n' % value.MeasurementResultObj.UnitObj.UnitsID
-                r += u'       UnitsAbbreviation: %s\n' % value.MeasurementResultObj.UnitObj.UnitsAbbreviation
-                r += u'       UnitsName: %s\n' % value.MeasurementResultObj.UnitObj.UnitsName
+            tsr  = u'MeasurementResult: &MeasurementResultID%03d\n' % value.MeasurementResultObj.ResultID
+            tsr += u'    ResultID: *ResultID%03d\n' % value.MeasurementResultObj.ResultID
+            if value.MeasurementResultObj.XLocation != None:
+                tsr += u'    XLocation: %f\n' % value.MeasurementResultObj.XLocation
+            else:
+                tsr += u'    XLocation: NULL\n'
+            if value.MeasurementResultObj.XLocationUnitsID != None:
+                tsr += u'    XLocationUnitsID: *UnitID%03d\n' % value.MeasurementResultObj.XLocationUnitsID
+            else:
+                tsr += u'    XLocationUnitsID: NULL\n'
+            if value.MeasurementResultObj.YLocation != None:
+                tsr += u'    YLocation: %f\n' % value.MeasurementResultObj.YLocation
+            else:
+                tsr += u'    YLocation: NULL\n'
+            if value.MeasurementResultObj.YLocationUnitsID != None:
+                tsr += u'    YLocationUnitsID: *UnitID%03d\n' % value.MeasurementResultObj.YLocationUnitsID
+            else:
+                tsr += u'    YLocationUnitsID: NULL\n'
+            if value.MeasurementResultObj.ZLocation != None:
+                tsr += u'    ZLocation: %f\n' % value.MeasurementResultObj.ZLocation
+            else:
+                tsr += u'    ZLocation: NULL\n'
+            if value.MeasurementResultObj.ZLocationUnitsID != None:
+                tsr += u'    ZLocationUnitsID: *UnitID%03d\n' % value.MeasurementResultObj.ZLocationUnitsID
+            else:
+                tsr += u'    ZLocationUnitsID: NULL\n'
+            if value.MeasurementResultObj.SpatialReferenceID != None:
+                tsr += u'    SpatialReferenceID: *SRSID%03d\n' % value.MeasurementResultObj.SpatialReferenceID
+            else:
+                tsr += u'    SpatialReferenceID: NULL\n'
+            
+            tsr += u'    CensorCodeCV: %s\n' % value.MeasurementResultObj.CensorCodeCV
+            tsr += u'    QualityCodeCV: %s\n' % value.MeasurementResultObj.QualityCodeCV
+            tsr += u'    AggregationStatisticCV: %s\n' % value.MeasurementResultObj.AggregationStatisticCV
+            tsr += u'    TimeAggregationInterval: %d\n' % value.MeasurementResultObj.TimeAggregationInterval
+            tsr += u'    TimeAggregationIntervalUnitsID:\n'
 
-                r += u'   ProcessingLevel:\n'
-                r += u'       ProcessingLevelID: %d\n' % value.MeasurementResultObj.ProcessingLevelObj.ProcessingLevelID
-                r += u'       ProcessingLevelCode: "%s"\n' % value.MeasurementResultObj.ProcessingLevelObj.ProcessingLevelCode
+            tsr += u'        UnitID: %d\n' % value.MeasurementResultObj.TimeUnitObj.UnitsID
+            tsr += u'        UnitsAbbreviation: %s\n' % value.MeasurementResultObj.TimeUnitObj.UnitsAbbreviation
+            tsr += u'        UnitsName: %s\n\n' % value.MeasurementResultObj.TimeUnitObj.UnitsName
 
-                tsr = u'MeasurementResult:\n'
-                tsr += u'   &MeasurementResultID%03d ' % value.MeasurementResultObj.ResultID
-                tsr += u'{ResultID: *ResultID%03d, ' % value.MeasurementResultObj.ResultID
-                if value.MeasurementResultObj.XLocation != None:
-                    tsr += u'XLocation: %f, ' % value.MeasurementResultObj.XLocation
-                else:
-                    tsr += u'XLocation: NULL, '
-                if value.MeasurementResultObj.XLocationUnitsID != None:
-                    tsr += u'XLocationUnitsID: *UnitID%03d, ' % value.MeasurementResultObj.XLocationUnitsID
-                else:
-                    tsr += u'XLocationUnitsID: NULL, '
-                if value.MeasurementResultObj.YLocation != None:
-                    tsr += u'YLocation: %f, ' % value.MeasurementResultObj.YLocation
-                else:
-                    tsr += u'YLocation: NULL, '
-                if value.MeasurementResultObj.YLocationUnitsID != None:
-                    tsr += u'YLocationUnitsID: *UnitID%03d, ' % value.MeasurementResultObj.YLocationUnitsID
-                else:
-                    tsr += u'YLocationUnitsID: NULL, '
-                if value.MeasurementResultObj.ZLocation != None:
-                    tsr += u'ZLocation: %f, ' % value.MeasurementResultObj.ZLocation
-                else:
-                    tsr += u'ZLocation: NULL, '
-                if value.MeasurementResultObj.ZLocationUnitsID != None:
-                    tsr += u'ZLocationUnitsID: *UnitID%03d, ' % value.MeasurementResultObj.ZLocationUnitsID
-                else:
-                    tsr += u'ZLocationUnitsID: NULL, '
-                if value.MeasurementResultObj.SpatialReferenceID != None:
-                    tsr += u'SpatialReferenceID: *SRSID%03d, ' % value.MeasurementResultObj.SpatialReferenceID
-                else:
-                    tsr += u'SpatialReferenceID: NULL, '
-                tsr += u'CensorCodeCV: %s, ' % value.MeasurementResultObj.CensorCodeCV
-                tsr += u'QualityCodeCV: %s, ' % value.MeasurementResultObj.QualityCodeCV
-                tsr += u'AggregationStatisticCV: %s, ' % value.MeasurementResultObj.AggregationStatisticCV
-                tsr += u'TimeAggregationInterval: %d, ' % value.MeasurementResultObj.TimeAggregationInterval
-                tsr += u'TimeAggregationIntervalUnitsID: {'
+            tsr += u'MeasurementResultValues:\n'
+            tsr += u'    ResultID: *MeasurementResultID%03d\n' % value.ResultID
+            tsr += u'    ValueDateTime: %s\n' % str(value.ValueDateTime)
+            tsr += u'    ValueDateTimeUTCOffset: %d\n' % value.ValueDateTimeUTCOffset
+            tsr += u'    DataValue: %f\n' % value.DataValue
 
-                tsr += u'UnitID: %d, ' % value.MeasurementResultObj.TimeUnitObj.UnitsID
-                tsr += u'UnitsAbbreviation: %s, ' % value.MeasurementResultObj.TimeUnitObj.UnitsAbbreviation
-                tsr += u'UnitsName: %s}}\n' % value.MeasurementResultObj.TimeUnitObj.UnitsName
-
-                tsrv = u'MeasurementResultValues:\n'
-                tsrv += u'  ColumnDefinitions:\n'
-                tsrv += u'    - {ColumnNumber: 1, Label: ValueDateTime, ODM2Field: ValueDateTime}\n'
-                tsrv += u'    - {ColumnNumber: 2, Label: ValueDateTimeUTCOffset, ODM2Field: ValueDateTimeUTCOffset}\n'
-                tsrv += u'    - {ColumnNumber: 3, Label: AirTemp_Avg, Result: *MeasurementResultID%03d}\n' % value.ResultID 
-
-                tsrv += u'Data:\n'
-                tsrv += u'- [ValueDateTime,ValueDateTimeUTCOffset,AirTemp_Avg]\n'
-
-                flag = False
-
-            tsrv_data += u'- ["%s",%d,%f]\n' % (str(value.ValueDateTime),value.ValueDateTimeUTCOffset,value.DataValue) 
-
-        tsrv += tsrv_data
 
         response.write(r)
         response.write('\n')
         response.write(tsr)
-        response.write('\n')
-        response.write(tsrv)
         #response.write(pyaml.dump(allvalues,vspacing=[1, 0]))
 
         return response

@@ -12,7 +12,7 @@ from time import strftime
 import inspect
 import codecs
 
-conn = dbconnection.createConnection('mysql', 'localhost', 'ODM2', 'xxx', 'xxx')
+conn = dbconnection.createConnection('mysql', 'localhost', 'ODM2', 'cinergi', 'cinergi')
 yoda_service = yodaservice(conn)
 
 class obj(object):
@@ -103,6 +103,18 @@ def getSamplingFeatureExternalIdentifiers(model,sfei):
     setattr(sfei,'ExternalIdentifierSystemID',eis.ExternalIdentifierSystemID)
     delattr(sfei,'ExternalIdentifierSystemObj')
     return yoda_service.get_or_createObject(model,sfei)
+
+def getCitationExternalIdentifiers(model,cei):    
+    c = getattr(models,'Citations')
+    c = yoda_service.get_or_createObject(c,cei.CitationObj)
+    setattr(cei,'CitationID',c.CitationID)
+    delattr(cei,'CitationObj')
+
+    eis = getattr(models,'ExternalIdentifierSystems')
+    eis = getExternalIdentifierSystems(eis,cei.ExternalIdentifierSystemObj)
+    setattr(cei,'ExternalIdentifierSystemID',eis.ExternalIdentifierSystemID)
+    delattr(cei,'ExternalIdentifierSystemObj')
+    return yoda_service.get_or_createObject(model,cei)
 
 def getSites(model,site):
     sf = getattr(models,'SamplingFeatures')
@@ -264,54 +276,60 @@ def getDatasetsResults(model,ds):
     delattr(ds,'ResultObj')
     return yoda_service.get_or_createObject(model,ds)
 
-def getTimeSeriesResults(model,tr):
+def getDataResults(model,dr,dataType):
     r = getattr(models,'Results')
-    r = getResults(r,tr.ResultObj)
-    setattr(tr,'ResultID',r.ResultID)
-    delattr(tr,'ResultObj')
+    r = getResults(r,dr.ResultObj)
+    setattr(dr,'ResultID',r.ResultID)
+    delattr(dr,'ResultObj')
 
     uobj = getattr(models,'Units')
-    if tr.XLocationUnitsObj == None:
-        setattr(tr,'XLocationUnitsID',None)
+    if dr.XLocationUnitsObj == None:
+        setattr(dr,'XLocationUnitsID',None)
     else:
-        u = yoda_service.get_or_createObject(uobj,tr.XLocationUnitsObj)
-        setattr(tr,'XLocationUnitsID',u.UnitsID)
-    if tr.YLocationUnitsObj == None:
-        setattr(tr,'YLocationUnitsID',None)
+        u = yoda_service.get_or_createObject(uobj,dr.XLocationUnitsObj)
+        setattr(dr,'XLocationUnitsID',u.UnitsID)
+    if dr.YLocationUnitsObj == None:
+        setattr(dr,'YLocationUnitsID',None)
     else:
-        u = yoda_service.get_or_createObject(uobj,tr.YLocationUnitsObj)
-        setattr(tr,'YLocationUnitsID',u.UnitsID)
-    if tr.ZLocationUnitsObj == None:
-        setattr(tr,'ZLocationUnitsID',None)
+        u = yoda_service.get_or_createObject(uobj,dr.YLocationUnitsObj)
+        setattr(dr,'YLocationUnitsID',u.UnitsID)
+    if dr.ZLocationUnitsObj == None:
+        setattr(dr,'ZLocationUnitsID',None)
     else:
-        u = yoda_service.get_or_createObject(uobj,tr.ZLocationUnitsObj)
-        setattr(tr,'ZLocationUnitsID',u.UnitsID)
+        u = yoda_service.get_or_createObject(uobj,dr.ZLocationUnitsObj)
+        setattr(dr,'ZLocationUnitsID',u.UnitsID)
 
-    delattr(tr,'XLocationUnitsObj')
-    delattr(tr,'YLocationUnitsObj')
-    delattr(tr,'ZLocationUnitsObj')
+    delattr(dr,'XLocationUnitsObj')
+    delattr(dr,'YLocationUnitsObj')
+    delattr(dr,'ZLocationUnitsObj')
 
-    if tr.SpatialReferenceObj == None:
-        setattr(tr,'SpatialReferenceID',None)
+    if dr.SpatialReferenceObj == None:
+        setattr(dr,'SpatialReferenceID',None)
     else:
         sr = getattr(models,'SpatialReferences')
-        sr = yoda_service.get_or_createObject(sr,tr.SpatialReferenceObj)
-        setattr(tr,'SpatialReferenceID',sr.SpatialReferenceID)
-    delattr(tr,'SpatialReferenceObj')
-    
-    if tr.IntendedTimeSpacingUnitsObj == None:
-        setattr(tr,'IntendedTimeSpacingUnitsID',None)
-    else:
-        u = yoda_service.get_or_createObject(uobj,tr.IntendedTimeSpacingUnitsObj)
-        setattr(tr,'IntendedTimeSpacingUnitsID',u.UnitsID)
-    delattr(tr,'IntendedTimeSpacingUnitsObj')
+        sr = yoda_service.get_or_createObject(sr,dr.SpatialReferenceObj)
+        setattr(dr,'SpatialReferenceID',sr.SpatialReferenceID)
+    delattr(dr,'SpatialReferenceObj')
 
-    return yoda_service.get_or_createObject(model,tr)
+    if dataType == 'TimeSeries':    
+        if dr.IntendedTimeSpacingUnitsObj == None:
+            setattr(dr,'IntendedTimeSpacingUnitsID',None)
+        else:
+            u = yoda_service.get_or_createObject(uobj,dr.IntendedTimeSpacingUnitsObj)
+            setattr(dr,'IntendedTimeSpacingUnitsID',u.UnitsID)
+            delattr(dr,'IntendedTimeSpacingUnitsObj')
+
+    if dataType == 'Measurement':
+        u = yoda_service.get_or_createObject(uobj,dr.TimeAggregationIntervalUnitsObj)
+        setattr(dr,'TimeAggregationIntervalUnitsID',u.UnitsID)
+        delattr(dr,'TimeAggregationIntervalUnitsObj')
+
+    return yoda_service.get_or_createObject(model,dr)
 
 
 def getTimeSeriesResultValues(trv,valueDateTime,valueDateTimeUTCOffset,dataValue):
     ts = getattr(models,'TimeSeriesResults')
-    ts = getTimeSeriesResults(ts,trv.Result)
+    ts = getDataResults(ts,trv.Result,'TimeSeries')
     setattr(trv,'ResultID',ts.ResultID)
     delattr(trv,'Result')
     delattr(trv,'ColumnNumber')
@@ -325,10 +343,18 @@ def getTimeSeriesResultValues(trv,valueDateTime,valueDateTimeUTCOffset,dataValue
     setattr(trv,'DataValue',None)
     return yoda_service.get_or_createTimeSeriesResultValues(trv,valueDateTime,valueDateTimeUTCOffset,dataValue)
 
+def getMeasurementResultValues(model,mrv):
+    ms = getattr(models,'MeasurementResults')
+    ms = getDataResults(ms,mrv.MeasurementResultObj,'Measurement')
+    setattr(mrv,'ResultID',ms.ResultID)
+    delattr(mrv,'MeasurementResultObj')
+    return yoda_service.get_or_createObject(model,mrv)
+
 def main():
 
     #f = codecs.open('Specimen_Template_Working.yaml','r','utf-8',errors='ignore')
-    f = codecs.open('Timeseries_Template_Working_my_version.yaml','r','utf-8',errors='ignore')
+    #f = codecs.open('Timeseries_Template_Working.yaml','r','utf-8',errors='ignore')
+    f = codecs.open('Soil_YODA_Specimen_TEMPLATE_MCT_V2_modified.yaml','r','utf-8',errors='ignore')
     dataMap = yaml.load(f)
     #dataMap = yaml.safe_load(f)
     f.close()
@@ -386,6 +412,13 @@ def main():
                 sfei = getattr(models,attr)            
                 sfei = getSamplingFeatureExternalIdentifiers(sfei,x)
                 print "BridgeID:",sfei.BridgeID
+        #specimens measurement
+        elif attr == 'CitationExternalIdentifiers':
+            print "CitationExternalIdentifiers:=========="
+            for x in value:
+                cei = getattr(models,attr)            
+                cei = getCitationExternalIdentifiers(cei,x)
+                print "BridgeID:",cei.BridgeID
 
         elif attr == 'Sites':
             print "Sites:=============="
@@ -461,8 +494,8 @@ def main():
             print "TimeSeriesResults:=========="
             for x in value:
                 tr = getattr(models,attr)            
-                tr = getTimeSeriesResults(tr,x)
-                print "ResultID:",tr.ResultID
+                tr = getDataResults(tr,x,'TimeSeries')
+                print "Time Series ResultID:",tr.ResultID
 
         elif attr == 'TimeSeriesResultValues':
             print "TimeSeriesResultValues:=========="
@@ -477,6 +510,20 @@ def main():
                 if hasattr(x, 'Result'):
                     trv = getTimeSeriesResultValues(x,valuelist[0],valuelist[1],valuelist[x.ColumnNumber-1])
                     print "ValueID:",trv.ValueID
+
+        elif attr == 'MeasurementResults':
+            print "MeasurementResults:=========="
+            for x in value:
+                mr = getattr(models,attr)            
+                mr = getDataResults(mr,x,'Measurement')
+                print "Measure ResultID:",mr.ResultID
+
+        elif attr == 'MeasurementResultValues':
+            print "MeasurementResultValues:=========="
+            for x in value:
+                mrv = getattr(models,attr)
+                mrv = getMeasurementResultValues(mrv,x)
+                
 
         else:
             #if attr == 'Datasets' or attr == 'People' or attr == 'Citations' or attr == 'SpatialReferences' or attr == 'SamplingFeatures' or attr == 'Variables' or attr == 'ProcessingLevels':

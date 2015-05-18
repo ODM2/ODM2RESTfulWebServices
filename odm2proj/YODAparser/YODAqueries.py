@@ -13,7 +13,7 @@ from ODM2.apiCustomType import Geometry
 class yodaService(serviceBase):
 
     def get_or_createObject(self,model,data):
-        keywords = ['UUID','Elevation_m','Latitude','Longitude','Offset1Value','Offset2Value','Offset3Value','NoDataValue','XLocation','YLocation','ZLocation','IntendedTimeSpacing','TimeAggregationInterval']
+        keywords = ['UUID','Elevation_m','Latitude','Longitude','Offset1Value','Offset2Value','Offset3Value','NoDataValue','XLocation','YLocation','ZLocation','IntendedTimeSpacing','TimeAggregationInterval','DataValue']
 
         filters = {}
         q = self._session.query(model)
@@ -115,38 +115,3 @@ class yodaService(serviceBase):
         except Exception, e:
             print e
             return None
-
-    def get_or_createMeasurementResultValues(self,mrv):
-        """
-        ValueID = Column('valueid', BigInteger, primary_key=True)
-        ResultID = Column('resultid', ForeignKey('odm2.measurementresults.resultid'), nullable=False)
-        DataValue = Column('datavalue', Float(53), nullable=False)
-        ValueDateTime = Column('valuedatetime', DateTime, nullable=False)
-        ValueDateTimeUTCOffset = Column('valuedatetimeutcoffset', Integer, nullable=False)
-        """
-        filters = {}
-        q = self._session.query(MeasurementResultValues)
-        for attr, value in mrv.__dict__.iteritems():
-            #print attr, value
-            if attr == 'DataValue':
-                continue
-            else:
-                filters[attr] = value
-        #print "filters", filters
-        q = q.filter_by(**filters)
-
-        try:
-            rep = q.one()
-            return rep
-        except:
-            rep = None
-
-        if rep == None:
-            rep = MeasurementResultValues()
-            for attr, value in mrv.__dict__.iteritems():
-                setattr(rep,attr,value)
-
-            self._session.add(rep)
-            self._session.commit()
-            
-            return rep
