@@ -3,6 +3,8 @@
   -- Added "cv_relationshiptype" class
   -- in the class "SamplingFeatureExternalIdentifiers", add the type, "Integer".
   -- in the class "Specimens", replace "BIT" type with "Boolean" type.
+  -- in the class "Results", add the column name, "resulttypecv".
+  -- in the class "RelatedActions", remove the column, "ActionTypeCV" which is not in the table.
 
 #In ODM2 database schema, "ODM2_for_MySQL.sql"
   -- Added "AUTO_INCREMENT" constraint in the table, "externalidentifiersystems" and "spatialoffsets"
