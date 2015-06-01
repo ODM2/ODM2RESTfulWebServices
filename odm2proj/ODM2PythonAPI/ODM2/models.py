@@ -15,7 +15,7 @@ from sqlalchemy import BigInteger, Column, Date, DateTime, Float, ForeignKey, In
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
 
-
+from sqlalchemy.dialects.postgresql import UUID
 
 Base = declarative_base()
 metadata = Base.metadata
@@ -585,7 +585,7 @@ class RelatedActions(Base):
     __table_args__ = {u'schema': u'odm2'}
 
     RelationID = Column('relationid',Integer, primary_key=True, nullable=False)
-    ActionTypeCV = Column('actiontypecv', ForeignKey('odm2.cv_actiontype.name'), nullable=False, index=True)
+    #ActionTypeCV = Column('actiontypecv', ForeignKey('odm2.cv_actiontype.name'), nullable=False, index=True)
     ActionID = Column('actionid',  ForeignKey('odm2.actions.actionid'), nullable=False)
     RelationshipTypeCV = Column('relationshiptypecv',  ForeignKey('odm2.cv_relationshiptype.name'), nullable=False, index=True)
     RelatedActionID = Column('relatedactionid',  ForeignKey('odm2.actions.actionid'), nullable=False)
@@ -662,8 +662,10 @@ class Results(Base):
     # This has been changed to String to support multiple database uuid types
     # ResultUUID = Column(UNIQUEIDENTIFIER, nullable=False)
     ResultUUID = Column('resultuuid', String(36), nullable=False)
+    #ResultUUID = Column('resultuuid', UUID, nullable=False)
     FeatureActionID = Column('featureactionid', ForeignKey('odm2.featureactions.featureactionid'), nullable=False)
-    ResultTypeCV = Column(ForeignKey('odm2.cv_resulttype.name'), nullable=False, index=True)
+    #ResultTypeCV = Column(ForeignKey('odm2.cv_resulttype.name'), nullable=False, index=True)
+    ResultTypeCV = Column('resulttypecv', ForeignKey('odm2.cv_resulttype.name'), nullable=False, index=True)
     VariableID = Column('variableid', ForeignKey('odm2.variables.variableid'), nullable=False)
     UnitsID = Column('unitsid', ForeignKey('odm2.units.unitsid'), nullable=False)
     TaxonomicClassifierID = Column('taxonomicclassifierid', ForeignKey('odm2.taxonomicclassifiers.taxonomicclassifierid'))
