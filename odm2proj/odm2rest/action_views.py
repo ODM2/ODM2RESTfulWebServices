@@ -160,6 +160,7 @@ class MultipleRepresentations(Service):
 
             allactions.append(queryset)
 
+        self._session.close()
         return allactions
 
     def csv_format(self):
@@ -192,6 +193,7 @@ class MultipleRepresentations(Service):
 
             writer.writerow(row)
 
+        self._session.close()
         return response
 
     def yaml_format(self):
@@ -233,5 +235,6 @@ class MultipleRepresentations(Service):
         allactions["Methods"] = mts
         response.write(pyaml.dump(allactions, vspacing=[1, 0]))
 
+        self._session.close()
         return response
 

@@ -28,6 +28,7 @@ from rest_framework.renderers import BrowsableAPIRenderer
 import yaml, pyaml
 from sets import Set
 from negotiation import IgnoreClientContentNegotiation
+from odm2rest.ODM2ALLServices import odm2Service as ODM2Read
 
 class ValuesViewSet(APIView):
     """
@@ -82,11 +83,11 @@ class ValuesViewSet(APIView):
 
         mr = MultipleRepresentations()
         readConn = mr.readService()
+
         ts = readConn.getResultByUUID(resultUUID)
         if ts == None or len(ts) == 0:
             return Response('time series data is not available.',
                             status=status.HTTP_400_BAD_REQUEST)
-
         mr.setResultTypeCV(ts.ResultTypeCV)
         items = None
 
@@ -97,17 +98,17 @@ class ValuesViewSet(APIView):
             else:
                 items = readConn.getTimeSeriesResultValuesByResultID(ts.ResultID)
         elif ts.ResultTypeCV == 'Measurement':
-            count = readConn.getMeasurementResultValuesByResultID(ts.ResultID)            
-            if count > 1000:
-                items = readConn.getMeasurementResultValuesByResultIDByPage(ts.ResultID, page, page_size)            
-            else:
-                items = readConn.getMeasurementResultValuesByResultID(ts.ResultID)            
+            #count = readConn.getCountForMeasurementResultValuesByResultID(ts.ResultID)            
+            #if count > 10:
+            #    items = readConn.getMeasurementResultValuesByResultIDByPage(ts.ResultID, page, page_size)            
+            #else:
+            items = readConn.getMeasurementResultValuesByResultID(ts.ResultID)            
 
         if items == None or len(items) == 0:
             return Response('time series data is not available.',
                             status=status.HTTP_400_BAD_REQUEST)
 
-        return mr.content_format_with_conn(items, format, readConn)
+        return mr.content_format(items, format)
 
 
 class MultipleRepresentations(Service):
@@ -135,6 +136,7 @@ class MultipleRepresentations(Service):
 
             allvalues.append(queryset)
 
+        self._session.close()
         return allvalues
 
     def csv_format(self):
@@ -166,16 +168,17 @@ class MultipleRepresentations(Service):
 
             writer.writerow(row)
 
+        self._session.close()
         return response
 
     def yaml_format(self):
 
         if self.resulttypecv == 'Time series coverage':
-            return self.yaml_timeseriesdata(self.items, self.conn)
+            return self.yaml_timeseriesdata(self.items)
         elif self.resulttypecv == 'Measurement':
-            return self.yaml_measurementdata(self.items, self.conn)
+            return self.yaml_measurementdata(self.items)
 
-    def yaml_timeseriesdata(self, items, conn):
+    def yaml_timeseriesdata(self, items):
 
         response = HttpResponse(content_type='application/yaml')
         response['Content-Disposition'] = 'attachment; filename="values.yaml"'
@@ -218,6 +221,7 @@ class MultipleRepresentations(Service):
                 r += u'                   MethodID: %d\n' % value.TimeSeriesResultObj.ResultObj.FeatureActionObj.ActionObj.MethodObj.MethodID
                 r += u'                   MethodCode: %s\n' % value.TimeSeriesResultObj.ResultObj.FeatureActionObj.ActionObj.MethodObj.MethodCode
                 r += u'                   MethodName: %s\n' % value.TimeSeriesResultObj.ResultObj.FeatureActionObj.ActionObj.MethodObj.MethodName
+                conn = ODM2Read(self._session)
                 raction = conn.getRelatedActionsByActionID(value.TimeSeriesResultObj.ResultObj.FeatureActionObj.ActionObj.ActionID)
                 if raction != None:
                     r += u'   RelatedActions:\n'
@@ -330,9 +334,10 @@ class MultipleRepresentations(Service):
         response.write(tsrv)
         #response.write(pyaml.dump(allvalues,vspacing=[1, 0]))
 
+        self._session.close()
         return response
 
-    def yaml_measurementdata(self, items, conn):
+    def yaml_measurementdata(self, items):
 
         response = HttpResponse(content_type='application/yaml')
         response['Content-Disposition'] = 'attachment; filename="values.yaml"'
@@ -342,7 +347,6 @@ class MultipleRepresentations(Service):
         response.write(resulttype)
         #response.write("YODA:\n")
         #response.write('- {Version: 1.0.0, Profile: TimeSeries, CreationTool: NULL, DateCreated: "2015-03-19", DateUpdated: "2015-03-19"}\n\n')
-
         for value in items:
             r = u'Result: &ResultID%03d\n' % value.ResultID
             r += u'   ResultUUID: "%s"\n' % value.MeasurementResultObj.ResultObj.ResultUUID
@@ -352,7 +356,6 @@ class MultipleRepresentations(Service):
             r += u'   StatusCV: %s\n' % value.MeasurementResultObj.ResultObj.StatusCV
             r += u'   SampledMediumCV: %s\n' % value.MeasurementResultObj.ResultObj.SampledMediumCV
             r += u'   ValueCount: %d\n' % value.MeasurementResultObj.ResultObj.ValueCount
-
             r += u'   FeatureAction: \n'
             r += u'       SamplingFeature:\n'
             r += u'           SamplingFeatureID: %d\n' % value.MeasurementResultObj.ResultObj.FeatureActionObj.SamplingFeatureObj.SamplingFeatureID
@@ -370,7 +373,9 @@ class MultipleRepresentations(Service):
             r += u'                   MethodID: %d\n' % value.MeasurementResultObj.ResultObj.FeatureActionObj.ActionObj.MethodObj.MethodID
             r += u'                   MethodCode: %s\n' % value.MeasurementResultObj.ResultObj.FeatureActionObj.ActionObj.MethodObj.MethodCode
             r += u'                   MethodName: %s\n' % value.MeasurementResultObj.ResultObj.FeatureActionObj.ActionObj.MethodObj.MethodName
-            raction = conn.getRelatedActionsByActionID(value.MeasurementResultObj.ResultObj.FeatureActionObj.ActionObj.ActionID)
+            aid = value.MeasurementResultObj.ResultObj.FeatureActionObj.ActionObj.ActionID 
+            conn = ODM2Read(self._session)
+            raction = conn.getRelatedActionsByActionID(aid)
             if raction != None:
                 r += u'   RelatedActions:\n'
                 for x in raction:
@@ -401,8 +406,7 @@ class MultipleRepresentations(Service):
             r += u'       VariableID: %d\n' % value.MeasurementResultObj.ResultObj.VariableObj.VariableID
             r += u'       VariableCode: %s\n' % value.MeasurementResultObj.ResultObj.VariableObj.VariableCode
             r += u'       VariableNameCV: %s\n' % value.MeasurementResultObj.ResultObj.VariableObj.VariableNameCV
-            r += u'       NoDataValue: %d\n' % value.MeasurementResultObj.ResultObj.VariableObj.NoDataValue
-
+            r += u'       NoDataValue: %s\n' % str(value.MeasurementResultObj.ResultObj.VariableObj.NoDataValue)
             r += u'   Unit:\n'
             r += u'       UnitID: %d\n' % value.MeasurementResultObj.ResultObj.UnitsObj.UnitsID
             r += u'       UnitsAbbreviation: %s\n' % value.MeasurementResultObj.ResultObj.UnitsObj.UnitsAbbreviation
@@ -459,11 +463,11 @@ class MultipleRepresentations(Service):
             tsr += u'    ValueDateTimeUTCOffset: %d\n' % value.ValueDateTimeUTCOffset
             tsr += u'    DataValue: %f\n' % value.DataValue
 
-
         response.write(r)
         response.write('\n')
         response.write(tsr)
         #response.write(pyaml.dump(allvalues,vspacing=[1, 0]))
 
+        self._session.close()
         return response
 

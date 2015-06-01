@@ -10,17 +10,28 @@ import datetime as dt
 from ODM2.apiCustomType import Geometry
 from sqlalchemy import func
 
-class odm2Service(serviceBase):
+class odm2Service(object):
+
+    def __init__(self, session):
+        self._session = session
+
+    def odm2_close(self):
+        self._session.close()
 
     """
     Actions
     """
 
     def getActions(self):
+        items = None
         try:
-            return self._session.query(Actions).order_by(Actions.ActionID).all()
+            items = self._session.query(Actions).order_by(Actions.ActionID).all()
         except:
-            return None
+            items = None
+        #finally:
+        #    self._session.close()
+
+        return items
 
     def getActionsByPage(self, page=0, page_size=None):
         try:
@@ -83,6 +94,12 @@ class odm2Service(serviceBase):
     """
     Method
     """
+    def getMethods(self):
+        try:
+            return self._session.query(Methods).all()
+        except:
+            return None
+
     def getMethodByCode(self, methodCode):
         try:
             return self._session.query(Methods).filter_by(MethodCode=methodCode).one()
@@ -92,6 +109,12 @@ class odm2Service(serviceBase):
     """
     Organization
     """
+    def getOrganizations(self):
+        try:
+            return self._session.query(Organizations).all()
+        except:
+            return None
+
     def getOrganizationByCode(self, orgCode):
         try:
             return self._session.query(Organizations).filter_by(OrganizationCode=orgCode).one()
@@ -110,6 +133,12 @@ class odm2Service(serviceBase):
     def getVariableByCode(self, variableCode):
         try:
             return self._session.query(Variables).filter_by(VariableCode=variableCode).one()
+        except:
+            return None
+
+    def getVariableById(self, variableId):
+        try:
+            return self._session.query(Variables).filter_by(VariableID=variableId).one()
         except:
             return None
 
@@ -159,7 +188,7 @@ class odm2Service(serviceBase):
         except:
             return None
 
-    def getResultsByBBox(self, xmin, ymin, xmax, ymax):
+    def getResultsByBBoxForSite(self, xmin, ymin, xmax, ymax):
         """
         north - ymax - latitude
         south - ymin - latitude

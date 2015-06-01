@@ -31,6 +31,41 @@ from rest_framework_yaml.renderers import YAMLRenderer
 from rest_framework.renderers import BrowsableAPIRenderer
 from negotiation import IgnoreClientContentNegotiation
 
+class OrgsViewSet(APIView):
+    """
+    All ODM2 organizations Retrieval
+    """
+    content_negotiation_class = IgnoreClientContentNegotiation
+
+    def get(self, request, format=None):
+        """
+        ---
+        parameters:
+            - name: format    
+              description: The format type is "yaml", "json" or "csv". The default type is "yaml".
+              required: false
+              type: string
+              paramType: query
+
+        omit_serializer: true
+
+        responseMessages:
+            - code: 401
+              message: Not authenticated
+        """
+
+        format = request.query_params.get('format', 'yaml')
+        #accept = request.accepted_renderer.media_type
+        mr = MultipleRepresentations()
+        readConn = mr.readService()
+        items = readConn.getOrganizations()
+
+        if items == None or len(items) == 0:
+            return Response('The data is not existed.',
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        return mr.content_format(items, format)
+
 class OrgCodeViewSet(APIView):
     """
     All ODM2 organizations Retrieval
@@ -86,6 +121,7 @@ class MultipleRepresentations(Service):
             queryset['ParentOrganizationID'] = x.ParentOrganizationID
             allitems.append(queryset)
 
+        self._session.close()
         return allitems
 
     def csv_format(self):
@@ -110,6 +146,7 @@ class MultipleRepresentations(Service):
 
             writer.writerow(row)
 
+        self._session.close()
         return response
 
     def yaml_format(self):
@@ -136,6 +173,7 @@ class MultipleRepresentations(Service):
         allitems["Organizations"] = records
         response.write(pyaml.dump(allitems,vspacing=[0, 0]))
 
+        self._session.close()
         return response
 
 class JSONResponse(HttpResponse):

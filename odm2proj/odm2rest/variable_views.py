@@ -121,6 +121,7 @@ class MultipleRepresentations(Service):
             queryset['Speciation'] = variable.SpeciationCV
             allvars.append(queryset)
 
+        self._session.close()
         return allvars
 
     def csv_format(self):
@@ -144,6 +145,7 @@ class MultipleRepresentations(Service):
 
             writer.writerow(row)
 
+        self._session.close()
         return response
 
     def yaml_format(self):
@@ -186,6 +188,7 @@ class MultipleRepresentations(Service):
         allvars["Variables"] = vararray
         response.write(pyaml.dump(allvars,vspacing=[0, 0]))
 
+        self._session.close()
         return response
 
 class JSONResponse(HttpResponse):

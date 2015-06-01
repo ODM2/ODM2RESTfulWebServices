@@ -30,6 +30,7 @@ from rest_framework_xml.renderers import XMLRenderer
 from rest_framework_yaml.renderers import YAMLRenderer
 from rest_framework.renderers import BrowsableAPIRenderer
 from negotiation import IgnoreClientContentNegotiation
+from odm2rest.ODM2ALLServices import odm2Service as ODM2Read
 
 class DatasetDetailViewSet(APIView):
     """
@@ -67,7 +68,7 @@ class DatasetDetailViewSet(APIView):
             return Response('"%s" is not existed.' % datasetUUID,
                             status=status.HTTP_400_BAD_REQUEST)
 
-        return mr.content_format_with_conn(items, format, readConn)
+        return mr.content_format(items, format)
 
 class MultipleRepresentations(Service):
 
@@ -84,6 +85,7 @@ class MultipleRepresentations(Service):
             queryset['DatasetAbstract'] = x.DatasetAbstract
             allitems.append(queryset)
 
+        self._session.close()
         return allitems
 
     def csv_format(self):
@@ -107,6 +109,7 @@ class MultipleRepresentations(Service):
 
             writer.writerow(row)
 
+        self._session.close()
         return response
 
     def yaml_format(self):
@@ -164,7 +167,8 @@ class MultipleRepresentations(Service):
             r += u'                   MethodCode: %s\n' % value.ResultObj.FeatureActionObj.ActionObj.MethodObj.MethodCode
             r += u'                   MethodName: %s\n' % value.ResultObj.FeatureActionObj.ActionObj.MethodObj.MethodName
             sfid = value.ResultObj.FeatureActionObj.SamplingFeatureObj.SamplingFeatureID
-            site = self.conn.getSiteBySFId(sfid)
+            conn = ODM2Read(self._session)
+            site = conn.getSiteBySFId(sfid)
             if site != None:
                 r += u'   Site:\n'
                 r += u'       SiteTypeCV: %s\n' % site.SiteTypeCV
@@ -196,6 +200,7 @@ class MultipleRepresentations(Service):
             response.write(r)
             response.write('\n')
 
+        self._session.close()
         return response
 
 

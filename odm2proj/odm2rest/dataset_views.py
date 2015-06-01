@@ -79,6 +79,7 @@ class MultipleRepresentations(Service):
             queryset['DatasetAbstract'] = x.DatasetAbstract
             allitems.append(queryset)
 
+        self._session.close()
         return allitems
 
     def csv_format(self):
@@ -102,6 +103,7 @@ class MultipleRepresentations(Service):
 
             writer.writerow(row)
 
+        self._session.close()
         return response
 
     def yaml_format(self):
@@ -117,7 +119,7 @@ class MultipleRepresentations(Service):
 
             queryset = OrderedDict()
             queryset["DatasetID"] = item.DatasetID
-            queryset["DatasetUUID"] = item.DatasetUUID
+            queryset["DatasetUUID"] = str(item.DatasetUUID)
             queryset["DatasetTypeCV"] = item.DatasetTypeCV
             queryset["DatasetCode"] = item.DatasetCode
             queryset["DatasetTitle"] = item.DatasetTitle
@@ -127,6 +129,7 @@ class MultipleRepresentations(Service):
         allitems["DataSets"] = records
         response.write(pyaml.dump(allitems,vspacing=[0, 0]))
 
+        self._session.close()
         return response
 
 class JSONResponse(HttpResponse):

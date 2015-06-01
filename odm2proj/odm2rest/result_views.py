@@ -29,6 +29,7 @@ import yaml, pyaml
 from sets import Set
 from negotiation import IgnoreClientContentNegotiation
 from datetime import datetime, timedelta
+from odm2rest.ODM2ALLServices import odm2Service as ODM2Read
 
 class ResultsViewSet(APIView):
     """
@@ -62,21 +63,21 @@ class ResultsViewSet(APIView):
 
         format = request.query_params.get('format', 'yaml')
         #accept = request.accepted_renderer.media_type
-        #page = request.QUERY_PARAMS.get('page','0')
-        #page_size = request.QUERY_PARAMS.get('page_size','10')
+        page = request.QUERY_PARAMS.get('page','0')
+        page_size = request.QUERY_PARAMS.get('page_size','10')
 
-        #page = int(page)
-        #page_size = int(page_size)
+        page = int(page)
+        page_size = int(page_size)
 
         mr = MultipleRepresentations()
         readConn = mr.readService()
-        #items = readConn.getResultsByPage(page, page_size)
-        items = readConn.getResults()
+        items = readConn.getResultsByPage(page, page_size)
+        #items = readConn.getResults()[0]
         if items == None or len(items) == 0:
             return Response('The data is not existed.',
                             status=status.HTTP_400_BAD_REQUEST)
 
-        return mr.content_format_with_conn(items, format, readConn)
+        return mr.content_format(items, format)
 
 class ResultsVarCodeViewSet(APIView):
     """
@@ -123,7 +124,7 @@ class ResultsVarCodeViewSet(APIView):
             return Response('There are no available data.',
                             status=status.HTTP_400_BAD_REQUEST)
 
-        return mr.content_format_with_conn(items, format, readConn)
+        return mr.content_format(items, format)
 
 class ResultsSFCodeViewSet(APIView):
     """
@@ -169,7 +170,7 @@ class ResultsSFCodeViewSet(APIView):
             return Response('There are no available data.',
                             status=status.HTTP_400_BAD_REQUEST)
 
-        return mr.content_format_with_conn(items, format, readConn)
+        return mr.content_format(items, format)
 
 class ResultsSFUUIDViewSet(APIView):
     """
@@ -215,7 +216,7 @@ class ResultsSFUUIDViewSet(APIView):
             return Response('There are no available data.',
                             status=status.HTTP_400_BAD_REQUEST)
 
-        return mr.content_format_with_conn(items, format, readConn)
+        return mr.content_format(items, format)
 
 class ResultsBBoxViewSet(APIView):
     """
@@ -280,12 +281,12 @@ class ResultsBBoxViewSet(APIView):
 
         mr = MultipleRepresentations()
         readConn = mr.readService()
-        items = readConn.getResultsByBBox(west, south, east, north)
+        items = readConn.getResultsByBBoxForSite(west, south, east, north)
         if items == None or len(items) == 0:
             return Response('There are no available data.',
                             status=status.HTTP_400_BAD_REQUEST)
 
-        return mr.content_format_with_conn(items, format, readConn)
+        return mr.content_format(items, format)
 
 class ResultsActionDateViewSet(APIView):
     """
@@ -346,7 +347,7 @@ class ResultsActionDateViewSet(APIView):
             return Response('There are no available data.',
                             status=status.HTTP_400_BAD_REQUEST)
 
-        return mr.content_format_with_conn(items, format, readConn)
+        return mr.content_format(items, format)
 
 class ResultsRTypeCVViewSet(APIView):
     """
@@ -397,7 +398,7 @@ class ResultsRTypeCVViewSet(APIView):
             return Response('There are no available data.',
                             status=status.HTTP_400_BAD_REQUEST)
 
-        return mr.content_format_with_conn(items, format, readConn)
+        return mr.content_format(items, format)
 
 class ResultsComplexViewSet(APIView):
     """
@@ -488,7 +489,7 @@ class ResultsComplexViewSet(APIView):
             return Response('There are no available data.',
                             status=status.HTTP_400_BAD_REQUEST)
 
-        return mr.content_format_with_conn(items, format, readConn)
+        return mr.content_format(items, format)
 
 class MultipleRepresentations(Service):
 
@@ -514,6 +515,7 @@ class MultipleRepresentations(Service):
 
             allvalues.append(queryset)
 
+        self._session.close()
         return allvalues
 
     def csv_format(self):
@@ -542,6 +544,7 @@ class MultipleRepresentations(Service):
 
             writer.writerow(row)
 
+        self._session.close()
         return response
 
     def yaml_format(self):
@@ -586,7 +589,8 @@ class MultipleRepresentations(Service):
             r += u'                   MethodCode: %s\n' % value.FeatureActionObj.ActionObj.MethodObj.MethodCode
             r += u'                   MethodName: %s\n' % value.FeatureActionObj.ActionObj.MethodObj.MethodName
             sfid = value.FeatureActionObj.SamplingFeatureObj.SamplingFeatureID
-            site = self.conn.getSiteBySFId(sfid)
+            conn = ODM2Read(self._session)
+            site = conn.getSiteBySFId(sfid)
             if site != None:
                 r += u'   Site:\n'
                 r += u'       SiteTypeCV: %s\n' % site.SiteTypeCV
@@ -618,4 +622,5 @@ class MultipleRepresentations(Service):
             response.write(r)
             response.write('\n')
 
+        self._session.close()
         return response

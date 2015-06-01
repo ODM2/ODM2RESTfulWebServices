@@ -187,6 +187,8 @@ class MultipleRepresentations(Service):
             features.append(feature)
 
         allsites['features'] = features
+
+        self._session.close()
         return allsites
 
     def csv_format(self):
@@ -221,6 +223,7 @@ class MultipleRepresentations(Service):
             
             writer.writerow(row)
             
+        self._session.close()
         return response
         
     def yaml_format(self):
@@ -273,6 +276,7 @@ class MultipleRepresentations(Service):
 
         response.write(pyaml.dump(allsites,vspacing=[1, 0]))
 
+        self._session.close()
         return response
 
 class JSONResponse(HttpResponse):
