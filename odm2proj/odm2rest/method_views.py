@@ -30,6 +30,7 @@ from rest_framework_xml.renderers import XMLRenderer
 from rest_framework_yaml.renderers import YAMLRenderer
 from rest_framework.renderers import BrowsableAPIRenderer
 from negotiation import IgnoreClientContentNegotiation
+from dict2xml import dict2xml as xmlify
 
 class MethodsViewSet(APIView):
     """
@@ -42,7 +43,7 @@ class MethodsViewSet(APIView):
         ---
         parameters:
             - name: format    
-              description: The format type is "yaml", "json" or "csv". The default type is "yaml".
+              description: The format type is "yaml", "json", "xml" or "csv". The default type is "yaml".
               required: false
               type: string
               paramType: query
@@ -77,7 +78,7 @@ class MethodCodeViewSet(APIView):
         ---
         parameters:
             - name: format    
-              description: The format type is "yaml", "json" or "csv". The default type is "yaml".
+              description: The format type is "yaml", "json", "xml" or "csv". The default type is "yaml".
               required: false
               type: string
               paramType: query
@@ -172,6 +173,29 @@ class MultipleRepresentations(Service):
         allitems["Methods"] = records
         response.write(pyaml.dump(allitems,vspacing=[0, 0]))
 
+        self._session.close()
+        return response
+
+    def xml_format(self):
+
+        response = HttpResponse(content_type='text/xml')
+        response['Content-Disposition'] = 'attachment; filename="methods.xml"'
+
+        response.write("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n")
+
+        allitems = []
+        for x in self.items:
+            queryset = OrderedDict()
+            queryset['MethodID'] = x.MethodID
+            queryset['MethodTypeCV'] = x.MethodTypeCV
+            queryset['MethodCode'] = x.MethodCode
+            queryset['MethodName'] = x.MethodName
+            queryset['MethodDescription'] = x.MethodDescription
+            queryset['MethodLink'] = x.MethodLink
+            queryset['OrganizationID'] = x.OrganizationID
+            allitems.append(queryset)
+
+        response.write(xmlify({'Method': allitems}, wrap="Methods", indent="  "))
         self._session.close()
         return response
 

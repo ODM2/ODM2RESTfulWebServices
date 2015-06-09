@@ -30,6 +30,7 @@ from rest_framework_xml.renderers import XMLRenderer
 from rest_framework_yaml.renderers import YAMLRenderer
 from rest_framework.renderers import BrowsableAPIRenderer
 from negotiation import IgnoreClientContentNegotiation
+from dict2xml import dict2xml as xmlify
 
 class VariableViewSet(APIView):
     """
@@ -44,7 +45,7 @@ class VariableViewSet(APIView):
         ---
         parameters:
             - name: format    
-              description: The format type is "yaml", "json" or "csv". The default type is "yaml".
+              description: The format type is "yaml", "json", "xml" or "csv". The default type is "yaml".
               required: false
               type: string
               paramType: query
@@ -78,7 +79,7 @@ class VariableCodeViewSet(APIView):
         ---
         parameters:
             - name: format    
-              description: The format type is "yaml", "json" or "csv". The default type is "yaml".
+              description: The format type is "yaml", "json", "xml" or "csv". The default type is "yaml".
               required: false
               type: string
               paramType: query
@@ -188,6 +189,28 @@ class MultipleRepresentations(Service):
         allvars["Variables"] = vararray
         response.write(pyaml.dump(allvars,vspacing=[0, 0]))
 
+        self._session.close()
+        return response
+
+    def xml_format(self):
+        response = HttpResponse(content_type='text/xml')
+        response['Content-Disposition'] = 'attachment; filename="variables.xml"'
+
+        response.write("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n")
+
+        allvars = []
+        for variable in self.items:
+            queryset = OrderedDict()
+            queryset['VariableID'] = variable.VariableID
+            queryset['VariableCode'] = variable.VariableCode
+            queryset['VariableType'] = variable.VariableTypeCV
+            queryset['VariableName'] = variable.VariableNameCV
+            queryset['VariableDefinition'] = variable.VariableDefinition
+            queryset['NoDataValue'] = variable.NoDataValue
+            queryset['Speciation'] = variable.SpeciationCV
+            allvars.append(queryset)
+
+        response.write(xmlify({'Variable': allvars}, wrap="Variables", indent="  "))
         self._session.close()
         return response
 

@@ -103,8 +103,8 @@ class ST_GeomFromText(FunctionElement):
 
 
 class Geometry(GeometryBase):
-    from_text = 'Geometry::STGeomFromText'
-    from_text = 'GeomFromText'
+    #from_text = 'Geometry::STGeomFromText'
+    from_text = 'ST_GeomFromText'
 
     def column_expression(self, col):
 

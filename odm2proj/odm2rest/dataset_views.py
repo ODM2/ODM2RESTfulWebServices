@@ -31,6 +31,8 @@ from rest_framework_yaml.renderers import YAMLRenderer
 from rest_framework.renderers import BrowsableAPIRenderer
 from negotiation import IgnoreClientContentNegotiation
 
+from dict2xml import dict2xml as xmlify
+
 class DatasetViewSet(APIView):
     """
     All ODM2 dataset Retrieval
@@ -42,7 +44,7 @@ class DatasetViewSet(APIView):
         ---
         parameters:
             - name: format    
-              description: The format type is "yaml", "json" or "csv". The default type is "yaml".
+              description: The format type is "yaml", "json", "xml" or "csv". The default type is "yaml".
               required: false
               type: string
               paramType: query
@@ -128,6 +130,30 @@ class MultipleRepresentations(Service):
 
         allitems["DataSets"] = records
         response.write(pyaml.dump(allitems,vspacing=[0, 0]))
+
+        self._session.close()
+        return response
+
+    def xml_format(self):
+
+        response = HttpResponse(content_type='text/xml')
+        response['Content-Disposition'] = 'attachment; filename="datasets.xml"'
+
+        response.write("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n")
+        records = []
+            
+        for item in self.items:
+
+            queryset = OrderedDict()
+            queryset["DatasetID"] = item.DatasetID
+            queryset["DatasetUUID"] = str(item.DatasetUUID)
+            queryset["DatasetTypeCV"] = item.DatasetTypeCV
+            queryset["DatasetCode"] = item.DatasetCode
+            queryset["DatasetTitle"] = item.DatasetTitle
+            queryset["DatasetAbstract"] = item.DatasetAbstract
+            records.append(queryset)
+
+        response.write(xmlify({'Dataset': records}, wrap="Datasets", indent="  "))
 
         self._session.close()
         return response

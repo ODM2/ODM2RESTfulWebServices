@@ -28,6 +28,7 @@ class Service:
         self.__json_format()
         self.__csv_format()
         self.__yaml_format()
+        self.__xml_format()
 
     def connect(self):
         conn = dbconnection.createConnection(self.engine, self.address, self.db, self.user, self.password)
@@ -58,6 +59,8 @@ class Service:
         #elif format == 'yaml' or accept == 'application/yaml':
         elif self.accept == 'application/yaml' or self.accept == 'yaml':
             return self.yaml_format()
+        elif self.accept == 'text/xml' or self.accept == 'xml':
+            return self.xml_format()
         else:
             #return Response(self.json_format())
             #return Response(self.yaml_format())
@@ -79,6 +82,11 @@ class Service:
 
         pass
 
+    def xml_format(self):
+
+        pass
+
     __json_format = json_format
     __csv_format = csv_format
     __yaml_format = yaml_format
+    __xml_format = xml_format

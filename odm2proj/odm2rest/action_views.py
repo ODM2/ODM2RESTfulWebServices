@@ -28,6 +28,7 @@ from rest_framework.views import APIView
 import yaml, pyaml
 import json
 
+from dict2xml import dict2xml as xmlify
 from negotiation import IgnoreClientContentNegotiation
 
 class JSONResponse(HttpResponse):
@@ -64,7 +65,7 @@ class ActionsViewSet(APIView):
         ---
         parameters:
             - name: format    
-              description: The format type is "yaml", "json" or "csv". The default type is "yaml".
+              description: The format type is "yaml", "json", "csv" or "xml". The default type is "yaml".
               required: false
               type: string
               paramType: query
@@ -105,7 +106,7 @@ class ActionIDViewSet(APIView):
         ---
         parameters:
             - name: format    
-              description: The format type is "yaml", "json" or "csv". The default type is "yaml".
+              description: The format type is "yaml", "json", "csv" or "xml". The default type is "yaml".
               required: false
               type: string
               paramType: query
@@ -168,8 +169,7 @@ class MultipleRepresentations(Service):
         response = HttpResponse(content_type='text/csv')
         response['Content-Disposition'] = 'attachment; filename="actions.csv"'
 
-        action_csv_header = ["#fields=ActionID[type='string']","ActionTypeCV[type='string']","ActionDescription[type='string']","ActionFileLink[type='string']","MethodTypeCV[type='string']","MethodCode[type='string']","MethodName[type='string']\
-","MethodDescription[type='string']","MethodLink[type='string']","OrganizationID","BeginDateTime[type='date' format='yyyy-MM-dd HH:MM:SS']","BeginDateTimeUTCOffset","EndDateTime[type='date' format='yyyy-MM-dd HH:MM:SS']","EndDateTimeUTCOffset"]
+        action_csv_header = ["#fields=ActionID[type='string']","ActionTypeCV[type='string']","ActionDescription[type='string']","ActionFileLink[type='string']","MethodTypeCV[type='string']","MethodCode[type='string']","MethodName[type='string']","MethodDescription[type='string']","MethodLink[type='string']","OrganizationID","BeginDateTime[type='date' format='yyyy-MM-dd HH:MM:SS']","BeginDateTimeUTCOffset","EndDateTime[type='date' format='yyyy-MM-dd HH:MM:SS']","EndDateTimeUTCOffset"]
         
         writer = csv.writer(response)
         writer.writerow(action_csv_header)
@@ -234,6 +234,42 @@ class MultipleRepresentations(Service):
         allactions["Actions"] = ats
         allactions["Methods"] = mts
         response.write(pyaml.dump(allactions, vspacing=[1, 0]))
+
+        self._session.close()
+        return response
+
+    def xml_format(self):
+
+        response = HttpResponse(content_type='text/xml')
+        response['Content-Disposition'] = 'attachment; filename="actions.xml"'
+
+        response.write("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n")
+
+        allactions = []
+        for action in self.items:
+            queryset = OrderedDict()
+            queryset['ActionID'] = action.ActionID
+            queryset['ActionTypeCV'] = action.ActionTypeCV
+            queryset['ActionDescription'] = action.ActionDescription
+            queryset['ActionFileLink'] = action.ActionFileLink
+
+            m = OrderedDict()
+            m['MethodTypeCV'] = action.MethodObj.MethodTypeCV
+            m['MethodCode'] = action.MethodObj.MethodCode
+            m['MethodName'] = action.MethodObj.MethodName
+            m['MethodDescription'] = action.MethodObj.MethodDescription
+            m['MethodLink'] = action.MethodObj.MethodLink
+            m['OrganizationID'] = action.MethodObj.OrganizationID
+            queryset['Method'] = m
+
+            queryset['BeginDateTime'] = action.BeginDateTime
+            queryset['BeginDateTimeUTCOffset'] = action.BeginDateTimeUTCOffset
+            queryset['EndDateTime'] = action.EndDateTime
+            queryset['EndDateTimeUTCOffset'] = action.EndDateTimeUTCOffset
+
+            allactions.append(queryset)
+
+        response.write(xmlify({'Action': allactions}, wrap="Actions", indent="  "))
 
         self._session.close()
         return response

@@ -29,6 +29,7 @@ import yaml, pyaml
 from sets import Set
 from negotiation import IgnoreClientContentNegotiation
 from odm2rest.ODM2ALLServices import odm2Service as ODM2Read
+from dict2xml import dict2xml as xmlify
 
 class ValuesViewSet(APIView):
     """
@@ -48,7 +49,7 @@ class ValuesViewSet(APIView):
         ---
         parameters:
             - name: format    
-              description: The format type is "yaml", "json" or "csv". The default type is "yaml".
+              description: The format type is "yaml", "json", "xml" or "csv". The default type is "yaml".
               required: false
               type: string
               paramType: query
@@ -115,61 +116,17 @@ class MultipleRepresentations(Service):
 
     def json_format(self):
 
-        allvalues = []
-        for value in self.items:
-            queryset = OrderedDict()
-            queryset['ResultTypeCV'] = value.TimeSeriesResultObj.ResultTypeCV
-            s = OrderedDict()
-            s['SamplingFeatureCode'] = value.TimeSeriesResultObj.FeatureActionObj.SamplingFeatureObj.SamplingFeatureCode
-            s['SamplingFeatureName'] = value.TimeSeriesResultObj.FeatureActionObj.SamplingFeatureObj.SamplingFeatureName
-            s['FeatureGeometry'] = value.TimeSeriesResultObj.FeatureActionObj.SamplingFeatureObj.FeatureGeometry
-            s['Elevation_m'] = value.TimeSeriesResultObj.FeatureActionObj.SamplingFeatureObj.Elevation_m
-            queryset['SamplingFeature'] = s
-
-            v = OrderedDict()
-            v['VariableCode'] = value.TimeSeriesResultObj.VariableObj.VariableCode
-            v['VariableNameCV'] = value.TimeSeriesResultObj.VariableObj.VariableNameCV
-            queryset['Variable'] = v
-            queryset['ValueDateTime'] = value.ValueDateTime
-            queryset['ValueDateTimeUTCOffset'] = value.ValueDateTimeUTCOffset
-            queryset['DataValue'] = value.DataValue
-
-            allvalues.append(queryset)
-
-        self._session.close()
-        return allvalues
+        if self.resulttypecv == 'Time series coverage':
+            return self.json_timeseriesdata(self.items)
+        elif self.resulttypecv == 'Measurement':
+            return self.json_measurementdata(self.items)
 
     def csv_format(self):
 
-        response = HttpResponse(content_type='text/csv')
-        response['Content-Disposition'] = 'attachment; filename="values.csv"'
-
-        value_csv_header = ["#fields=ResultTypeCV[type='string']","SamplingFeatureCode[type='string']","SamplingFeatureName[type='string']","FeatureGeometry[type='string']","Elevation","VariableCode[type='string']","VariableNameCV[type='string']","ValueDateTime[type='date' format='yyyy-MM-dd HH:MM:SS']","ValueDateTimeUTCOffset","DataValue"]
-            
-        writer = csv.writer(response)
-        writer.writerow(value_csv_header)
-        
-        for item in self.items:
-            row = []
-            #row.append(item.ResultID)
-            row.append(item.TimeSeriesResultObj.ResultTypeCV)
-            #row.append(item.TimeSeriesResultObj.ProcessingLevelObj.Definition)
-            #row.append(item.TimeSeriesResultObj.SampledMediumCV)
-            row.append(item.TimeSeriesResultObj.FeatureActionObj.SamplingFeatureObj.SamplingFeatureCode)
-            row.append(item.TimeSeriesResultObj.FeatureActionObj.SamplingFeatureObj.SamplingFeatureName)
-            row.append(item.TimeSeriesResultObj.FeatureActionObj.SamplingFeatureObj.FeatureGeometry)
-            row.append(item.TimeSeriesResultObj.FeatureActionObj.SamplingFeatureObj.Elevation_m)
-            row.append(item.TimeSeriesResultObj.VariableObj.VariableCode)
-            row.append(item.TimeSeriesResultObj.VariableObj.VariableNameCV)
-            #row.append(item.TimeSeriesResultObj.AggregationStatisticCV)
-            row.append(item.ValueDateTime)
-            row.append(item.ValueDateTimeUTCOffset)
-            row.append(item.DataValue)
-
-            writer.writerow(row)
-
-        self._session.close()
-        return response
+        if self.resulttypecv == 'Time series coverage':
+            return self.csv_timeseriesdata(self.items)
+        elif self.resulttypecv == 'Measurement':
+            return self.csv_measurementdata(self.items)
 
     def yaml_format(self):
 
@@ -178,14 +135,514 @@ class MultipleRepresentations(Service):
         elif self.resulttypecv == 'Measurement':
             return self.yaml_measurementdata(self.items)
 
+    def xml_format(self):
+
+        if self.resulttypecv == 'Time series coverage':
+            return self.xml_timeseriesdata(self.items)
+        elif self.resulttypecv == 'Measurement':
+            return self.xml_measurementdata(self.items)
+
+    def json_timeseriesdata(self, items):
+
+        flag = True
+        result = {}
+        results = []
+        for value in items:
+
+            if flag:
+                result['ResultUUID'] = value.TimeSeriesResultObj.ResultObj.ResultUUID
+                result['ResultTypeCV'] = value.TimeSeriesResultObj.ResultObj.ResultTypeCV
+                result['ResultDateTime'] = str(value.TimeSeriesResultObj.ResultObj.ResultDateTime)
+                result['ResultDateTimeUTCOffset'] = str(value.TimeSeriesResultObj.ResultObj.ResultDateTimeUTCOffset)
+                result['StatusCV'] = value.TimeSeriesResultObj.ResultObj.StatusCV
+                result['SampledMediumCV'] = value.TimeSeriesResultObj.ResultObj.SampledMediumCV
+                result['ValueCount'] = value.TimeSeriesResultObj.ResultObj.ValueCount
+
+                samplingfeature = {}
+                samplingfeature['SamplingFeatureUUID'] = value.TimeSeriesResultObj.ResultObj.FeatureActionObj.SamplingFeatureObj.SamplingFeatureUUID
+                samplingfeature['SamplingFeatureTypeCV'] = value.TimeSeriesResultObj.ResultObj.FeatureActionObj.SamplingFeatureObj.SamplingFeatureTypeCV
+                samplingfeature['SamplingFeatureCode'] = value.TimeSeriesResultObj.ResultObj.FeatureActionObj.SamplingFeatureObj.SamplingFeatureCode
+                samplingfeature['SamplingFeatureName'] = value.TimeSeriesResultObj.ResultObj.FeatureActionObj.SamplingFeatureObj.SamplingFeatureName
+                samplingfeature['Elevation_m'] = str(value.TimeSeriesResultObj.ResultObj.FeatureActionObj.SamplingFeatureObj.Elevation_m)
+
+                action = {}
+                action['ActionTypeCV'] = value.TimeSeriesResultObj.ResultObj.FeatureActionObj.ActionObj.ActionTypeCV
+                action['BeginDateTime'] = str(value.TimeSeriesResultObj.ResultObj.FeatureActionObj.ActionObj.BeginDateTime)
+                action['BeginDateTimeUTCOffset'] = value.TimeSeriesResultObj.ResultObj.FeatureActionObj.ActionObj.BeginDateTimeUTCOffset
+                action['EndDateTime'] = str(value.TimeSeriesResultObj.ResultObj.FeatureActionObj.ActionObj.EndDateTime)
+                action['EndDateTimeUTCOffset'] = str(value.TimeSeriesResultObj.ResultObj.FeatureActionObj.ActionObj.EndDateTimeUTCOffset)
+                method = {}
+                method['MethodTypeCV'] = value.TimeSeriesResultObj.ResultObj.FeatureActionObj.ActionObj.MethodObj.MethodTypeCV
+                method['MethodCode'] = value.TimeSeriesResultObj.ResultObj.FeatureActionObj.ActionObj.MethodObj.MethodCode
+                method['MethodName'] = value.TimeSeriesResultObj.ResultObj.FeatureActionObj.ActionObj.MethodObj.MethodName
+                action['Method'] = method
+
+                aid = value.TimeSeriesResultObj.ResultObj.FeatureActionObj.ActionObj.ActionID 
+                conn = ODM2Read(self._session)
+                raction = conn.getRelatedActionsByActionID(aid)
+                if raction != None:
+                    arrayrelaction = []
+                    for x in raction:
+                        relaction = {}
+                        relaction['RelationshipTypeCV'] = x.RelationshipTypeCV
+                        relaction['ActionTypeCV'] = x.RelatedActionObj.ActionTypeCV
+                        relaction['BeginDateTime'] = str(x.RelatedActionObj.BeginDateTime)
+                        relaction['BeginDateTimeUTCOffset'] = x.RelatedActionObj.BeginDateTimeUTCOffset
+                        relaction['EndDateTime'] = str(x.RelatedActionObj.EndDateTime)
+                        relaction['EndDateTimeUTCOffset'] = str(x.RelatedActionObj.EndDateTimeUTCOffset)
+                        relmethod = {}
+                        relmethod['MethodTypeCV'] = x.RelatedActionObj.MethodObj.MethodTypeCV
+                        relmethod['MethodCode'] = x.RelatedActionObj.MethodObj.MethodCode
+                        relmethod['MethodName'] = x.RelatedActionObj.MethodObj.MethodName
+                        relaction['Method'] = relmethod
+                        arrayrelaction.append(relaction)
+
+                        #result['RelatedActions'] = {'RelatedAction':arrayrelaction}
+                        result['FeatureAction'] = {'SamplingFeature': samplingfeature, 'Action': action, 'RelatedActions': {'RelatedAction':arrayrelaction}}
+                else:
+                    result['FeatureAction'] = {'SamplingFeature': samplingfeature, 'Action': action}
+
+                sfid = value.TimeSeriesResultObj.ResultObj.FeatureActionObj.SamplingFeatureObj.SamplingFeatureID
+                site = conn.getSiteBySFId(sfid)
+                if site != None:
+                    s = {}
+                    s['SiteTypeCV'] = site.SiteTypeCV
+                    s['Latitude'] = site.Latitude
+                    s['Longitude'] = site.Longitude
+                    sr = {}
+                    sr['SRSCode'] = site.SpatialReferenceObj.SRSCode
+                    sr['SRSName'] = site.SpatialReferenceObj.SRSName
+                    s['SpatialReference'] = sr
+                    result['Site'] = s
+
+                varone = {}
+                varone['VariableTypeCV'] = value.TimeSeriesResultObj.ResultObj.VariableObj.VariableTypeCV
+                varone['VariableCode'] = value.TimeSeriesResultObj.ResultObj.VariableObj.VariableCode
+                varone['VariableNameCV'] = value.TimeSeriesResultObj.ResultObj.VariableObj.VariableNameCV
+                varone['NoDataValue'] = value.TimeSeriesResultObj.ResultObj.VariableObj.NoDataValue
+                result['Variable'] = varone
+            
+                unit = {}
+                unit['UnitsTypeCV'] = value.TimeSeriesResultObj.ResultObj.UnitsObj.UnitsTypeCV
+                unit['UnitsAbbreviation'] = value.TimeSeriesResultObj.ResultObj.UnitsObj.UnitsAbbreviation
+                unit['UnitsName'] = value.TimeSeriesResultObj.ResultObj.UnitsObj.UnitsName
+                result['Unit'] = unit
+            
+                pl = {}
+                pl['ProcessingLevelCode'] = value.TimeSeriesResultObj.ResultObj.ProcessingLevelObj.ProcessingLevelCode
+                pl['Definition'] = value.TimeSeriesResultObj.ResultObj.ProcessingLevelObj.Definition
+                pl['Explanation'] = value.TimeSeriesResultObj.ResultObj.ProcessingLevelObj.Explanation
+                result['ProcessingLevel'] = pl
+
+                mresult = {}
+                if value.TimeSeriesResultObj.XLocation != None:
+                    mresult['XLocation'] = value.TimeSeriesResultObj.XLocation
+                else:
+                    mresult['XLocation'] = ''
+                if value.TimeSeriesResultObj.XLocationUnitsID != None:
+                    mresult['XLocationUnitsID'] = value.TimeSeriesResultObj.XLocationUnitsID
+                else:
+                    mresult['XLocationUnitsID'] = ''
+                if value.TimeSeriesResultObj.YLocation != None:
+                    mresult['YLocation'] = value.TimeSeriesResultObj.YLocation
+                else:
+                    mresult['YLocation'] = ''
+                if value.TimeSeriesResultObj.YLocationUnitsID != None:
+                    mresult['YLocationUnitsID'] = value.TimeSeriesResultObj.YLocationUnitsID
+                else:
+                    mresult['YLocationUnitsID'] = ''
+                if value.TimeSeriesResultObj.ZLocation != None:
+                    mresult['ZLocation'] = value.TimeSeriesResultObj.ZLocation
+                else:
+                    mresult['ZLocation'] = ''
+                if value.TimeSeriesResultObj.ZLocationUnitsID != None:
+                    mresult['ZLocationUnitsID'] = value.TimeSeriesResultObj.ZLocationUnitsID
+                else:
+                    mresult['ZLocationUnitsID'] = ''
+
+                if value.TimeSeriesResultObj.SpatialReferenceID != None:
+                    msr = {}
+                    msr['SRSCode'] = value.TimeSeriesResultObj.SpatialReferenceObj.SRSCode
+                    msr['SRSName'] = value.TimeSeriesResultObj.SpatialReferenceObj.SRSName
+                    mresult['SpatialReference'] = msr
+                else:
+                    mresult['SpatialReference'] = ''
+            
+                if value.TimeSeriesResultObj.IntendedTimeSpacing != None:
+                    mresult['IntendedTimeSpacing'] = value.TimeSeriesResultObj.IntendedTimeSpacing
+                else:
+                    mresult['IntendedTimeSpacing'] = ''
+                if value.TimeSeriesResultObj.IntendedTimeSpacingUnitsID != None:
+                    mresult['IntendedTimeSpacingUnitsID'] = value.TimeSeriesResultObj.IntendedTimeSpacingUnitsID
+                else:
+                    mresult['IntendedTimeSpacingUnitsID'] = ''
+
+                mresult['CensorCodeCV'] = value.CensorCodeCV
+                mresult['QualityCodeCV'] = value.QualityCodeCV
+                mresult['AggregationStatisticCV'] = value.TimeSeriesResultObj.AggregationStatisticCV
+                mresult['TimeAggregationInterval'] = value.TimeAggregationInterval
+
+                tunit = {}
+                tunit['UnitsTypeCV'] = value.TimeUnitObj.UnitsTypeCV
+                tunit['UnitsAbbreviation'] = value.TimeUnitObj.UnitsAbbreviation
+                tunit['UnitsName'] = value.TimeUnitObj.UnitsName
+                mresult['TimeAggregationIntervalUnit'] = tunit
+                result['TimeSeriesResult'] = mresult
+                flag = False
+
+            mvalue = {}
+            mvalue['ValueDateTime'] = str(value.ValueDateTime)
+            mvalue['ValueDateTimeUTCOffset'] = value.ValueDateTimeUTCOffset
+            mvalue['DataValue'] = value.DataValue
+            results.append(mvalue)
+
+        final_result = {'Result':result,'DataRecords':results}
+
+        self._session.close()
+        return final_result
+
+    def json_measurementdata(self, items):
+
+        results = []
+        for value in items:
+
+            result = {}
+            result['ResultUUID'] = value.MeasurementResultObj.ResultObj.ResultUUID
+            result['ResultTypeCV'] = value.MeasurementResultObj.ResultObj.ResultTypeCV
+            result['ResultDateTime'] = str(value.MeasurementResultObj.ResultObj.ResultDateTime)
+            result['ResultDateTimeUTCOffset'] = str(value.MeasurementResultObj.ResultObj.ResultDateTimeUTCOffset)
+            result['StatusCV'] = value.MeasurementResultObj.ResultObj.StatusCV
+            result['SampledMediumCV'] = value.MeasurementResultObj.ResultObj.SampledMediumCV
+            result['ValueCount'] = value.MeasurementResultObj.ResultObj.ValueCount
+
+            samplingfeature = {}
+            samplingfeature['SamplingFeatureUUID'] = value.MeasurementResultObj.ResultObj.FeatureActionObj.SamplingFeatureObj.SamplingFeatureUUID
+            samplingfeature['SamplingFeatureTypeCV'] = value.MeasurementResultObj.ResultObj.FeatureActionObj.SamplingFeatureObj.SamplingFeatureTypeCV
+            samplingfeature['SamplingFeatureCode'] = value.MeasurementResultObj.ResultObj.FeatureActionObj.SamplingFeatureObj.SamplingFeatureCode
+            samplingfeature['SamplingFeatureName'] = value.MeasurementResultObj.ResultObj.FeatureActionObj.SamplingFeatureObj.SamplingFeatureName
+            samplingfeature['Elevation_m'] = str(value.MeasurementResultObj.ResultObj.FeatureActionObj.SamplingFeatureObj.Elevation_m)
+
+            action = {}
+            action['ActionTypeCV'] = value.MeasurementResultObj.ResultObj.FeatureActionObj.ActionObj.ActionTypeCV
+            action['BeginDateTime'] = str(value.MeasurementResultObj.ResultObj.FeatureActionObj.ActionObj.BeginDateTime)
+            action['BeginDateTimeUTCOffset'] = value.MeasurementResultObj.ResultObj.FeatureActionObj.ActionObj.BeginDateTimeUTCOffset
+            action['EndDateTime'] = str(value.MeasurementResultObj.ResultObj.FeatureActionObj.ActionObj.EndDateTime)
+            action['EndDateTimeUTCOffset'] = str(value.MeasurementResultObj.ResultObj.FeatureActionObj.ActionObj.EndDateTimeUTCOffset)
+            method = {}
+            method['MethodTypeCV'] = value.MeasurementResultObj.ResultObj.FeatureActionObj.ActionObj.MethodObj.MethodTypeCV
+            method['MethodCode'] = value.MeasurementResultObj.ResultObj.FeatureActionObj.ActionObj.MethodObj.MethodCode
+            method['MethodName'] = value.MeasurementResultObj.ResultObj.FeatureActionObj.ActionObj.MethodObj.MethodName
+            action['Method'] = method
+
+            aid = value.MeasurementResultObj.ResultObj.FeatureActionObj.ActionObj.ActionID 
+            conn = ODM2Read(self._session)
+            raction = conn.getRelatedActionsByActionID(aid)
+            if raction != None:
+                arrayrelaction = []
+                for x in raction:
+                    relaction = {}
+                    relaction['RelationshipTypeCV'] = x.RelationshipTypeCV
+                    relaction['ActionTypeCV'] = x.RelatedActionObj.ActionTypeCV
+                    relaction['BeginDateTime'] = str(x.RelatedActionObj.BeginDateTime)
+                    relaction['BeginDateTimeUTCOffset'] = x.RelatedActionObj.BeginDateTimeUTCOffset
+                    relaction['EndDateTime'] = str(x.RelatedActionObj.EndDateTime)
+                    relaction['EndDateTimeUTCOffset'] = str(x.RelatedActionObj.EndDateTimeUTCOffset)
+                    relmethod = {}
+                    relmethod['MethodTypeCV'] = x.RelatedActionObj.MethodObj.MethodTypeCV
+                    relmethod['MethodCode'] = x.RelatedActionObj.MethodObj.MethodCode
+                    relmethod['MethodName'] = x.RelatedActionObj.MethodObj.MethodName
+                    relaction['Method'] = relmethod
+                    arrayrelaction.append(relaction)
+
+                #result['RelatedActions'] = {'RelatedAction':arrayrelaction}
+                result['FeatureAction'] = {'SamplingFeature': samplingfeature, 'Action': action, 'RelatedActions': {'RelatedAction':arrayrelaction}}
+            else:
+                result['FeatureAction'] = {'SamplingFeature': samplingfeature, 'Action': action}
+
+            sfid = value.MeasurementResultObj.ResultObj.FeatureActionObj.SamplingFeatureObj.SamplingFeatureID
+            site = conn.getSiteBySFId(sfid)
+            if site != None:
+                s = {}
+                s['SiteTypeCV'] = site.SiteTypeCV
+                s['Latitude'] = site.Latitude
+                s['Longitude'] = site.Longitude
+                sr = {}
+                sr['SRSCode'] = site.SpatialReferenceObj.SRSCode
+                sr['SRSName'] = site.SpatialReferenceObj.SRSName
+                s['SpatialReference'] = sr
+                result['Site'] = s
+
+            varone = {}
+            varone['VariableTypeCV'] = value.MeasurementResultObj.ResultObj.VariableObj.VariableTypeCV
+            varone['VariableCode'] = value.MeasurementResultObj.ResultObj.VariableObj.VariableCode
+            varone['VariableNameCV'] = value.MeasurementResultObj.ResultObj.VariableObj.VariableNameCV
+            varone['NoDataValue'] = value.MeasurementResultObj.ResultObj.VariableObj.NoDataValue
+            result['Variable'] = varone
+            
+            unit = {}
+            unit['UnitsTypeCV'] = value.MeasurementResultObj.ResultObj.UnitsObj.UnitsTypeCV
+            unit['UnitsAbbreviation'] = value.MeasurementResultObj.ResultObj.UnitsObj.UnitsAbbreviation
+            unit['UnitsName'] = value.MeasurementResultObj.ResultObj.UnitsObj.UnitsName
+            result['Unit'] = unit
+            
+            pl = {}
+            pl['ProcessingLevelCode'] = value.MeasurementResultObj.ResultObj.ProcessingLevelObj.ProcessingLevelCode
+            pl['Definition'] = value.MeasurementResultObj.ResultObj.ProcessingLevelObj.Definition
+            pl['Explanation'] = value.MeasurementResultObj.ResultObj.ProcessingLevelObj.Explanation
+            result['ProcessingLevel'] = pl
+
+            mresult = {}
+            if value.MeasurementResultObj.XLocation != None:
+                mresult['XLocation'] = value.MeasurementResultObj.XLocation
+            else:
+                mresult['XLocation'] = ''
+            if value.MeasurementResultObj.XLocationUnitsID != None:
+                mresult['XLocationUnitsID'] = value.MeasurementResultObj.XLocationUnitsID
+            else:
+                mresult['XLocationUnitsID'] = ''
+            if value.MeasurementResultObj.YLocation != None:
+                mresult['YLocation'] = value.MeasurementResultObj.YLocation
+            else:
+                mresult['YLocation'] = ''
+            if value.MeasurementResultObj.YLocationUnitsID != None:
+                mresult['YLocationUnitsID'] = value.MeasurementResultObj.YLocationUnitsID
+            else:
+                mresult['YLocationUnitsID'] = ''
+            if value.MeasurementResultObj.ZLocation != None:
+                mresult['ZLocation'] = value.MeasurementResultObj.ZLocation
+            else:
+                mresult['ZLocation'] = ''
+            if value.MeasurementResultObj.ZLocationUnitsID != None:
+                mresult['ZLocationUnitsID'] = value.MeasurementResultObj.ZLocationUnitsID
+            else:
+                mresult['ZLocationUnitsID'] = ''
+
+            if value.MeasurementResultObj.SpatialReferenceID != None:
+                msr = {}
+                msr['SRSCode'] = value.MeasurementResultObj.SpatialReferenceObj.SRSCode
+                msr['SRSName'] = value.MeasurementResultObj.SpatialReferenceObj.SRSName
+                mresult['SpatialReference'] = msr
+            else:
+                mresult['SpatialReference'] = ''
+            
+            mresult['CensorCodeCV'] = value.MeasurementResultObj.CensorCodeCV
+            mresult['QualityCodeCV'] = value.MeasurementResultObj.QualityCodeCV
+            mresult['AggregationStatisticCV'] = value.MeasurementResultObj.AggregationStatisticCV
+            mresult['TimeAggregationInterval'] = value.MeasurementResultObj.TimeAggregationInterval
+
+            tunit = {}
+            tunit['UnitsTypeCV'] = value.MeasurementResultObj.TimeUnitObj.UnitsTypeCV
+            tunit['UnitsAbbreviation'] = value.MeasurementResultObj.TimeUnitObj.UnitsAbbreviation
+            tunit['UnitsName'] = value.MeasurementResultObj.TimeUnitObj.UnitsName
+            mresult['TimeAggregationIntervalUnit'] = tunit
+
+            mvalue = {}
+            mvalue['ValueDateTime'] = str(value.ValueDateTime)
+            mvalue['ValueDateTimeUTCOffset'] = value.ValueDateTimeUTCOffset
+            mvalue['DataValue'] = value.DataValue
+            mresult['MeasurementResultValues'] = mvalue
+            result['MeasurementResult'] = mresult
+
+            results.append(result)
+
+        self._session.close()
+        return results
+
+    def csv_timeseriesdata(self, items):
+
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename="values.csv"'
+
+        item_csv_header = ["#fields=Result.ResultID","Result.ResultUUID[type='string']","Result.ResultTypeCV[type='string']", "Result.ResultDateTime[type='date' format='yyyy-MM-dd HH:MM:SS']","Result.ResultDateTimeUTCOffset","Result.StatusCV[type='string']","Result.SampledMediumCV[type='string']","Result.ValueCount","SamplingFeature.SamplingFeatureUUID[type='string']","SamplingFeature.SamplingFeatureTypeCV[type='string']","SamplingFeature.SamplingFeatureCode[type='string']","SamplingFeature.SamplingFeatureName[type='string']","SamplingFeature.Elevation_m","Action.ActionTypeCV[type='string']","Action.ActionTypeCV[type='date' format='yyyy-MM-dd HH:MM:SS']","Action.BeginDateTimeUTCOffset","Action.EndDateTime[type='date' format='yyyy-MM-dd HH:MM:SS']","Action.EndDateTimeUTCOffset","Method.MethodTypeCV[type='string']","Method.MethodCode[type='string']","Method.MethodName[type='string']","Variable.VariableTypeCV[type='string']","Variable.VariableCode[type='string']","Variable.VariableNameCV[type='string']","Variable.NoDataValue","Unit.UnitsTypeCV[type='string']","Unit.UnitsAbbreviation[type='string']","Unit.UnitsName[type='string']","ProcessingLevel.ProcessingLevelCode[type='string']","ProcessingLevel.Definition[type='string']","ProcessingLevel.Explanation[type='string']","TimeSeriesResult.XLocation","TimeSeriesResult.XLocationUnitsID","TimeSeriesResult.YLocation","TimeSeriesResult.YLocationUnitsID","TimeSeriesResult.ZLocation","TimeSeriesResult.ZLocationUnitsID","TimeSeriesResult.CensorCodeCV[type='string']","TimeSeriesResult.QualityCodeCV[type='string']","TimeSeriesResult.AggregationStatisticCV[type='string']","TimeSeriesResult.TimeAggregationInterval","TimeSeriesResult.TimeUnit.UnitsTypeCV[type='string']","TimeSeriesResult.TimeUnit.UnitsAbbreviation[type='string']","TimeSeriesResult.TimeUnit.UnitsName[type='string']","TimeSeriesResultValues.ValueDateTime[type='date' format='yyyy-MM-dd HH:MM:SS']","TimeSeriesResultValues.ValueDateTimeUTCOffset","TimeSeriesResultValues.DataValue"]
+
+        writer = csv.writer(response)
+        writer.writerow(item_csv_header)
+            
+        for value in items:
+            row = []
+
+            row.append(value.ResultID)
+            row.append(value.TimeSeriesResultObj.ResultObj.ResultUUID)
+            row.append(value.TimeSeriesResultObj.ResultObj.ResultTypeCV)
+            row.append(value.TimeSeriesResultObj.ResultObj.ResultDateTime)
+            row.append(value.TimeSeriesResultObj.ResultObj.ResultDateTimeUTCOffset)
+            row.append(value.TimeSeriesResultObj.ResultObj.StatusCV)
+            row.append(value.TimeSeriesResultObj.ResultObj.SampledMediumCV)
+            row.append(value.TimeSeriesResultObj.ResultObj.ValueCount)
+
+            row.append(value.TimeSeriesResultObj.ResultObj.FeatureActionObj.SamplingFeatureObj.SamplingFeatureUUID)
+            row.append(value.TimeSeriesResultObj.ResultObj.FeatureActionObj.SamplingFeatureObj.SamplingFeatureTypeCV)
+            row.append(value.TimeSeriesResultObj.ResultObj.FeatureActionObj.SamplingFeatureObj.SamplingFeatureCode)
+            row.append(value.TimeSeriesResultObj.ResultObj.FeatureActionObj.SamplingFeatureObj.SamplingFeatureName)
+            row.append(value.TimeSeriesResultObj.ResultObj.FeatureActionObj.SamplingFeatureObj.Elevation_m)
+
+            row.append(value.TimeSeriesResultObj.ResultObj.FeatureActionObj.ActionObj.ActionTypeCV)
+            row.append(value.TimeSeriesResultObj.ResultObj.FeatureActionObj.ActionObj.BeginDateTime)
+            row.append(value.TimeSeriesResultObj.ResultObj.FeatureActionObj.ActionObj.BeginDateTimeUTCOffset)
+            row.append(value.TimeSeriesResultObj.ResultObj.FeatureActionObj.ActionObj.EndDateTime)
+            row.append(value.TimeSeriesResultObj.ResultObj.FeatureActionObj.ActionObj.EndDateTimeUTCOffset)
+
+            row.append(value.TimeSeriesResultObj.ResultObj.FeatureActionObj.ActionObj.MethodObj.MethodTypeCV)
+            row.append(value.TimeSeriesResultObj.ResultObj.FeatureActionObj.ActionObj.MethodObj.MethodCode)
+            row.append(value.TimeSeriesResultObj.ResultObj.FeatureActionObj.ActionObj.MethodObj.MethodName)
+
+            row.append(value.TimeSeriesResultObj.ResultObj.VariableObj.VariableTypeCV)
+            row.append(value.TimeSeriesResultObj.ResultObj.VariableObj.VariableCode)
+            row.append(value.TimeSeriesResultObj.ResultObj.VariableObj.VariableNameCV)
+            row.append(value.TimeSeriesResultObj.ResultObj.VariableObj.NoDataValue)
+
+            row.append(value.TimeSeriesResultObj.ResultObj.UnitsObj.UnitsTypeCV)
+            row.append(value.TimeSeriesResultObj.ResultObj.UnitsObj.UnitsAbbreviation)
+            row.append(value.TimeSeriesResultObj.ResultObj.UnitsObj.UnitsName)
+
+            row.append(value.TimeSeriesResultObj.ResultObj.ProcessingLevelObj.ProcessingLevelCode)
+            row.append(value.TimeSeriesResultObj.ResultObj.ProcessingLevelObj.Definition)
+            row.append(value.TimeSeriesResultObj.ResultObj.ProcessingLevelObj.Explanation)
+
+            if value.TimeSeriesResultObj.XLocation != None:
+                row.append(value.TimeSeriesResultObj.XLocation)
+            else:
+                row.append('')
+            if value.TimeSeriesResultObj.XLocationUnitsID != None:
+                row.append(value.TimeSeriesResultObj.XLocationUnitsID)
+            else:
+                row.append('')
+            if value.TimeSeriesResultObj.YLocation != None:
+                row.append(value.TimeSeriesResultObj.YLocation)
+            else:
+                row.append('')
+            if value.TimeSeriesResultObj.YLocationUnitsID != None:
+                row.append(value.TimeSeriesResultObj.YLocationUnitsID)
+            else:
+                row.append('')
+            if value.TimeSeriesResultObj.ZLocation != None:
+                row.append(value.TimeSeriesResultObj.ZLocation)
+            else:
+                row.append('')
+            if value.TimeSeriesResultObj.ZLocationUnitsID != None:
+                row.append(value.TimeSeriesResultObj.ZLocationUnitsID)
+            else:
+                row.append('')
+
+            row.append(value.CensorCodeCV)
+            row.append(value.QualityCodeCV)
+            row.append(value.TimeSeriesResultObj.AggregationStatisticCV)
+            row.append(value.TimeAggregationInterval)
+
+            row.append(value.TimeUnitObj.UnitsTypeCV)
+            row.append(value.TimeUnitObj.UnitsAbbreviation)
+            row.append(value.TimeUnitObj.UnitsName)
+
+            row.append(value.ValueDateTime)
+            row.append(value.ValueDateTimeUTCOffset)
+            row.append(value.DataValue)
+
+            writer.writerow(row)
+
+        self._session.close()
+        return response        
+
+    def csv_measurementdata(self, items):
+
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename="values.csv"'
+
+        item_csv_header = ["#fields=Result.ResultID","Result.ResultUUID[type='string']","Result.ResultTypeCV[type='string']", "Result.ResultDateTime[type='date' format='yyyy-MM-dd HH:MM:SS']","Result.ResultDateTimeUTCOffset","Result.StatusCV[type='string']","Result.SampledMediumCV[type='string']","Result.ValueCount","SamplingFeature.SamplingFeatureUUID[type='string']","SamplingFeature.SamplingFeatureTypeCV[type='string']","SamplingFeature.SamplingFeatureCode[type='string']","SamplingFeature.SamplingFeatureName[type='string']","SamplingFeature.Elevation_m","Action.ActionTypeCV[type='string']","Action.ActionTypeCV[type='date' format='yyyy-MM-dd HH:MM:SS']","Action.BeginDateTimeUTCOffset","Action.EndDateTime[type='date' format='yyyy-MM-dd HH:MM:SS']","Action.EndDateTimeUTCOffset","Method.MethodTypeCV[type='string']","Method.MethodCode[type='string']","Method.MethodName[type='string']","Variable.VariableTypeCV[type='string']","Variable.VariableCode[type='string']","Variable.VariableNameCV[type='string']","Variable.NoDataValue","Unit.UnitsTypeCV[type='string']","Unit.UnitsAbbreviation[type='string']","Unit.UnitsName[type='string']","ProcessingLevel.ProcessingLevelCode[type='string']","ProcessingLevel.Definition[type='string']","ProcessingLevel.Explanation[type='string']","MeasurementResult.XLocation","MeasurementResult.XLocationUnitsID","MeasurementResult.YLocation","MeasurementResult.YLocationUnitsID","MeasurementResult.ZLocation","MeasurementResult.ZLocationUnitsID","MeasurementResult.CensorCodeCV[type='string']","MeasurementResult.QualityCodeCV[type='string']","MeasurementResult.AggregationStatisticCV[type='string']","MeasurementResult.TimeAggregationInterval","MeasurementResult.TimeUnit.UnitsTypeCV[type='string']","MeasurementResult.TimeUnit.UnitsAbbreviation[type='string']","MeasurementResult.TimeUnit.UnitsName[type='string']","MeasurementResultValues.ValueDateTime[type='date' format='yyyy-MM-dd HH:MM:SS']","MeasurementResultValues.ValueDateTimeUTCOffset","MeasurementResultValues.DataValue"]
+
+        writer = csv.writer(response)
+        writer.writerow(item_csv_header)
+            
+        for value in items:
+            row = []
+
+            row.append(value.ResultID)
+            row.append(value.MeasurementResultObj.ResultObj.ResultUUID)
+            row.append(value.MeasurementResultObj.ResultObj.ResultTypeCV)
+            row.append(value.MeasurementResultObj.ResultObj.ResultDateTime)
+            row.append(value.MeasurementResultObj.ResultObj.ResultDateTimeUTCOffset)
+            row.append(value.MeasurementResultObj.ResultObj.StatusCV)
+            row.append(value.MeasurementResultObj.ResultObj.SampledMediumCV)
+            row.append(value.MeasurementResultObj.ResultObj.ValueCount)
+
+            row.append(value.MeasurementResultObj.ResultObj.FeatureActionObj.SamplingFeatureObj.SamplingFeatureUUID)
+            row.append(value.MeasurementResultObj.ResultObj.FeatureActionObj.SamplingFeatureObj.SamplingFeatureTypeCV)
+            row.append(value.MeasurementResultObj.ResultObj.FeatureActionObj.SamplingFeatureObj.SamplingFeatureCode)
+            row.append(value.MeasurementResultObj.ResultObj.FeatureActionObj.SamplingFeatureObj.SamplingFeatureName)
+            row.append(value.MeasurementResultObj.ResultObj.FeatureActionObj.SamplingFeatureObj.Elevation_m)
+
+            row.append(value.MeasurementResultObj.ResultObj.FeatureActionObj.ActionObj.ActionTypeCV)
+            row.append(value.MeasurementResultObj.ResultObj.FeatureActionObj.ActionObj.BeginDateTime)
+            row.append(value.MeasurementResultObj.ResultObj.FeatureActionObj.ActionObj.BeginDateTimeUTCOffset)
+            row.append(value.MeasurementResultObj.ResultObj.FeatureActionObj.ActionObj.EndDateTime)
+            row.append(value.MeasurementResultObj.ResultObj.FeatureActionObj.ActionObj.EndDateTimeUTCOffset)
+
+            row.append(value.MeasurementResultObj.ResultObj.FeatureActionObj.ActionObj.MethodObj.MethodTypeCV)
+            row.append(value.MeasurementResultObj.ResultObj.FeatureActionObj.ActionObj.MethodObj.MethodCode)
+            row.append(value.MeasurementResultObj.ResultObj.FeatureActionObj.ActionObj.MethodObj.MethodName)
+
+            row.append(value.MeasurementResultObj.ResultObj.VariableObj.VariableTypeCV)
+            row.append(value.MeasurementResultObj.ResultObj.VariableObj.VariableCode)
+            row.append(value.MeasurementResultObj.ResultObj.VariableObj.VariableNameCV)
+            row.append(value.MeasurementResultObj.ResultObj.VariableObj.NoDataValue)
+
+            row.append(value.MeasurementResultObj.ResultObj.UnitsObj.UnitsTypeCV)
+            row.append(value.MeasurementResultObj.ResultObj.UnitsObj.UnitsAbbreviation)
+            row.append(value.MeasurementResultObj.ResultObj.UnitsObj.UnitsName)
+
+            row.append(value.MeasurementResultObj.ResultObj.ProcessingLevelObj.ProcessingLevelCode)
+            row.append(value.MeasurementResultObj.ResultObj.ProcessingLevelObj.Definition)
+            row.append(value.MeasurementResultObj.ResultObj.ProcessingLevelObj.Explanation)
+
+            if value.MeasurementResultObj.XLocation != None:
+                row.append(value.MeasurementResultObj.XLocation)
+            else:
+                row.append('')
+            if value.MeasurementResultObj.XLocationUnitsID != None:
+                row.append(value.MeasurementResultObj.XLocationUnitsID)
+            else:
+                row.append('')
+            if value.MeasurementResultObj.YLocation != None:
+                row.append(value.MeasurementResultObj.YLocation)
+            else:
+                row.append('')
+            if value.MeasurementResultObj.YLocationUnitsID != None:
+                row.append(value.MeasurementResultObj.YLocationUnitsID)
+            else:
+                row.append('')
+            if value.MeasurementResultObj.ZLocation != None:
+                row.append(value.MeasurementResultObj.ZLocation)
+            else:
+                row.append('')
+            if value.MeasurementResultObj.ZLocationUnitsID != None:
+                row.append(value.MeasurementResultObj.ZLocationUnitsID)
+            else:
+                row.append('')
+
+            row.append(value.MeasurementResultObj.CensorCodeCV)
+            row.append(value.MeasurementResultObj.QualityCodeCV)
+            row.append(value.MeasurementResultObj.AggregationStatisticCV)
+            row.append(value.MeasurementResultObj.TimeAggregationInterval)
+
+            row.append(value.MeasurementResultObj.TimeUnitObj.UnitsTypeCV)
+            row.append(value.MeasurementResultObj.TimeUnitObj.UnitsAbbreviation)
+            row.append(value.MeasurementResultObj.TimeUnitObj.UnitsName)
+
+            row.append(value.ValueDateTime)
+            row.append(value.ValueDateTimeUTCOffset)
+            row.append(value.DataValue)
+
+            writer.writerow(row)
+
+        self._session.close()
+        return response
+        
+
     def yaml_timeseriesdata(self, items):
 
         response = HttpResponse(content_type='application/yaml')
         response['Content-Disposition'] = 'attachment; filename="values.yaml"'
 
         response.write("---\n")
-        #response.write("YODA:\n")
-        #response.write('- {Version: 1.0.0, Profile: TimeSeries, CreationTool: NULL, DateCreated: "2015-03-19", DateUpdated: "2015-03-19"}\n\n')
 
         tsrv_data = '' 
         flag = True
@@ -341,12 +798,8 @@ class MultipleRepresentations(Service):
 
         response = HttpResponse(content_type='application/yaml')
         response['Content-Disposition'] = 'attachment; filename="values.yaml"'
-
         response.write("---\n")
-        resulttype = u'ResultTypeCV: "%s"\n' % self.resulttypecv
-        response.write(resulttype)
-        #response.write("YODA:\n")
-        #response.write('- {Version: 1.0.0, Profile: TimeSeries, CreationTool: NULL, DateCreated: "2015-03-19", DateUpdated: "2015-03-19"}\n\n')
+
         for value in items:
             r = u'Result: &ResultID%03d\n' % value.ResultID
             r += u'   ResultUUID: "%s"\n' % value.MeasurementResultObj.ResultObj.ResultUUID
@@ -471,3 +924,318 @@ class MultipleRepresentations(Service):
         self._session.close()
         return response
 
+    def xml_timeseriesdata(self, items):
+
+        response = HttpResponse(content_type='text/xml')
+        response['Content-Disposition'] = 'attachment; filename="values.xml"'
+        response.write("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n")
+
+        flag = True
+        result = {}
+        results = []
+        for value in items:
+
+            if flag:
+                result['ResultUUID'] = value.TimeSeriesResultObj.ResultObj.ResultUUID
+                result['ResultTypeCV'] = value.TimeSeriesResultObj.ResultObj.ResultTypeCV
+                result['ResultDateTime'] = str(value.TimeSeriesResultObj.ResultObj.ResultDateTime)
+                result['ResultDateTimeUTCOffset'] = str(value.TimeSeriesResultObj.ResultObj.ResultDateTimeUTCOffset)
+                result['StatusCV'] = value.TimeSeriesResultObj.ResultObj.StatusCV
+                result['SampledMediumCV'] = value.TimeSeriesResultObj.ResultObj.SampledMediumCV
+                result['ValueCount'] = value.TimeSeriesResultObj.ResultObj.ValueCount
+
+                samplingfeature = {}
+                samplingfeature['SamplingFeatureUUID'] = value.TimeSeriesResultObj.ResultObj.FeatureActionObj.SamplingFeatureObj.SamplingFeatureUUID
+                samplingfeature['SamplingFeatureTypeCV'] = value.TimeSeriesResultObj.ResultObj.FeatureActionObj.SamplingFeatureObj.SamplingFeatureTypeCV
+                samplingfeature['SamplingFeatureCode'] = value.TimeSeriesResultObj.ResultObj.FeatureActionObj.SamplingFeatureObj.SamplingFeatureCode
+                samplingfeature['SamplingFeatureName'] = value.TimeSeriesResultObj.ResultObj.FeatureActionObj.SamplingFeatureObj.SamplingFeatureName
+                samplingfeature['Elevation_m'] = str(value.TimeSeriesResultObj.ResultObj.FeatureActionObj.SamplingFeatureObj.Elevation_m)
+
+                action = {}
+                action['ActionTypeCV'] = value.TimeSeriesResultObj.ResultObj.FeatureActionObj.ActionObj.ActionTypeCV
+                action['BeginDateTime'] = str(value.TimeSeriesResultObj.ResultObj.FeatureActionObj.ActionObj.BeginDateTime)
+                action['BeginDateTimeUTCOffset'] = value.TimeSeriesResultObj.ResultObj.FeatureActionObj.ActionObj.BeginDateTimeUTCOffset
+                action['EndDateTime'] = str(value.TimeSeriesResultObj.ResultObj.FeatureActionObj.ActionObj.EndDateTime)
+                action['EndDateTimeUTCOffset'] = str(value.TimeSeriesResultObj.ResultObj.FeatureActionObj.ActionObj.EndDateTimeUTCOffset)
+                method = {}
+                method['MethodTypeCV'] = value.TimeSeriesResultObj.ResultObj.FeatureActionObj.ActionObj.MethodObj.MethodTypeCV
+                method['MethodCode'] = value.TimeSeriesResultObj.ResultObj.FeatureActionObj.ActionObj.MethodObj.MethodCode
+                method['MethodName'] = value.TimeSeriesResultObj.ResultObj.FeatureActionObj.ActionObj.MethodObj.MethodName
+                action['Method'] = method
+
+                aid = value.TimeSeriesResultObj.ResultObj.FeatureActionObj.ActionObj.ActionID 
+                conn = ODM2Read(self._session)
+                raction = conn.getRelatedActionsByActionID(aid)
+                if raction != None:
+                    arrayrelaction = []
+                    for x in raction:
+                        relaction = {}
+                        relaction['RelationshipTypeCV'] = x.RelationshipTypeCV
+                        relaction['ActionTypeCV'] = x.RelatedActionObj.ActionTypeCV
+                        relaction['BeginDateTime'] = str(x.RelatedActionObj.BeginDateTime)
+                        relaction['BeginDateTimeUTCOffset'] = x.RelatedActionObj.BeginDateTimeUTCOffset
+                        relaction['EndDateTime'] = str(x.RelatedActionObj.EndDateTime)
+                        relaction['EndDateTimeUTCOffset'] = str(x.RelatedActionObj.EndDateTimeUTCOffset)
+                        relmethod = {}
+                        relmethod['MethodTypeCV'] = x.RelatedActionObj.MethodObj.MethodTypeCV
+                        relmethod['MethodCode'] = x.RelatedActionObj.MethodObj.MethodCode
+                        relmethod['MethodName'] = x.RelatedActionObj.MethodObj.MethodName
+                        relaction['Method'] = relmethod
+                        arrayrelaction.append(relaction)
+
+                        #result['RelatedActions'] = {'RelatedAction':arrayrelaction}
+                        result['FeatureAction'] = {'SamplingFeature': samplingfeature, 'Action': action, 'RelatedActions': {'RelatedAction':arrayrelaction}}
+                else:
+                    result['FeatureAction'] = {'SamplingFeature': samplingfeature, 'Action': action}
+
+                sfid = value.TimeSeriesResultObj.ResultObj.FeatureActionObj.SamplingFeatureObj.SamplingFeatureID
+                site = conn.getSiteBySFId(sfid)
+                if site != None:
+                    s = {}
+                    s['SiteTypeCV'] = site.SiteTypeCV
+                    s['Latitude'] = site.Latitude
+                    s['Longitude'] = site.Longitude
+                    sr = {}
+                    sr['SRSCode'] = site.SpatialReferenceObj.SRSCode
+                    sr['SRSName'] = site.SpatialReferenceObj.SRSName
+                    s['SpatialReference'] = sr
+                    result['Site'] = s
+
+                varone = {}
+                varone['VariableTypeCV'] = value.TimeSeriesResultObj.ResultObj.VariableObj.VariableTypeCV
+                varone['VariableCode'] = value.TimeSeriesResultObj.ResultObj.VariableObj.VariableCode
+                varone['VariableNameCV'] = value.TimeSeriesResultObj.ResultObj.VariableObj.VariableNameCV
+                varone['NoDataValue'] = value.TimeSeriesResultObj.ResultObj.VariableObj.NoDataValue
+                result['Variable'] = varone
+            
+                unit = {}
+                unit['UnitsTypeCV'] = value.TimeSeriesResultObj.ResultObj.UnitsObj.UnitsTypeCV
+                unit['UnitsAbbreviation'] = value.TimeSeriesResultObj.ResultObj.UnitsObj.UnitsAbbreviation
+                unit['UnitsName'] = value.TimeSeriesResultObj.ResultObj.UnitsObj.UnitsName
+                result['Unit'] = unit
+            
+                pl = {}
+                pl['ProcessingLevelCode'] = value.TimeSeriesResultObj.ResultObj.ProcessingLevelObj.ProcessingLevelCode
+                pl['Definition'] = value.TimeSeriesResultObj.ResultObj.ProcessingLevelObj.Definition
+                pl['Explanation'] = value.TimeSeriesResultObj.ResultObj.ProcessingLevelObj.Explanation
+                result['ProcessingLevel'] = pl
+
+                mresult = {}
+                if value.TimeSeriesResultObj.XLocation != None:
+                    mresult['XLocation'] = value.TimeSeriesResultObj.XLocation
+                else:
+                    mresult['XLocation'] = ''
+                if value.TimeSeriesResultObj.XLocationUnitsID != None:
+                    mresult['XLocationUnitsID'] = value.TimeSeriesResultObj.XLocationUnitsID
+                else:
+                    mresult['XLocationUnitsID'] = ''
+                if value.TimeSeriesResultObj.YLocation != None:
+                    mresult['YLocation'] = value.TimeSeriesResultObj.YLocation
+                else:
+                    mresult['YLocation'] = ''
+                if value.TimeSeriesResultObj.YLocationUnitsID != None:
+                    mresult['YLocationUnitsID'] = value.TimeSeriesResultObj.YLocationUnitsID
+                else:
+                    mresult['YLocationUnitsID'] = ''
+                if value.TimeSeriesResultObj.ZLocation != None:
+                    mresult['ZLocation'] = value.TimeSeriesResultObj.ZLocation
+                else:
+                    mresult['ZLocation'] = ''
+                if value.TimeSeriesResultObj.ZLocationUnitsID != None:
+                    mresult['ZLocationUnitsID'] = value.TimeSeriesResultObj.ZLocationUnitsID
+                else:
+                    mresult['ZLocationUnitsID'] = ''
+
+                if value.TimeSeriesResultObj.SpatialReferenceID != None:
+                    msr = {}
+                    msr['SRSCode'] = value.TimeSeriesResultObj.SpatialReferenceObj.SRSCode
+                    msr['SRSName'] = value.TimeSeriesResultObj.SpatialReferenceObj.SRSName
+                    mresult['SpatialReference'] = msr
+                else:
+                    mresult['SpatialReference'] = ''
+            
+                if value.TimeSeriesResultObj.IntendedTimeSpacing != None:
+                    mresult['IntendedTimeSpacing'] = value.TimeSeriesResultObj.IntendedTimeSpacing
+                else:
+                    mresult['IntendedTimeSpacing'] = ''
+                if value.TimeSeriesResultObj.IntendedTimeSpacingUnitsID != None:
+                    mresult['IntendedTimeSpacingUnitsID'] = value.TimeSeriesResultObj.IntendedTimeSpacingUnitsID
+                else:
+                    mresult['IntendedTimeSpacingUnitsID'] = ''
+
+                mresult['CensorCodeCV'] = value.CensorCodeCV
+                mresult['QualityCodeCV'] = value.QualityCodeCV
+                mresult['AggregationStatisticCV'] = value.TimeSeriesResultObj.AggregationStatisticCV
+                mresult['TimeAggregationInterval'] = value.TimeAggregationInterval
+
+                tunit = {}
+                tunit['UnitsTypeCV'] = value.TimeUnitObj.UnitsTypeCV
+                tunit['UnitsAbbreviation'] = value.TimeUnitObj.UnitsAbbreviation
+                tunit['UnitsName'] = value.TimeUnitObj.UnitsName
+                mresult['TimeAggregationIntervalUnit'] = tunit
+                result['TimeSeriesResult'] = mresult
+                flag = False
+
+            mvalue = {}
+            mvalue['ValueDateTime'] = str(value.ValueDateTime)
+            mvalue['ValueDateTimeUTCOffset'] = value.ValueDateTimeUTCOffset
+            mvalue['DataValue'] = value.DataValue
+            results.append(mvalue)
+
+        response.write(xmlify({'Result':result,'DataRecords':{'Data':results}}, wrap="Results", indent="  "))
+
+        self._session.close()
+        return response
+
+    def xml_measurementdata(self, items):
+
+        response = HttpResponse(content_type='text/xml')
+        response['Content-Disposition'] = 'attachment; filename="values.xml"'
+        response.write("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n")
+
+        results = []
+        for value in items:
+
+            result = {}
+            result['ResultUUID'] = value.MeasurementResultObj.ResultObj.ResultUUID
+            result['ResultTypeCV'] = value.MeasurementResultObj.ResultObj.ResultTypeCV
+            result['ResultDateTime'] = str(value.MeasurementResultObj.ResultObj.ResultDateTime)
+            result['ResultDateTimeUTCOffset'] = str(value.MeasurementResultObj.ResultObj.ResultDateTimeUTCOffset)
+            result['StatusCV'] = value.MeasurementResultObj.ResultObj.StatusCV
+            result['SampledMediumCV'] = value.MeasurementResultObj.ResultObj.SampledMediumCV
+            result['ValueCount'] = value.MeasurementResultObj.ResultObj.ValueCount
+
+            samplingfeature = {}
+            samplingfeature['SamplingFeatureUUID'] = value.MeasurementResultObj.ResultObj.FeatureActionObj.SamplingFeatureObj.SamplingFeatureUUID
+            samplingfeature['SamplingFeatureTypeCV'] = value.MeasurementResultObj.ResultObj.FeatureActionObj.SamplingFeatureObj.SamplingFeatureTypeCV
+            samplingfeature['SamplingFeatureCode'] = value.MeasurementResultObj.ResultObj.FeatureActionObj.SamplingFeatureObj.SamplingFeatureCode
+            samplingfeature['SamplingFeatureName'] = value.MeasurementResultObj.ResultObj.FeatureActionObj.SamplingFeatureObj.SamplingFeatureName
+            samplingfeature['Elevation_m'] = str(value.MeasurementResultObj.ResultObj.FeatureActionObj.SamplingFeatureObj.Elevation_m)
+
+            action = {}
+            action['ActionTypeCV'] = value.MeasurementResultObj.ResultObj.FeatureActionObj.ActionObj.ActionTypeCV
+            action['BeginDateTime'] = str(value.MeasurementResultObj.ResultObj.FeatureActionObj.ActionObj.BeginDateTime)
+            action['BeginDateTimeUTCOffset'] = value.MeasurementResultObj.ResultObj.FeatureActionObj.ActionObj.BeginDateTimeUTCOffset
+            action['EndDateTime'] = str(value.MeasurementResultObj.ResultObj.FeatureActionObj.ActionObj.EndDateTime)
+            action['EndDateTimeUTCOffset'] = str(value.MeasurementResultObj.ResultObj.FeatureActionObj.ActionObj.EndDateTimeUTCOffset)
+            method = {}
+            method['MethodTypeCV'] = value.MeasurementResultObj.ResultObj.FeatureActionObj.ActionObj.MethodObj.MethodTypeCV
+            method['MethodCode'] = value.MeasurementResultObj.ResultObj.FeatureActionObj.ActionObj.MethodObj.MethodCode
+            method['MethodName'] = value.MeasurementResultObj.ResultObj.FeatureActionObj.ActionObj.MethodObj.MethodName
+            action['Method'] = method
+
+            aid = value.MeasurementResultObj.ResultObj.FeatureActionObj.ActionObj.ActionID 
+            conn = ODM2Read(self._session)
+            raction = conn.getRelatedActionsByActionID(aid)
+            if raction != None:
+                arrayrelaction = []
+                for x in raction:
+                    relaction = {}
+                    relaction['RelationshipTypeCV'] = x.RelationshipTypeCV
+                    relaction['ActionTypeCV'] = x.RelatedActionObj.ActionTypeCV
+                    relaction['BeginDateTime'] = str(x.RelatedActionObj.BeginDateTime)
+                    relaction['BeginDateTimeUTCOffset'] = x.RelatedActionObj.BeginDateTimeUTCOffset
+                    relaction['EndDateTime'] = str(x.RelatedActionObj.EndDateTime)
+                    relaction['EndDateTimeUTCOffset'] = str(x.RelatedActionObj.EndDateTimeUTCOffset)
+                    relmethod = {}
+                    relmethod['MethodTypeCV'] = x.RelatedActionObj.MethodObj.MethodTypeCV
+                    relmethod['MethodCode'] = x.RelatedActionObj.MethodObj.MethodCode
+                    relmethod['MethodName'] = x.RelatedActionObj.MethodObj.MethodName
+                    relaction['Method'] = relmethod
+                    arrayrelaction.append(relaction)
+
+                #result['RelatedActions'] = {'RelatedAction':arrayrelaction}
+                result['FeatureAction'] = {'SamplingFeature': samplingfeature, 'Action': action, 'RelatedActions': {'RelatedAction':arrayrelaction}}
+            else:
+                result['FeatureAction'] = {'SamplingFeature': samplingfeature, 'Action': action}
+
+            sfid = value.MeasurementResultObj.ResultObj.FeatureActionObj.SamplingFeatureObj.SamplingFeatureID
+            site = conn.getSiteBySFId(sfid)
+            if site != None:
+                s = {}
+                s['SiteTypeCV'] = site.SiteTypeCV
+                s['Latitude'] = site.Latitude
+                s['Longitude'] = site.Longitude
+                sr = {}
+                sr['SRSCode'] = site.SpatialReferenceObj.SRSCode
+                sr['SRSName'] = site.SpatialReferenceObj.SRSName
+                s['SpatialReference'] = sr
+                result['Site'] = s
+
+            varone = {}
+            varone['VariableTypeCV'] = value.MeasurementResultObj.ResultObj.VariableObj.VariableTypeCV
+            varone['VariableCode'] = value.MeasurementResultObj.ResultObj.VariableObj.VariableCode
+            varone['VariableNameCV'] = value.MeasurementResultObj.ResultObj.VariableObj.VariableNameCV
+            varone['NoDataValue'] = value.MeasurementResultObj.ResultObj.VariableObj.NoDataValue
+            result['Variable'] = varone
+            
+            unit = {}
+            unit['UnitsTypeCV'] = value.MeasurementResultObj.ResultObj.UnitsObj.UnitsTypeCV
+            unit['UnitsAbbreviation'] = value.MeasurementResultObj.ResultObj.UnitsObj.UnitsAbbreviation
+            unit['UnitsName'] = value.MeasurementResultObj.ResultObj.UnitsObj.UnitsName
+            result['Unit'] = unit
+            
+            pl = {}
+            pl['ProcessingLevelCode'] = value.MeasurementResultObj.ResultObj.ProcessingLevelObj.ProcessingLevelCode
+            pl['Definition'] = value.MeasurementResultObj.ResultObj.ProcessingLevelObj.Definition
+            pl['Explanation'] = value.MeasurementResultObj.ResultObj.ProcessingLevelObj.Explanation
+            result['ProcessingLevel'] = pl
+
+            mresult = {}
+            if value.MeasurementResultObj.XLocation != None:
+                mresult['XLocation'] = value.MeasurementResultObj.XLocation
+            else:
+                mresult['XLocation'] = ''
+            if value.MeasurementResultObj.XLocationUnitsID != None:
+                mresult['XLocationUnitsID'] = value.MeasurementResultObj.XLocationUnitsID
+            else:
+                mresult['XLocationUnitsID'] = ''
+            if value.MeasurementResultObj.YLocation != None:
+                mresult['YLocation'] = value.MeasurementResultObj.YLocation
+            else:
+                mresult['YLocation'] = ''
+            if value.MeasurementResultObj.YLocationUnitsID != None:
+                mresult['YLocationUnitsID'] = value.MeasurementResultObj.YLocationUnitsID
+            else:
+                mresult['YLocationUnitsID'] = ''
+            if value.MeasurementResultObj.ZLocation != None:
+                mresult['ZLocation'] = value.MeasurementResultObj.ZLocation
+            else:
+                mresult['ZLocation'] = ''
+            if value.MeasurementResultObj.ZLocationUnitsID != None:
+                mresult['ZLocationUnitsID'] = value.MeasurementResultObj.ZLocationUnitsID
+            else:
+                mresult['ZLocationUnitsID'] = ''
+
+            if value.MeasurementResultObj.SpatialReferenceID != None:
+                msr = {}
+                msr['SRSCode'] = value.MeasurementResultObj.SpatialReferenceObj.SRSCode
+                msr['SRSName'] = value.MeasurementResultObj.SpatialReferenceObj.SRSName
+                mresult['SpatialReference'] = msr
+            else:
+                mresult['SpatialReference'] = ''
+            
+            mresult['CensorCodeCV'] = value.MeasurementResultObj.CensorCodeCV
+            mresult['QualityCodeCV'] = value.MeasurementResultObj.QualityCodeCV
+            mresult['AggregationStatisticCV'] = value.MeasurementResultObj.AggregationStatisticCV
+            mresult['TimeAggregationInterval'] = value.MeasurementResultObj.TimeAggregationInterval
+
+            tunit = {}
+            tunit['UnitsTypeCV'] = value.MeasurementResultObj.TimeUnitObj.UnitsTypeCV
+            tunit['UnitsAbbreviation'] = value.MeasurementResultObj.TimeUnitObj.UnitsAbbreviation
+            tunit['UnitsName'] = value.MeasurementResultObj.TimeUnitObj.UnitsName
+            mresult['TimeAggregationIntervalUnit'] = tunit
+
+            mvalue = {}
+            mvalue['ValueDateTime'] = str(value.ValueDateTime)
+            mvalue['ValueDateTimeUTCOffset'] = value.ValueDateTimeUTCOffset
+            mvalue['DataValue'] = value.DataValue
+            mresult['MeasurementResultValues'] = mvalue
+            result['MeasurementResult'] = mresult
+
+            results.append(result)
+
+        response.write(xmlify({'Result':results}, wrap="Results", indent="  "))
+
+        self._session.close()
+        return response

@@ -28,6 +28,7 @@ from rest_framework_yaml.renderers import YAMLRenderer
 from rest_framework.renderers import BrowsableAPIRenderer
 import yaml, pyaml
 from negotiation import IgnoreClientContentNegotiation
+from dict2xml import dict2xml as xmlify
 
 class SiteViewSet(APIView):
     """
@@ -49,7 +50,7 @@ class SiteViewSet(APIView):
         ---
         parameters:
             - name: format    
-              description: The format type is "yaml", "json" or "csv". The default type is "yaml".
+              description: The format type is "yaml", "json", "xml" or "csv". The default type is "yaml".
               required: false
               type: string
               paramType: query
@@ -84,7 +85,7 @@ class SiteSamplingFeatureCodeViewSet(APIView):
         ---
         parameters:
             - name: format    
-              description: The format type is "yaml", "json" or "csv". The default type is "yaml".
+              description: The format type is "yaml", "json", "xml" or "csv". The default type is "yaml".
               required: false
               type: string
               paramType: query
@@ -123,7 +124,7 @@ class SiteTypeViewSet(APIView):
         ---
         parameters:
             - name: format    
-              description: The format type is "yaml", "json" or "csv". The default type is "yaml".
+              description: The format type is "yaml", "json", "xml" or "csv". The default type is "yaml".
               required: false
               type: string
               paramType: query
@@ -276,6 +277,45 @@ class MultipleRepresentations(Service):
 
         response.write(pyaml.dump(allsites,vspacing=[1, 0]))
 
+        self._session.close()
+        return response
+
+    def xml_format(self):
+
+        response = HttpResponse(content_type='text/xml')
+        response['Content-Disposition'] = 'attachment; filename="sites.xml"'
+
+        response.write("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n")
+        allsites = {}
+
+        sts = []
+        for site in self.items:
+
+            st = {}
+            st['SiteTypeCV'] = site.SiteTypeCV
+            st['Longitude'] = site.Longitude
+            st['Latitude'] = site.Latitude
+
+            sr = {}
+            sr['SRSCode'] = site.SpatialReferenceObj.SRSCode
+            sr['SRSDescription'] = site.SpatialReferenceObj.SRSDescription
+            sr['SRSName'] = site.SpatialReferenceObj.SRSName
+            st['SpatialReference'] = sr
+
+            sf = {}
+            sf['SamplingFeatureTypeCV'] = site.SamplingFeatureObj.SamplingFeatureTypeCV
+            sf['SamplingFeatureCode'] = site.SamplingFeatureObj.SamplingFeatureCode
+            sf['SamplingFeatureName'] = site.SamplingFeatureObj.SamplingFeatureName
+            sf['SamplingFeatureDescription'] = site.SamplingFeatureObj.SamplingFeatureDescription
+            sf['SamplingFeatureGeotypeCV'] = site.SamplingFeatureObj.SamplingFeatureGeotypeCV
+            sf['FeatureGeometry'] = site.SamplingFeatureObj.FeatureGeometry
+            sf['Elevation_m'] = site.SamplingFeatureObj.Elevation_m
+            sf['ElevationDatumCV'] = site.SamplingFeatureObj.ElevationDatumCV
+            st['SamplingFeature'] = sf
+
+            sts.append(st)
+
+        response.write(xmlify({'Site': sts}, wrap="Sites", indent="  "))
         self._session.close()
         return response
 

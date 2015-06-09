@@ -205,6 +205,23 @@ class odm2Service(object):
         except:
             return None
 
+    def getResultsByBBoxForSamplingfeature(self, xmin, ymin, xmax, ymax):
+        """
+        north - ymax - latitude
+        south - ymin - latitude
+        west - xmin - longitude
+        east - xmax - longitude
+        """
+
+        try:
+            wkt_geometry = 'POLYGON((%s %s,%s %s,%s %s,%s %s,%s %s))' % (xmin,ymin,xmin,ymax,xmax,ymax,xmax,ymin,xmin,ymin)
+            return self._session.query(Results).\
+                join(FeatureActions).\
+                join(SamplingFeatures).\
+                filter(func.ST_Contains(func.ST_AsText(wkt_geometry), func.ST_AsText(SamplingFeatures.FeatureGeometry))).all()
+        except:
+            return None
+
     def getResultsByActionByDate(self, beginDate, endDate):
 
         try:
