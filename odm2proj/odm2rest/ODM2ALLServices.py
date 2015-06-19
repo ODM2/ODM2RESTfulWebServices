@@ -55,10 +55,43 @@ class odm2Service(object):
         except:
             return None
 
+    def getDataSetCitations(self,datasetID):
+
+        try:
+            return self._session.query(DatasetCitations).filter_by(DatasetID=datasetID).all()
+        except:
+            return None
+
+    def getAuthorLists(self,citationID):
+
+        try:
+            return self._session.query(AuthorLists).filter_by(CitationID=citationID).all()
+        except:
+            return None
+
     def getDataSetResultsByUUID(self,dsuuid):
 
         try:
             return self._session.query(DatasetsResults).join(Datasets).filter(Datasets.DatasetUUID==dsuuid).all()
+        except:
+            return None
+
+    def getCountForDataSetResultsByUUID(self,dsuuid):
+
+        try:
+            rows = self._session.query(func.count(DatasetsResults.ResultID)).\
+                   join(Datasets).\
+                   filter(Datasets.DatasetUUID==dsuuid).\
+                   scalar()
+            return rows
+        except:
+            return None
+
+    def getDataSetResultsByUUIDByPage(self,dsuuid,page,page_size):
+
+        try:
+            q=self._session.query(DatasetsResults).join(Datasets).filter(Datasets.DatasetUUID==dsuuid).order_by(DatasetsResults.ResultID).offset(page*page_size).limit(page_size).all()
+            return q
         except:
             return None
 
@@ -334,4 +367,49 @@ class odm2Service(object):
             return self._session.query(RelatedActions).filter_by(ActionID=actionID).all()
         except:
             return None
+
+    """
+    RelatedFeatures
+    """
+
+    def getRelatedFeaturesBySamplingFeatureID(self,samplingfeatureID):
+
+        try:
+            return self._session.query(RelatedFeatures).filter_by(SamplingFeatureID=samplingfeatureID).all()
+        except:
+            return None
+
+
+    """
+    ExternalIdentifiers
+    """
+
+    def getExternalIdentifiers(self):
+
+        try:
+            return self._session.query(ExternalIdentifierSystems).all()
+        except:
+            return None
+
+    def getExternalIdentifiersForCitation(self):
+
+        try:
+            return self._session.query(CitationExternalIdentifiers).all()
+        except:
+            return None
+
+    def getExternalIdentifiersForPeople(self):
+
+        try:
+            return self._session.query(PersonExternalIdentifiers).all()
+        except:
+            return None
+
+    def getExternalIdentifiersForSamplingFeature(self):
+
+        try:
+            return self._session.query(SamplingFeatureExternalIdentifiers).all()
+        except:
+            return None
+
 

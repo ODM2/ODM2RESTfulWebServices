@@ -22,6 +22,8 @@ class Service:
         self.items = []
         self.accept = ''
 
+        self.resulttypecv_to_id = {'Time series coverage':'TSC', 'Measurement':'M' }
+
         self.resulttypecv = ''
         self._session = None
 

@@ -48,6 +48,16 @@ class DatasetDetailViewSet(APIView):
               required: false
               type: string
               paramType: query
+            - name: page
+              description: the default page number is 0. 
+              required: false
+              type: integer
+              paramType: query
+            - name: page_size
+              description: The default page size is 100 records.
+              required: false
+              type: integer
+              paramType: query
 
         omit_serializer: true
 
@@ -60,10 +70,20 @@ class DatasetDetailViewSet(APIView):
 
         format = request.query_params.get('format', 'yaml')
         #accept = request.accepted_renderer.media_type
+        page = request.QUERY_PARAMS.get('page','0')
+        page_size = request.QUERY_PARAMS.get('page_size','100')
+
+        page = int(page)
+        page_size = int(page_size)
+
         mr = MultipleRepresentations()
         readConn = mr.readService()
-        items = readConn.getDataSetResultsByUUID(datasetUUID)
-        #conn = mr.readService()
+
+        count = readConn.getCountForDataSetResultsByUUID(datasetUUID)
+        if count > 500:
+            items = readConn.getDataSetResultsByUUIDByPage(datasetUUID,page,page_size)
+        else:
+            items = readConn.getDataSetResultsByUUID(datasetUUID)
 
         if items == None or len(items) == 0:
             return Response('"%s" is not existed.' % datasetUUID,
@@ -75,87 +95,8 @@ class MultipleRepresentations(Service):
 
     def json_format(self):
 
-        flag = True
-        
-        dataset = {}
-        results = []
-        for value in self.items:
-            if flag:
-                dataset['DatasetID'] = value.DatasetObj.DatasetID
-                dataset['DatasetUUID'] = value.DatasetObj.DatasetUUID
-                dataset['DatasetTypeCV'] = value.DatasetObj.DatasetTypeCV
-                dataset['DatasetCode'] = value.DatasetObj.DatasetCode
-                dataset['DatasetTitle'] = value.DatasetObj.DatasetTitle
-                dataset['DatasetAbstract'] = value.DatasetObj.DatasetAbstract
-                flag = False
-
-            result = {}
-            result['ResultUUID'] = value.ResultObj.ResultUUID
-            result['ResultTypeCV'] = value.ResultObj.ResultTypeCV
-            result['ResultDateTime'] = str(value.ResultObj.ResultDateTime)
-            result['ResultDateTimeUTCOffset'] = str(value.ResultObj.ResultDateTimeUTCOffset)
-            result['StatusCV'] = value.ResultObj.StatusCV
-            result['SampledMediumCV'] = value.ResultObj.SampledMediumCV
-            result['ValueCount'] = value.ResultObj.ValueCount
-
-            samplingfeature = {}
-            samplingfeature['SamplingFeatureUUID'] = value.ResultObj.FeatureActionObj.SamplingFeatureObj.SamplingFeatureUUID
-            samplingfeature['SamplingFeatureTypeCV'] = value.ResultObj.FeatureActionObj.SamplingFeatureObj.SamplingFeatureTypeCV
-            samplingfeature['SamplingFeatureCode'] = value.ResultObj.FeatureActionObj.SamplingFeatureObj.SamplingFeatureCode
-            samplingfeature['SamplingFeatureName'] = value.ResultObj.FeatureActionObj.SamplingFeatureObj.SamplingFeatureName
-            samplingfeature['Elevation_m'] = str(value.ResultObj.FeatureActionObj.SamplingFeatureObj.Elevation_m)
-
-            action = {}
-            action['ActionTypeCV'] = value.ResultObj.FeatureActionObj.ActionObj.ActionTypeCV
-            action['BeginDateTime'] = str(value.ResultObj.FeatureActionObj.ActionObj.BeginDateTime)
-            action['BeginDateTimeUTCOffset'] = value.ResultObj.FeatureActionObj.ActionObj.BeginDateTimeUTCOffset
-            action['EndDateTime'] = str(value.ResultObj.FeatureActionObj.ActionObj.EndDateTime)
-            action['EndDateTimeUTCOffset'] = str(value.ResultObj.FeatureActionObj.ActionObj.EndDateTimeUTCOffset)
-            method = {}
-            method['MethodTypeCV'] = value.ResultObj.FeatureActionObj.ActionObj.MethodObj.MethodTypeCV
-            method['MethodCode'] = value.ResultObj.FeatureActionObj.ActionObj.MethodObj.MethodCode
-            method['MethodName'] = value.ResultObj.FeatureActionObj.ActionObj.MethodObj.MethodName
-            action['Method'] = method
-            result['FeatureAction'] = {'SamplingFeature': samplingfeature, 'Action': action}
-
-            sfid = value.ResultObj.FeatureActionObj.SamplingFeatureObj.SamplingFeatureID
-            conn = ODM2Read(self._session)
-            site = conn.getSiteBySFId(sfid)
-            if site != None:
-                s = {}
-                s['SiteTypeCV'] = site.SiteTypeCV
-                s['Latitude'] = site.Latitude
-                s['Longitude'] = site.Longitude
-                sr = {}
-                sr['SRSCode'] = site.SpatialReferenceObj.SRSCode
-                sr['SRSName'] = site.SpatialReferenceObj.SRSName
-                s['SpatialReference'] = sr
-                result['Site'] = s
-
-            varone = {}
-            varone['VariableTypeCV'] = value.ResultObj.VariableObj.VariableTypeCV
-            varone['VariableCode'] = value.ResultObj.VariableObj.VariableCode
-            varone['VariableNameCV'] = value.ResultObj.VariableObj.VariableNameCV
-            varone['NoDataValue'] = value.ResultObj.VariableObj.NoDataValue
-            result['Variable'] = varone
-            
-            unit = {}
-            unit['UnitsTypeCV'] = value.ResultObj.UnitsObj.UnitsTypeCV
-            unit['UnitsAbbreviation'] = value.ResultObj.UnitsObj.UnitsAbbreviation
-            unit['UnitsName'] = value.ResultObj.UnitsObj.UnitsName
-            result['Unit'] = unit
-            
-            pl = {}
-            pl['ProcessingLevelCode'] = value.ResultObj.ProcessingLevelObj.ProcessingLevelCode
-            pl['Definition'] = value.ResultObj.ProcessingLevelObj.Definition
-            pl['Explanation'] = value.ResultObj.ProcessingLevelObj.Explanation
-            result['ProcessingLevel'] = pl
-
-            results.append(result)
-
+        dataset, results = self.sqlalchemy_object_to_dict()
         dataset['Results'] = results
-
-        self._session.close()
         return dataset
 
     def csv_format(self):
@@ -163,58 +104,130 @@ class MultipleRepresentations(Service):
         response = HttpResponse(content_type='text/csv')
         response['Content-Disposition'] = 'attachment; filename="datasets.csv"'
 
-        item_csv_header = ["#fields=DataSet.DataSetID","DataSet.DataSetUUID[type='string']","DataSet.DataSetTypeCV[type='string']","DataSet.DataSetCode[type='string']","DataSet.DataSetTitle[type='string']","DataSet.DataSetAbstract[type='string']","Result.ResultUUID[type='string']","Result.ResultTypeCV[type='string']", "Result.ResultDateTime[type='date' format='yyyy-MM-dd HH:MM:SS']","Result.ResultDateTimeUTCOffset","Result.StatusCV[type='string']","Result.SampledMediumCV[type='string']","Result.ValueCount","SamplingFeature.SamplingFeatureUUID[type='string']","SamplingFeature.SamplingFeatureTypeCV[type='string']","SamplingFeature.SamplingFeatureCode[type='string']","SamplingFeature.SamplingFeatureName[type='string']","SamplingFeature.Elevation_m","Action.ActionTypeCV[type='string']","Action.ActionTypeCV[type='date' format='yyyy-MM-dd HH:MM:SS']","Action.BeginDateTimeUTCOffset","Action.EndDateTime[type='date' format='yyyy-MM-dd HH:MM:SS']","Action.EndDateTimeUTCOffset","Method.MethodTypeCV[type='string']","Method.MethodCode[type='string']","Method.MethodName[type='string']","Variable.VariableTypeCV[type='string']","Variable.VariableCode[type='string']","Variable.VariableNameCV[type='string']","Variable.NoDataValue","Unit.UnitsTypeCV[type='string']","Unit.UnitsAbbreviation[type='string']","Unit.UnitsName[type='string']","ProcessingLevel.ProcessingLevelCode[type='string']","ProcessingLevel.Definition[type='string']","ProcessingLevel.Explanation[type='string']"]
+        item_csv_header = []
+        item_csv_header.extend(["#fields=DataSet.DataSetID","DataSet.DataSetUUID[type='string']","DataSet.DataSetTypeCV[type='string']","DataSet.DataSetCode[type='string']","DataSet.DataSetTitle[type='string']","DataSet.DataSetAbstract[type='string']"])
+        item_csv_header.extend(["Result.ResultUUID[type='string']","Result.ResultTypeCV[type='string']", "Result.ResultDateTime[type='date' format='yyyy-MM-dd HH:MM:SS']","Result.ResultDateTimeUTCOffset","Result.StatusCV[type='string']","Result.SampledMediumCV[type='string']","Result.ValueCount"])
+        item_csv_header.extend(["SamplingFeature.SamplingFeatureUUID[type='string']","SamplingFeature.SamplingFeatureTypeCV[type='string']","SamplingFeature.SamplingFeatureCode[type='string']","SamplingFeature.SamplingFeatureName[type='string']","SamplingFeature.SamplingFeatureDescription[type='string']","SamplingFeature.SamplingFeatureGeotypeCV[type='string']","SamplingFeature.Elevation_m[unit='m']","SamplingFeature.ElevationDatumCV[type='string']","SamplingFeature.FeatureGeometry[type='string']"])
+        item_csv_header.extend(["Action.ActionTypeCV[type='string']","Action.ActionTypeCV[type='date' format='yyyy-MM-dd HH:MM:SS']","Action.BeginDateTimeUTCOffset","Action.EndDateTime[type='date' format='yyyy-MM-dd HH:MM:SS']","Action.EndDateTimeUTCOffset","Method.MethodTypeCV[type='string']","Method.MethodCode[type='string']","Method.MethodName[type='string']"])
+        item_csv_header.extend(["Variable.VariableTypeCV[type='string']","Variable.VariableCode[type='string']","Variable.VariableNameCV[type='string']","Variable.NoDataValue","Unit.UnitsTypeCV[type='string']","Unit.UnitsAbbreviation[type='string']","Unit.UnitsName[type='string']","ProcessingLevel.ProcessingLevelCode[type='string']","ProcessingLevel.Definition[type='string']","ProcessingLevel.Explanation[type='string']"])
+        item_csv_header.extend(["Site.SiteTypeCV[type='string']","Site.Latitude[unit='degrees']","Site.Longitude[unit='degrees']","Site.SpatialReference.SRSCode[type='string']","Site.SpatialReference.SRSName[type='string']"])
+        item_csv_header.extend(["RelatedFeature.RelationshipTypeCV[type='string']","RelatedFeature.SamplingFeatureUUID[type='string']","RelatedFeature.SamplingFeatureTypeCV[type='string']","RelatedFeature.SamplingFeatureCode[type='string']","RelatedFeature.SamplingFeatureName[type='string']","RelatedFeature.SamplingFeatureDescription[type='string']","RelatedFeature.SamplingFeatureGeotypeCV[type='string']","RelatedFeature.Elevation_m[unit='m']","RelatedFeature.ElevationDatumCV[type='string']","RelatedFeature.FeatureGeometry[type='string']","RelatedFeature.Site.SiteTypeCV[type='string']","RelatedFeature.Site.Latitude[unit='degrees']","RelatedFeature.Site.Longitude[unit='degrees']","RelatedFeature.Site.SpatialReference.SRSCode[type='string']","RelatedFeature.Site.SpatialReference.SRSName[type='string']"])
 
         writer = csv.writer(response)
         writer.writerow(item_csv_header)
+        conn = ODM2Read(self._session)
             
         for value in self.items:
             row = []
-            row.append(value.DatasetObj.DatasetID)
-            row.append(value.DatasetObj.DatasetUUID)
-            row.append(value.DatasetObj.DatasetTypeCV)
-            row.append(value.DatasetObj.DatasetCode)
-            row.append(value.DatasetObj.DatasetTitle)
-            row.append(value.DatasetObj.DatasetAbstract)
+            d_obj = value.DatasetObj
+            r_obj = value.ResultObj
+            sf_obj = r_obj.FeatureActionObj.SamplingFeatureObj
+            a_obj = r_obj.FeatureActionObj.ActionObj
+            m_obj = a_obj.MethodObj
+            v_obj = r_obj.VariableObj
+            u_obj = r_obj.UnitsObj
+            p_obj = r_obj.ProcessingLevelObj
 
-            row.append(value.ResultObj.ResultUUID)
-            row.append(value.ResultObj.ResultTypeCV)
-            row.append(value.ResultObj.ResultDateTime)
-            row.append(value.ResultObj.ResultDateTimeUTCOffset)
-            row.append(value.ResultObj.StatusCV)
-            row.append(value.ResultObj.SampledMediumCV)
-            row.append(value.ResultObj.ValueCount)
+            row.append(d_obj.DatasetID)
+            row.append(d_obj.DatasetUUID)
+            row.append(d_obj.DatasetTypeCV)
+            row.append(d_obj.DatasetCode)
+            row.append(d_obj.DatasetTitle)
+            row.append(d_obj.DatasetAbstract)
 
-            row.append(value.ResultObj.FeatureActionObj.SamplingFeatureObj.SamplingFeatureUUID)
-            row.append(value.ResultObj.FeatureActionObj.SamplingFeatureObj.SamplingFeatureTypeCV)
-            row.append(value.ResultObj.FeatureActionObj.SamplingFeatureObj.SamplingFeatureCode)
-            row.append(value.ResultObj.FeatureActionObj.SamplingFeatureObj.SamplingFeatureName)
-            row.append(value.ResultObj.FeatureActionObj.SamplingFeatureObj.Elevation_m)
+            row.append(r_obj.ResultUUID)
+            row.append(r_obj.ResultTypeCV)
+            row.append(r_obj.ResultDateTime)
+            row.append(r_obj.ResultDateTimeUTCOffset)
+            row.append(r_obj.StatusCV)
+            row.append(r_obj.SampledMediumCV)
+            row.append(r_obj.ValueCount)
 
-            row.append(value.ResultObj.FeatureActionObj.ActionObj.ActionTypeCV)
-            row.append(value.ResultObj.FeatureActionObj.ActionObj.BeginDateTime)
-            row.append(value.ResultObj.FeatureActionObj.ActionObj.BeginDateTimeUTCOffset)
-            row.append(value.ResultObj.FeatureActionObj.ActionObj.EndDateTime)
-            row.append(value.ResultObj.FeatureActionObj.ActionObj.EndDateTimeUTCOffset)
+            row.append(sf_obj.SamplingFeatureUUID)
+            row.append(sf_obj.SamplingFeatureTypeCV)
+            row.append(sf_obj.SamplingFeatureCode)
+            row.append(sf_obj.SamplingFeatureName)
+            row.append(sf_obj.SamplingFeatureDescription)
+            row.append(sf_obj.SamplingFeatureGeotypeCV)
+            row.append(str(sf_obj.Elevation_m))
+            row.append(sf_obj.ElevationDatumCV)
+            row.append(sf_obj.FeatureGeometry)
 
-            row.append(value.ResultObj.FeatureActionObj.ActionObj.MethodObj.MethodTypeCV)
-            row.append(value.ResultObj.FeatureActionObj.ActionObj.MethodObj.MethodCode)
-            row.append(value.ResultObj.FeatureActionObj.ActionObj.MethodObj.MethodName)
+            row.append(a_obj.ActionTypeCV)
+            row.append(a_obj.BeginDateTime)
+            row.append(a_obj.BeginDateTimeUTCOffset)
+            row.append(a_obj.EndDateTime)
+            row.append(a_obj.EndDateTimeUTCOffset)
 
-            row.append(value.ResultObj.VariableObj.VariableTypeCV)
-            row.append(value.ResultObj.VariableObj.VariableCode)
-            row.append(value.ResultObj.VariableObj.VariableNameCV)
-            row.append(value.ResultObj.VariableObj.NoDataValue)
+            row.append(m_obj.MethodTypeCV)
+            row.append(m_obj.MethodCode)
+            row.append(m_obj.MethodName)
 
-            row.append(value.ResultObj.UnitsObj.UnitsTypeCV)
-            row.append(value.ResultObj.UnitsObj.UnitsAbbreviation)
-            row.append(value.ResultObj.UnitsObj.UnitsName)
+            row.append(v_obj.VariableTypeCV)
+            row.append(v_obj.VariableCode)
+            row.append(v_obj.VariableNameCV)
+            row.append(v_obj.NoDataValue)
 
-            row.append(value.ResultObj.ProcessingLevelObj.ProcessingLevelCode)
-            row.append(value.ResultObj.ProcessingLevelObj.Definition)
-            row.append(value.ResultObj.ProcessingLevelObj.Explanation)
+            row.append(u_obj.UnitsTypeCV)
+            row.append(u_obj.UnitsAbbreviation)
+            row.append(u_obj.UnitsName)
+                    
+            row.append(p_obj.ProcessingLevelCode)
+            row.append(p_obj.Definition)
+            row.append(p_obj.Explanation)
 
-            writer.writerow(row)
+            sfid = sf_obj.SamplingFeatureID
+            site = conn.getSiteBySFId(sfid)
+            if site != None:
+                row.append(site.SiteTypeCV)
+                row.append(site.Latitude)
+                row.append(site.Longitude)
+                sr_obj = site.SpatialReferenceObj
+                row.append(sr_obj.SRSCode)
+                row.append(sr_obj.SRSName)
+            else:
+                for i in range(5):
+                    row.append(None)
+
+            rf_list = []
+            rfeature = conn.getRelatedFeaturesBySamplingFeatureID(sfid)
+            if rfeature != None and len(rfeature) > 0:
+                for x in rfeature:
+                    row1 = []
+                    rf_obj = x.RelatedFeatureObj
+                    row1.append(x.RelationshipTypeCV)
+                    row1.append(rf_obj.SamplingFeatureUUID)
+                    row1.append(rf_obj.SamplingFeatureTypeCV)
+                    row1.append(rf_obj.SamplingFeatureCode)
+                    row1.append(rf_obj.SamplingFeatureName)
+                    row1.append(rf_obj.SamplingFeatureDescription)
+                    row1.append(rf_obj.SamplingFeatureGeotypeCV)
+                    row1.append(str(rf_obj.Elevation_m))
+                    row1.append(rf_obj.ElevationDatumCV)
+                    row1.append(rf_obj.FeatureGeometry)
+
+                    rsite = conn.getSiteBySFId(rf_obj.SamplingFeatureID)
+                    if rsite != None:
+                        row1.append(rsite.SiteTypeCV)
+                        row1.append(rsite.Latitude)
+                        row1.append(rsite.Longitude)
+                        sr_obj = rsite.SpatialReferenceObj
+                        row1.append(sr_obj.SRSCode)
+                        row1.append(sr_obj.SRSName)
+                    else:
+                        for i in range(5):
+                            row1.append(None)
+                    rf_list.append(row1)
+
+            else:
+                row1 = []
+                for i in range(15):
+                    row1.append(None)
+                rf_list.append(row1)
+            
+            for i in rf_list:
+                row.extend(i)
+                writer.writerow(row)
 
         self._session.close()
         return response
@@ -228,82 +241,129 @@ class MultipleRepresentations(Service):
         response.write("Dataset:\n")
 
         flag = True
+        conn = ODM2Read(self._session)
 
         for value in self.items:
             if flag:
-                q  = u'    DatasetID: %d\n' % value.DatasetObj.DatasetID
-                q += u'    DatasetUUID: %s\n' % value.DatasetObj.DatasetUUID
-                q += u'    DatasetTypeCV: %s\n' % value.DatasetObj.DatasetTypeCV
-                q += u'    DatasetCode: %s\n' % value.DatasetObj.DatasetCode
-                q += u'    DatasetTitle: %s\n' % value.DatasetObj.DatasetTitle
-                q += u'    DatasetAbstract: %s\n' % value.DatasetObj.DatasetAbstract
+                d_obj = value.DatasetObj
+                q  = u'    DatasetID: %d\n' % d_obj.DatasetID
+                q += u'    DatasetUUID: %s\n' % d_obj.DatasetUUID
+                q += u'    DatasetTypeCV: %s\n' % d_obj.DatasetTypeCV
+                q += u'    DatasetCode: %s\n' % d_obj.DatasetCode
+                q += u'    DatasetTitle: %s\n' % d_obj.DatasetTitle
+                q += u'    DatasetAbstract: %s\n' % d_obj.DatasetAbstract
                 response.write(q)
                 response.write("\n")
                 response.write("Results:\n")
                 flag = False
 
+            r_obj = value.ResultObj
+            sf_obj = r_obj.FeatureActionObj.SamplingFeatureObj
+            a_obj = r_obj.FeatureActionObj.ActionObj
+            m_obj = a_obj.MethodObj
+            v_obj = r_obj.VariableObj
+            u_obj = r_obj.UnitsObj
+            p_obj = r_obj.ProcessingLevelObj
+
             #r  = u' - ResultID: %d\n' % value.ResultID
-            r  = u' - ResultUUID: "%s"\n' % value.ResultObj.ResultUUID
-            r += u'   ResultTypeCV: \'%s\'\n' % value.ResultObj.ResultTypeCV
-            r += u'   ResultDateTime: "%s"\n' % str(value.ResultObj.ResultDateTime)
-            r += u'   ResultDateTimeUTCOffset: %s\n' % str(value.ResultObj.ResultDateTimeUTCOffset)
-            r += u'   StatusCV: %s\n' % value.ResultObj.StatusCV
-            r += u'   SampledMediumCV: %s\n' % value.ResultObj.SampledMediumCV
-            r += u'   ValueCount: %d\n' % value.ResultObj.ValueCount
+            r  = u' - ResultUUID: "%s"\n' % r_obj.ResultUUID
+            r += u'   ResultTypeCV: \'%s\'\n' % r_obj.ResultTypeCV
+            r += u'   ResultDateTime: "%s"\n' % str(r_obj.ResultDateTime)
+            r += u'   ResultDateTimeUTCOffset: %s\n' % str(r_obj.ResultDateTimeUTCOffset)
+            r += u'   StatusCV: %s\n' % r_obj.StatusCV
+            r += u'   SampledMediumCV: %s\n' % r_obj.SampledMediumCV
+            r += u'   ValueCount: %d\n' % r_obj.ValueCount
+
 
             r += u'   FeatureAction: \n'
             #r += u'       FeatureActionID: %d\n' % value.FeatureActionObj.FeatureActionID
             r += u'       SamplingFeature:\n'
-            #r += u'           SamplingFeatureID: %d\n' % value.FeatureActionObj.SamplingFeatureObj.SamplingFeatureID
-            r += u'           SamplingFeatureUUID: %s\n' % value.ResultObj.FeatureActionObj.SamplingFeatureObj.SamplingFeatureUUID
-            r += u'           SamplingFeatureTypeCV: %s\n' % value.ResultObj.FeatureActionObj.SamplingFeatureObj.SamplingFeatureTypeCV
-            r += u'           SamplingFeatureCode: %s\n' % value.ResultObj.FeatureActionObj.SamplingFeatureObj.SamplingFeatureCode
-            r += u'           SamplingFeatureName: "%s"\n' % value.ResultObj.FeatureActionObj.SamplingFeatureObj.SamplingFeatureName
-            r += u'           Elevation_m: %s\n' % str(value.ResultObj.FeatureActionObj.SamplingFeatureObj.Elevation_m)
+            #r += u'           SamplingFeatureID: %d\n' % sf_obj.SamplingFeatureID
+            r += u'           SamplingFeatureUUID: %s\n' % sf_obj.SamplingFeatureUUID
+            r += u'           SamplingFeatureTypeCV: %s\n' % sf_obj.SamplingFeatureTypeCV
+            r += u'           SamplingFeatureCode: %s\n' % sf_obj.SamplingFeatureCode
+            r += u'           SamplingFeatureName: "%s"\n' % sf_obj.SamplingFeatureName
+            r += u'           SamplingFeatureDescription: "%s"\n' % sf_obj.SamplingFeatureDescription
+            r += u'           SamplingFeatureGeotypeCV: "%s"\n' % sf_obj.SamplingFeatureGeotypeCV
+            r += u'           Elevation_m: %s\n' % str(sf_obj.Elevation_m)
+            r += u'           ElevationDatumCV: "%s"\n' % sf_obj.ElevationDatumCV
+            r += u'           FeatureGeometry: "%s"\n' % sf_obj.FeatureGeometry
 
             r += u'           Action:\n'
-            #r += u'               ActionID: %d\n' % value.FeatureActionObj.ActionObj.ActionID
-            r += u'               ActionTypeCV: "%s"\n' % value.ResultObj.FeatureActionObj.ActionObj.ActionTypeCV
-            r += u'               BeginDateTime: "%s"\n' % str(value.ResultObj.FeatureActionObj.ActionObj.BeginDateTime)
-            r += u'               BeginDateTimeUTCOffset: %d\n' % value.ResultObj.FeatureActionObj.ActionObj.BeginDateTimeUTCOffset
-            r += u'               EndDateTime: "%s"\n' % str(value.ResultObj.FeatureActionObj.ActionObj.EndDateTime)
-            r += u'               EndDateTimeUTCOffset: %s\n' % str(value.ResultObj.FeatureActionObj.ActionObj.EndDateTimeUTCOffset)
+            #r += u'               ActionID: %d\n' % a_obj.ActionID
+            r += u'               ActionTypeCV: "%s"\n' % a_obj.ActionTypeCV
+            r += u'               BeginDateTime: "%s"\n' % str(a_obj.BeginDateTime)
+            r += u'               BeginDateTimeUTCOffset: %s\n' % str(a_obj.BeginDateTimeUTCOffset)
+            r += u'               EndDateTime: "%s"\n' % str(a_obj.EndDateTime)
+            r += u'               EndDateTimeUTCOffset: %s\n' % str(a_obj.EndDateTimeUTCOffset)
             r += u'               Method:\n'
-            #r += u'                   MethodID: %d\n' % value.FeatureActionObj.ActionObj.MethodObj.MethodID
-            r += u'                   MethodTypeCV: %s\n' % value.ResultObj.FeatureActionObj.ActionObj.MethodObj.MethodTypeCV
-            r += u'                   MethodCode: %s\n' % value.ResultObj.FeatureActionObj.ActionObj.MethodObj.MethodCode
-            r += u'                   MethodName: %s\n' % value.ResultObj.FeatureActionObj.ActionObj.MethodObj.MethodName
-            sfid = value.ResultObj.FeatureActionObj.SamplingFeatureObj.SamplingFeatureID
-            conn = ODM2Read(self._session)
+            #r += u'                   MethodID: %d\n' % m_obj.MethodID
+            r += u'                   MethodTypeCV: %s\n' % m_obj.MethodTypeCV
+            r += u'                   MethodCode: %s\n' % m_obj.MethodCode
+            r += u'                   MethodName: %s\n' % m_obj.MethodName
+
+            sfid = sf_obj.SamplingFeatureID
+            rfeature = conn.getRelatedFeaturesBySamplingFeatureID(sfid)
+            if rfeature != None and len(rfeature) > 0:
+                r += u'   RelatedFeatures:\n'
+                for x in rfeature:
+                    rf_obj = x.RelatedFeatureObj
+                    r += u'       RelatedFeature:\n'
+                    r += u'           RelationshipTypeCV: %s\n' % x.RelationshipTypeCV
+                    #r += u'           SamplingFeatureID: %d\n' % rf_obj.SamplingFeatureID
+                    r += u'           SamplingFeatureUUID: %s\n' % rf_obj.SamplingFeatureUUID
+                    r += u'           SamplingFeatureTypeCV: %s\n' % rf_obj.SamplingFeatureTypeCV
+                    r += u'           SamplingFeatureCode: %s\n' % rf_obj.SamplingFeatureCode
+                    r += u'           SamplingFeatureName: "%s"\n' % rf_obj.SamplingFeatureName
+                    r += u'           SamplingFeatureDescription: "%s"\n' % rf_obj.SamplingFeatureDescription
+                    r += u'           SamplingFeatureGeotypeCV: "%s"\n' % rf_obj.SamplingFeatureGeotypeCV
+                    r += u'           Elevation_m: %s\n' % str(rf_obj.Elevation_m)
+                    r += u'           ElevationDatumCV: "%s"\n' % rf_obj.ElevationDatumCV
+                    r += u'           FeatureGeometry: "%s"\n' % rf_obj.FeatureGeometry
+
+                    rsite = conn.getSiteBySFId(rf_obj.SamplingFeatureID)
+                    if rsite != None:
+                        r += u'           Site:\n'
+                        r += u'               SiteTypeCV: %s\n' % rsite.SiteTypeCV
+                        r += u'               Latitude: %f\n' % rsite.Latitude
+                        r += u'               Longitude: %f\n' % rsite.Longitude
+                        sr_obj = rsite.SpatialReferenceObj
+                        r += u'               SpatialReference:\n'
+                        #r += u'                   SRSID: %d\n' % sr_obj.SpatialReferenceID
+                        r += u'                   SRSCode: "%s"\n' % sr_obj.SRSCode
+                        r += u'                   SRSName: %s\n' % sr_obj.SRSName
+
             site = conn.getSiteBySFId(sfid)
             if site != None:
                 r += u'   Site:\n'
                 r += u'       SiteTypeCV: %s\n' % site.SiteTypeCV
                 r += u'       Latitude: %f\n' % site.Latitude
                 r += u'       Longitude: %f\n' % site.Longitude
+                sr_obj = site.SpatialReferenceObj
                 r += u'       SpatialReference:\n'
-                #r += u'           SRSID: %d\n' % site.SpatialReferenceObj.SpatialReferenceID
-                r += u'           SRSCode: "%s"\n' % site.SpatialReferenceObj.SRSCode
-                r += u'           SRSName: %s\n' % site.SpatialReferenceObj.SRSName
+                #r += u'           SRSID: %d\n' % sr_obj.SpatialReferenceID
+                r += u'           SRSCode: "%s"\n' % sr_obj.SRSCode
+                r += u'           SRSName: %s\n' % sr_obj.SRSName
 
             r += u'   Variable:\n'
-            #r += u'       VariableID: %d\n' % value.VariableObj.VariableID
-            r += u'       VariableTypeCV: %s\n' % value.ResultObj.VariableObj.VariableTypeCV
-            r += u'       VariableCode: %s\n' % value.ResultObj.VariableObj.VariableCode
-            r += u'       VariableNameCV: %s\n' % value.ResultObj.VariableObj.VariableNameCV
-            r += u'       NoDataValue: %d\n' % value.ResultObj.VariableObj.NoDataValue
+            #r += u'       VariableID: %d\n' % v_obj.VariableID
+            r += u'       VariableTypeCV: %s\n' % v_obj.VariableTypeCV
+            r += u'       VariableCode: %s\n' % v_obj.VariableCode
+            r += u'       VariableNameCV: %s\n' % v_obj.VariableNameCV
+            r += u'       NoDataValue: %d\n' % v_obj.NoDataValue
             
             r += u'   Unit:\n'
-            #r += u'       UnitID: %d\n' % value.UnitObj.UnitsID
-            r += u'       UnitsTypeCV: %s\n' % value.ResultObj.UnitsObj.UnitsTypeCV
-            r += u'       UnitsAbbreviation: %s\n' % value.ResultObj.UnitsObj.UnitsAbbreviation
-            r += u'       UnitsName: %s\n' % value.ResultObj.UnitsObj.UnitsName
+            #r += u'       UnitID: %d\n' % u_obj.UnitsID
+            r += u'       UnitsTypeCV: %s\n' % u_obj.UnitsTypeCV
+            r += u'       UnitsAbbreviation: %s\n' % u_obj.UnitsAbbreviation
+            r += u'       UnitsName: %s\n' % u_obj.UnitsName
             
             r += u'   ProcessingLevel:\n'
-            #r += u'       ProcessingLevelID: %d\n' % value.ProcessingLevelObj.ProcessingLevelID
-            r += u'       ProcessingLevelCode: "%s"\n' % value.ResultObj.ProcessingLevelObj.ProcessingLevelCode
-            r += u'       Definition: "%s"\n' % value.ResultObj.ProcessingLevelObj.Definition
-            r += u'       Explanation: "%s"\n' % value.ResultObj.ProcessingLevelObj.Explanation
+            #r += u'       ProcessingLevelID: %d\n' % p_obj.ProcessingLevelID
+            r += u'       ProcessingLevelCode: "%s"\n' % p_obj.ProcessingLevelCode
+            r += u'       Definition: "%s"\n' % p_obj.Definition
+            r += u'       Explanation: "%s"\n' % p_obj.Explanation
+
             response.write(r)
             response.write('\n')
 
@@ -317,89 +377,141 @@ class MultipleRepresentations(Service):
 
         response.write("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n")
 
-        flag = True
-        
+        dataset, results = self.sqlalchemy_object_to_dict()
+
+        dataset['Results'] = {'Result': results }
+        response.write(xmlify(dataset, wrap="Dataset", indent="  "))
+        return response
+
+    def sqlalchemy_object_to_dict(self):
+
+        flag = True        
         dataset = {}
         results = []
+        conn = ODM2Read(self._session)
+
         for value in self.items:
             if flag:
-                dataset['DatasetID'] = value.DatasetObj.DatasetID
-                dataset['DatasetUUID'] = value.DatasetObj.DatasetUUID
-                dataset['DatasetTypeCV'] = value.DatasetObj.DatasetTypeCV
-                dataset['DatasetCode'] = value.DatasetObj.DatasetCode
-                dataset['DatasetTitle'] = value.DatasetObj.DatasetTitle
-                dataset['DatasetAbstract'] = value.DatasetObj.DatasetAbstract
+                d_obj = value.DatasetObj
+                dataset['DatasetID'] = d_obj.DatasetID
+                dataset['DatasetUUID'] = d_obj.DatasetUUID
+                dataset['DatasetTypeCV'] = d_obj.DatasetTypeCV
+                dataset['DatasetCode'] = d_obj.DatasetCode
+                dataset['DatasetTitle'] = d_obj.DatasetTitle
+                dataset['DatasetAbstract'] = d_obj.DatasetAbstract
                 flag = False
 
+            r_obj = value.ResultObj
+            sf_obj = r_obj.FeatureActionObj.SamplingFeatureObj
+            a_obj = r_obj.FeatureActionObj.ActionObj
+            m_obj = a_obj.MethodObj
+            v_obj = r_obj.VariableObj
+            u_obj = r_obj.UnitsObj
+            p_obj = r_obj.ProcessingLevelObj
+
             result = {}
-            result['ResultUUID'] = value.ResultObj.ResultUUID
-            result['ResultTypeCV'] = value.ResultObj.ResultTypeCV
-            result['ResultDateTime'] = str(value.ResultObj.ResultDateTime)
-            result['ResultDateTimeUTCOffset'] = str(value.ResultObj.ResultDateTimeUTCOffset)
-            result['StatusCV'] = value.ResultObj.StatusCV
-            result['SampledMediumCV'] = value.ResultObj.SampledMediumCV
-            result['ValueCount'] = value.ResultObj.ValueCount
+            result['ResultUUID'] = r_obj.ResultUUID
+            result['ResultTypeCV'] = r_obj.ResultTypeCV
+            result['ResultDateTime'] = str(r_obj.ResultDateTime)
+            result['ResultDateTimeUTCOffset'] = str(r_obj.ResultDateTimeUTCOffset)
+            result['StatusCV'] = r_obj.StatusCV
+            result['SampledMediumCV'] = r_obj.SampledMediumCV
+            result['ValueCount'] = r_obj.ValueCount
 
             samplingfeature = {}
-            samplingfeature['SamplingFeatureUUID'] = value.ResultObj.FeatureActionObj.SamplingFeatureObj.SamplingFeatureUUID
-            samplingfeature['SamplingFeatureTypeCV'] = value.ResultObj.FeatureActionObj.SamplingFeatureObj.SamplingFeatureTypeCV
-            samplingfeature['SamplingFeatureCode'] = value.ResultObj.FeatureActionObj.SamplingFeatureObj.SamplingFeatureCode
-            samplingfeature['SamplingFeatureName'] = value.ResultObj.FeatureActionObj.SamplingFeatureObj.SamplingFeatureName
-            samplingfeature['Elevation_m'] = str(value.ResultObj.FeatureActionObj.SamplingFeatureObj.Elevation_m)
+            samplingfeature['SamplingFeatureUUID'] = sf_obj.SamplingFeatureUUID
+            samplingfeature['SamplingFeatureTypeCV'] = sf_obj.SamplingFeatureTypeCV
+            samplingfeature['SamplingFeatureCode'] = sf_obj.SamplingFeatureCode
+            samplingfeature['SamplingFeatureName'] = sf_obj.SamplingFeatureName
+            samplingfeature['SamplingFeatureDescription'] = sf_obj.SamplingFeatureDescription
+            samplingfeature['SamplingFeatureGeotypeCV'] = sf_obj.SamplingFeatureGeotypeCV
+            samplingfeature['Elevation_m'] = str(sf_obj.Elevation_m)
+            samplingfeature['ElevationDatumCV'] = sf_obj.ElevationDatumCV
+            samplingfeature['FeatureGeometry'] = sf_obj.FeatureGeometry
 
             action = {}
-            action['ActionTypeCV'] = value.ResultObj.FeatureActionObj.ActionObj.ActionTypeCV
-            action['BeginDateTime'] = str(value.ResultObj.FeatureActionObj.ActionObj.BeginDateTime)
-            action['BeginDateTimeUTCOffset'] = value.ResultObj.FeatureActionObj.ActionObj.BeginDateTimeUTCOffset
-            action['EndDateTime'] = str(value.ResultObj.FeatureActionObj.ActionObj.EndDateTime)
-            action['EndDateTimeUTCOffset'] = str(value.ResultObj.FeatureActionObj.ActionObj.EndDateTimeUTCOffset)
+            action['ActionTypeCV'] = a_obj.ActionTypeCV
+            action['BeginDateTime'] = str(a_obj.BeginDateTime)
+            action['BeginDateTimeUTCOffset'] = a_obj.BeginDateTimeUTCOffset
+            action['EndDateTime'] = str(a_obj.EndDateTime)
+            action['EndDateTimeUTCOffset'] = str(a_obj.EndDateTimeUTCOffset)
             method = {}
-            method['MethodTypeCV'] = value.ResultObj.FeatureActionObj.ActionObj.MethodObj.MethodTypeCV
-            method['MethodCode'] = value.ResultObj.FeatureActionObj.ActionObj.MethodObj.MethodCode
-            method['MethodName'] = value.ResultObj.FeatureActionObj.ActionObj.MethodObj.MethodName
+            method['MethodTypeCV'] = m_obj.MethodTypeCV
+            method['MethodCode'] = m_obj.MethodCode
+            method['MethodName'] = m_obj.MethodName
             action['Method'] = method
             result['FeatureAction'] = {'SamplingFeature': samplingfeature, 'Action': action}
 
-            sfid = value.ResultObj.FeatureActionObj.SamplingFeatureObj.SamplingFeatureID
-            conn = ODM2Read(self._session)
+            sfid = sf_obj.SamplingFeatureID
+            rfeature = conn.getRelatedFeaturesBySamplingFeatureID(sfid)
+            if rfeature != None and len(rfeature) > 0:
+                rfeatures = []
+                for x in rfeature:
+                    rf_obj = x.RelatedFeatureObj
+                    rf = {}
+                    rf['RelationshipTypeCV'] = x.RelationshipTypeCV
+                    rf['SamplingFeatureUUID'] = rf_obj.SamplingFeatureUUID
+                    rf['SamplingFeatureTypeCV'] = rf_obj.SamplingFeatureTypeCV
+                    rf['SamplingFeatureCode'] = rf_obj.SamplingFeatureCode
+                    rf['SamplingFeatureName'] = rf_obj.SamplingFeatureName
+                    rf['SamplingFeatureDescription'] = rf_obj.SamplingFeatureDescription
+                    rf['SamplingFeatureGeotypeCV'] = rf_obj.SamplingFeatureGeotypeCV
+                    rf['Elevation_m'] = str(rf_obj.Elevation_m)
+                    rf['ElevationDatumCV'] = rf_obj.ElevationDatumCV
+                    rf['FeatureGeometry'] = rf_obj.FeatureGeometry
+
+                    rsite = conn.getSiteBySFId(rf_obj.SamplingFeatureID)
+                    if rsite != None:
+                        rs = {}
+                        rs['SiteTypeCV'] = rsite.SiteTypeCV
+                        rs['Latitude'] = rsite.Latitude
+                        rs['Longitude'] = rsite.Longitude
+                        sr_obj = rsite.SpatialReferenceObj
+                        rsr = {}
+                        rsr['SRSCode'] = sr_obj.SRSCode
+                        rsr['SRSName'] = sr_obj.SRSName
+                        rs['SpatialReference'] = rsr
+                        rf['Site'] = rs
+                    rfeatures.append(rf)
+
+                result['RelatedFeatures'] = rfeatures
+
             site = conn.getSiteBySFId(sfid)
             if site != None:
                 s = {}
                 s['SiteTypeCV'] = site.SiteTypeCV
                 s['Latitude'] = site.Latitude
                 s['Longitude'] = site.Longitude
+                sr_obj = site.SpatialReferenceObj
                 sr = {}
-                sr['SRSCode'] = site.SpatialReferenceObj.SRSCode
-                sr['SRSName'] = site.SpatialReferenceObj.SRSName
+                sr['SRSCode'] = sr_obj.SRSCode
+                sr['SRSName'] = sr_obj.SRSName
                 s['SpatialReference'] = sr
                 result['Site'] = s
 
             varone = {}
-            varone['VariableTypeCV'] = value.ResultObj.VariableObj.VariableTypeCV
-            varone['VariableCode'] = value.ResultObj.VariableObj.VariableCode
-            varone['VariableNameCV'] = value.ResultObj.VariableObj.VariableNameCV
-            varone['NoDataValue'] = value.ResultObj.VariableObj.NoDataValue
+            varone['VariableTypeCV'] = v_obj.VariableTypeCV
+            varone['VariableCode'] = v_obj.VariableCode
+            varone['VariableNameCV'] = v_obj.VariableNameCV
+            varone['NoDataValue'] = v_obj.NoDataValue
             result['Variable'] = varone
             
             unit = {}
-            unit['UnitsTypeCV'] = value.ResultObj.UnitsObj.UnitsTypeCV
-            unit['UnitsAbbreviation'] = value.ResultObj.UnitsObj.UnitsAbbreviation
-            unit['UnitsName'] = value.ResultObj.UnitsObj.UnitsName
+            unit['UnitsTypeCV'] = u_obj.UnitsTypeCV
+            unit['UnitsAbbreviation'] = u_obj.UnitsAbbreviation
+            unit['UnitsName'] = u_obj.UnitsName
             result['Unit'] = unit
             
             pl = {}
-            pl['ProcessingLevelCode'] = value.ResultObj.ProcessingLevelObj.ProcessingLevelCode
-            pl['Definition'] = value.ResultObj.ProcessingLevelObj.Definition
-            pl['Explanation'] = value.ResultObj.ProcessingLevelObj.Explanation
+            pl['ProcessingLevelCode'] = p_obj.ProcessingLevelCode
+            pl['Definition'] = p_obj.Definition
+            pl['Explanation'] = p_obj.Explanation
             result['ProcessingLevel'] = pl
 
             results.append(result)
 
-        dataset['Results'] = {'Result': results }
-        response.write(xmlify(dataset, wrap="Dataset", indent="  "))
-        
         self._session.close()
-        return response
+        return dataset,results
 
 class JSONResponse(HttpResponse):
     """

@@ -13,6 +13,10 @@ from odm2rest.method_views import MethodsViewSet, MethodCodeViewSet
 from odm2rest.org_views import OrgsViewSet, OrgCodeViewSet
 from odm2rest.dataset_views import DatasetViewSet
 from odm2rest.datasetdetail_views import DatasetDetailViewSet
+from odm2rest.externalidentifier_views import ExternalIdentifierViewSet
+from odm2rest.externalidentifier_citation_views import ExternalIdentifierCitationViewSet
+from odm2rest.externalidentifier_people_views import ExternalIdentifierPeopleViewSet
+from odm2rest.externalidentifier_samplingfeature_views import ExternalIdentifierSamplingFeatureViewSet
 
 urlpatterns = [
     url(r'^$', views.api_root),
@@ -39,6 +43,10 @@ urlpatterns = [
     url(r'^sites/siteType/(?P<siteType>.+)/$',  SiteTypeViewSet.as_view(), name='site-detail-st'),
     url(r'^datasets/$', DatasetViewSet.as_view(), name='dataset-list'),
     url(r'^datasets/(?P<datasetUUID>.+)/$', DatasetDetailViewSet.as_view(), name='datasetdetail-list'),
+    url(r'^externalidentifiers/$', ExternalIdentifierViewSet.as_view(), name='externalidentifier-list'),
+    url(r'^externalidentifiers/citation/$', ExternalIdentifierCitationViewSet.as_view(), name='externalidentifier-citation-list'),
+    url(r'^externalidentifiers/people/$', ExternalIdentifierPeopleViewSet.as_view(), name='externalidentifier-people-list'),
+    url(r'^externalidentifiers/samplingfeature/$', ExternalIdentifierSamplingFeatureViewSet.as_view(), name='externalidentifier-sf-list'),
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns)

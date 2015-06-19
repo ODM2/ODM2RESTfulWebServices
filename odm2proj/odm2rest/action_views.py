@@ -137,32 +137,7 @@ class MultipleRepresentations(Service):
 
     def json_format(self):
 
-        allactions = []
-        for action in self.items:
-            queryset = OrderedDict()
-            queryset['ActionID'] = action.ActionID
-            queryset['ActionTypeCV'] = action.ActionTypeCV
-            queryset['ActionDescription'] = action.ActionDescription
-            queryset['ActionFileLink'] = action.ActionFileLink
-
-            m = OrderedDict()
-            m['MethodTypeCV'] = action.MethodObj.MethodTypeCV
-            m['MethodCode'] = action.MethodObj.MethodCode
-            m['MethodName'] = action.MethodObj.MethodName
-            m['MethodDescription'] = action.MethodObj.MethodDescription
-            m['MethodLink'] = action.MethodObj.MethodLink
-            m['OrganizationID'] = action.MethodObj.OrganizationID
-            queryset['MethodID'] = m
-
-            queryset['BeginDateTime'] = action.BeginDateTime
-            queryset['BeginDateTimeUTCOffset'] = action.BeginDateTimeUTCOffset
-            queryset['EndDateTime'] = action.EndDateTime
-            queryset['EndDateTimeUTCOffset'] = action.EndDateTimeUTCOffset
-
-            allactions.append(queryset)
-
-        self._session.close()
-        return allactions
+        return self.sqlalchemy_object_to_dict()
 
     def csv_format(self):
 
@@ -208,6 +183,8 @@ class MultipleRepresentations(Service):
         mts = []
 
         for action in self.items:
+            m_obj = action.MethodObj
+
             at = OrderedDict()
             at['ActionID'] = action.ActionID
             at['ActionTypeCV'] = action.ActionTypeCV
@@ -221,13 +198,13 @@ class MultipleRepresentations(Service):
             ats.append(at)
 
             m = OrderedDict()
-            m['Method'] = "&MethodID%03d" % action.MethodObj.MethodID
-            m['MethodTypeCV'] = action.MethodObj.MethodTypeCV
-            m['MethodCode'] = action.MethodObj.MethodCode
-            m['MethodName'] = action.MethodObj.MethodName
-            m['MethodDescription'] = action.MethodObj.MethodDescription
-            m['MethodLink'] = action.MethodObj.MethodLink
-            m['OrganizationID'] = action.MethodObj.OrganizationID
+            m['Method'] = "&MethodID%03d" % m_obj.MethodID
+            m['MethodTypeCV'] = m_obj.MethodTypeCV
+            m['MethodCode'] = m_obj.MethodCode
+            m['MethodName'] = m_obj.MethodName
+            m['MethodDescription'] = m_obj.MethodDescription
+            m['MethodLink'] = m_obj.MethodLink
+            m['OrganizationID'] = m_obj.OrganizationID
             mts.append(m)
             mts = [i for n, i in enumerate(mts) if i not in mts[n + 1:]]
 
@@ -244,9 +221,16 @@ class MultipleRepresentations(Service):
         response['Content-Disposition'] = 'attachment; filename="actions.xml"'
 
         response.write("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n")
+        allactions = self.sqlalchemy_object_to_dict()
+        response.write(xmlify({'Action': allactions}, wrap="Actions", indent="  "))
+        return response
+
+    def sqlalchemy_object_to_dict(self):
 
         allactions = []
         for action in self.items:
+            m_obj = action.MethodObj
+
             queryset = OrderedDict()
             queryset['ActionID'] = action.ActionID
             queryset['ActionTypeCV'] = action.ActionTypeCV
@@ -254,12 +238,12 @@ class MultipleRepresentations(Service):
             queryset['ActionFileLink'] = action.ActionFileLink
 
             m = OrderedDict()
-            m['MethodTypeCV'] = action.MethodObj.MethodTypeCV
-            m['MethodCode'] = action.MethodObj.MethodCode
-            m['MethodName'] = action.MethodObj.MethodName
-            m['MethodDescription'] = action.MethodObj.MethodDescription
-            m['MethodLink'] = action.MethodObj.MethodLink
-            m['OrganizationID'] = action.MethodObj.OrganizationID
+            m['MethodTypeCV'] = m_obj.MethodTypeCV
+            m['MethodCode'] = m_obj.MethodCode
+            m['MethodName'] = m_obj.MethodName
+            m['MethodDescription'] = m_obj.MethodDescription
+            m['MethodLink'] = m_obj.MethodLink
+            m['OrganizationID'] = m_obj.OrganizationID
             queryset['Method'] = m
 
             queryset['BeginDateTime'] = action.BeginDateTime
@@ -269,8 +253,5 @@ class MultipleRepresentations(Service):
 
             allactions.append(queryset)
 
-        response.write(xmlify({'Action': allactions}, wrap="Actions", indent="  "))
-
         self._session.close()
-        return response
-
+        return allactions

@@ -109,20 +109,7 @@ class MultipleRepresentations(Service):
 
     def json_format(self):
 
-        allitems = []
-        for x in self.items:
-            queryset = OrderedDict()
-            queryset['MethodID'] = x.MethodID
-            queryset['MethodTypeCV'] = x.MethodTypeCV
-            queryset['MethodCode'] = x.MethodCode
-            queryset['MethodName'] = x.MethodName
-            queryset['MethodDescription'] = x.MethodDescription
-            queryset['MethodLink'] = x.MethodLink
-            queryset['OrganizationID'] = x.OrganizationID
-            allitems.append(queryset)
-
-        self._session.close()
-        return allitems
+        return self.sqlalchemy_object_to_dict()
 
     def csv_format(self):
 
@@ -156,24 +143,9 @@ class MultipleRepresentations(Service):
 
         response.write("---\n")
         allitems = {}
-        records = []
-            
-        for item in self.items:
-
-            queryset = OrderedDict()
-            queryset["MethodID"] = item.MethodID
-            queryset["MethodTypeCV"] = item.MethodTypeCV
-            queryset["MethodCode"] = item.MethodCode
-            queryset["MethodName"] = item.MethodName
-            queryset["MethodDescription"] = item.MethodDescription
-            queryset["MethodLink"] = item.MethodLink
-            queryset["OrganizationID"] = item.OrganizationID
-            records.append(queryset)
-
+        records = self.sqlalchemy_object_to_dict()
         allitems["Methods"] = records
         response.write(pyaml.dump(allitems,vspacing=[0, 0]))
-
-        self._session.close()
         return response
 
     def xml_format(self):
@@ -182,6 +154,12 @@ class MultipleRepresentations(Service):
         response['Content-Disposition'] = 'attachment; filename="methods.xml"'
 
         response.write("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n")
+
+        allitems = self.sqlalchemy_object_to_dict()
+        response.write(xmlify({'Method': allitems}, wrap="Methods", indent="  "))
+        return response
+
+    def sqlalchemy_object_to_dict(self):
 
         allitems = []
         for x in self.items:
@@ -195,9 +173,8 @@ class MultipleRepresentations(Service):
             queryset['OrganizationID'] = x.OrganizationID
             allitems.append(queryset)
 
-        response.write(xmlify({'Method': allitems}, wrap="Methods", indent="  "))
         self._session.close()
-        return response
+        return allitems
 
 class JSONResponse(HttpResponse):
     """

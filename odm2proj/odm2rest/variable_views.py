@@ -110,20 +110,7 @@ class MultipleRepresentations(Service):
 
     def json_format(self):
 
-        allvars = []
-        for variable in self.items:
-            queryset = OrderedDict()
-            queryset['VariableID'] = variable.VariableID
-            queryset['VariableCode'] = variable.VariableCode
-            queryset['VariableType'] = variable.VariableTypeCV
-            queryset['VariableName'] = variable.VariableNameCV
-            queryset['VariableDefinition'] = variable.VariableDefinition
-            queryset['NoDataValue'] = variable.NoDataValue
-            queryset['Speciation'] = variable.SpeciationCV
-            allvars.append(queryset)
-
-        self._session.close()
-        return allvars
+        return self.sqlalchemy_object_to_dict()
 
     def csv_format(self):
 
@@ -156,40 +143,9 @@ class MultipleRepresentations(Service):
 
         response.write("---\n")
         allvars = {}
-        vararray = []
-            
-        for variable in self.items:
-
-            queryset = OrderedDict()
-            queryset["VariableID"] = variable.VariableID
-            queryset["VariableCode"] = variable.VariableCode
-            queryset["VariableType"] = variable.VariableTypeCV
-            queryset["VariableName"] = variable.VariableNameCV
-            queryset["VariableDefinition"] = variable.VariableDefinition
-            queryset["NoDataValue"] = str(variable.NoDataValue)
-            queryset["Speciation"] = variable.SpeciationCV
-            vararray.append(queryset)
-                
-            #queryset = "- {"
-            #queryset += "VariableCode: " + variable.VariableCode + ", "
-            #queryset += "VariableType: " + variable.VariableTypeCV + ", "
-            #queryset += "VariableName: \"" + variable.VariableNameCV + "\", "
-            #if variable.VariableDefinition == None:
-            #    queryset += "VariableDefinition: \"\", "
-            #else:
-            #    queryset += "VariableDefinition: " + variable.VariableDefinition +", "
-            #queryset += "NoDataValue: " + str(variable.NoDataValue) + ", "
-            #queryset += "Speciation: " + variable.SpeciationCV
-            #queryset += "}"
-            #response.write(queryset+"\n")
-            #Variables.append(queryset)
-
-        #response.write(yaml.dump(Variables, indent=4 ,default_flow_style=False).replace('-   ', '  - ')+"\n")
-        #response.write(pyaml.dump(Variables,vspacing=[2, 1]))
+        vararray = self.sqlalchemy_object_to_dict()
         allvars["Variables"] = vararray
         response.write(pyaml.dump(allvars,vspacing=[0, 0]))
-
-        self._session.close()
         return response
 
     def xml_format(self):
@@ -197,6 +153,12 @@ class MultipleRepresentations(Service):
         response['Content-Disposition'] = 'attachment; filename="variables.xml"'
 
         response.write("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n")
+
+        allvars = self.sqlalchemy_object_to_dict()
+        response.write(xmlify({'Variable': allvars}, wrap="Variables", indent="  "))
+        return response
+
+    def sqlalchemy_object_to_dict(self):
 
         allvars = []
         for variable in self.items:
@@ -206,13 +168,12 @@ class MultipleRepresentations(Service):
             queryset['VariableType'] = variable.VariableTypeCV
             queryset['VariableName'] = variable.VariableNameCV
             queryset['VariableDefinition'] = variable.VariableDefinition
-            queryset['NoDataValue'] = variable.NoDataValue
+            queryset['NoDataValue'] = str(variable.NoDataValue)
             queryset['Speciation'] = variable.SpeciationCV
             allvars.append(queryset)
 
-        response.write(xmlify({'Variable': allvars}, wrap="Variables", indent="  "))
         self._session.close()
-        return response
+        return allvars
 
 class JSONResponse(HttpResponse):
     """

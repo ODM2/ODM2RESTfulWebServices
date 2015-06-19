@@ -70,19 +70,7 @@ class DatasetViewSet(APIView):
 class MultipleRepresentations(Service):
     def json_format(self):
 
-        allitems = []
-        for x in self.items:
-            queryset = OrderedDict()
-            queryset['DatasetID'] = x.DatasetID
-            queryset['DatasetUUID'] = x.DatasetUUID
-            queryset['DatasetTypeCV'] = x.DatasetTypeCV
-            queryset['DatasetCode'] = x.DatasetCode
-            queryset['DatasetTitle'] = x.DatasetTitle
-            queryset['DatasetAbstract'] = x.DatasetAbstract
-            allitems.append(queryset)
-
-        self._session.close()
-        return allitems
+        return self.sqlalchemy_object_to_dict()
 
     def csv_format(self):
 
@@ -115,23 +103,9 @@ class MultipleRepresentations(Service):
 
         response.write("---\n")
         allitems = {}
-        records = []
-            
-        for item in self.items:
-
-            queryset = OrderedDict()
-            queryset["DatasetID"] = item.DatasetID
-            queryset["DatasetUUID"] = str(item.DatasetUUID)
-            queryset["DatasetTypeCV"] = item.DatasetTypeCV
-            queryset["DatasetCode"] = item.DatasetCode
-            queryset["DatasetTitle"] = item.DatasetTitle
-            queryset["DatasetAbstract"] = item.DatasetAbstract
-            records.append(queryset)
-
+        records = self.sqlalchemy_object_to_dict()
         allitems["DataSets"] = records
         response.write(pyaml.dump(allitems,vspacing=[0, 0]))
-
-        self._session.close()
         return response
 
     def xml_format(self):
@@ -140,8 +114,13 @@ class MultipleRepresentations(Service):
         response['Content-Disposition'] = 'attachment; filename="datasets.xml"'
 
         response.write("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n")
-        records = []
-            
+        records = self.sqlalchemy_object_to_dict()
+        response.write(xmlify({'Dataset': records}, wrap="Datasets", indent="  "))
+        return response
+
+    def sqlalchemy_object_to_dict(self):
+
+        records = []            
         for item in self.items:
 
             queryset = OrderedDict()
@@ -153,10 +132,9 @@ class MultipleRepresentations(Service):
             queryset["DatasetAbstract"] = item.DatasetAbstract
             records.append(queryset)
 
-        response.write(xmlify({'Dataset': records}, wrap="Datasets", indent="  "))
-
         self._session.close()
-        return response
+        return records
+
 
 class JSONResponse(HttpResponse):
     """

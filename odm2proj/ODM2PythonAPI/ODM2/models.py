@@ -869,9 +869,9 @@ class RelatedFeatures(Base):
     SpatialOffsetID = Column('spatialoffsetid', ForeignKey('odm2.spatialoffsets.spatialoffsetid'))
 
     SamplingFeatureObj = relationship(SamplingFeatures,
-                                      primaryjoin='RelatedFeatures.RelatedFeatureID == SamplingFeatures.SamplingFeatureID')
-    RelatedFeatureObj = relationship(SamplingFeatures,
                                      primaryjoin='RelatedFeatures.SamplingFeatureID == SamplingFeatures.SamplingFeatureID')
+    RelatedFeatureObj = relationship(SamplingFeatures,
+                                      primaryjoin='RelatedFeatures.RelatedFeatureID == SamplingFeatures.SamplingFeatureID')
     SpatialOffsetObj = relationship(SpatialOffsets)
 
 

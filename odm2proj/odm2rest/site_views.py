@@ -161,6 +161,8 @@ class MultipleRepresentations(Service):
         allsites['type'] = "FeatureCollection"
         features = []
         for site in self.items:
+            sf_obj = site.SamplingFeatureObj
+
             feature = OrderedDict()
             feature['type'] = "Feature"
 
@@ -175,14 +177,14 @@ class MultipleRepresentations(Service):
 
             queryset = OrderedDict()
             queryset['SiteTypeCV'] = site.SiteTypeCV
-            queryset['SamplingFeatureID'] = site.SamplingFeatureObj.SamplingFeatureID
-            queryset['SamplingFeatureTypeCV'] = site.SamplingFeatureObj.SamplingFeatureTypeCV
-            queryset['SamplingFeatureCode'] = site.SamplingFeatureObj.SamplingFeatureCode
-            queryset['SamplingFeatureName'] = site.SamplingFeatureObj.SamplingFeatureName
-            queryset['SamplingFeatureDescription'] = site.SamplingFeatureObj.SamplingFeatureDescription
-            queryset['SamplingFeatureGeotypeCV'] = site.SamplingFeatureObj.SamplingFeatureGeotypeCV
-            queryset['Elevation_m'] = site.SamplingFeatureObj.Elevation_m
-            queryset['ElevationDatumCV'] = site.SamplingFeatureObj.ElevationDatumCV
+            queryset['SamplingFeatureID'] = sf_obj.SamplingFeatureID
+            queryset['SamplingFeatureTypeCV'] = sf_obj.SamplingFeatureTypeCV
+            queryset['SamplingFeatureCode'] = sf_obj.SamplingFeatureCode
+            queryset['SamplingFeatureName'] = sf_obj.SamplingFeatureName
+            queryset['SamplingFeatureDescription'] = sf_obj.SamplingFeatureDescription
+            queryset['SamplingFeatureGeotypeCV'] = sf_obj.SamplingFeatureGeotypeCV
+            queryset['Elevation_m'] = sf_obj.Elevation_m
+            queryset['ElevationDatumCV'] = sf_obj.ElevationDatumCV
 
             feature['properties'] = queryset
             features.append(feature)
@@ -206,23 +208,28 @@ class MultipleRepresentations(Service):
             
         for site in self.items:
             row = []
-            row.append(site.SamplingFeatureObj.SamplingFeatureTypeCV)
-            row.append(site.SamplingFeatureObj.SamplingFeatureCode)
-            row.append(site.SamplingFeatureObj.SamplingFeatureName)
-            row.append(site.SamplingFeatureObj.SamplingFeatureDescription)
-            row.append(site.SamplingFeatureObj.SamplingFeatureGeotypeCV)
-            row.append(site.SamplingFeatureObj.FeatureGeometry)
-            row.append(site.SamplingFeatureObj.Elevation_m)
-            row.append(site.SamplingFeatureObj.ElevationDatumCV)
+            sf_obj = site.SamplingFeatureObj
+            sr_obj = site.SpatialReferenceObj
+
+            row.append(sf_obj.SamplingFeatureTypeCV)
+            row.append(sf_obj.SamplingFeatureCode)
+            sf_name = u'%s' % sf_obj.SamplingFeatureName
+            row.append(sf_name.encode("utf-8"))
+            row.append(sf_obj.SamplingFeatureDescription)
+            row.append(sf_obj.SamplingFeatureGeotypeCV)
+            row.append(sf_obj.FeatureGeometry)
+            row.append(sf_obj.Elevation_m)
+            row.append(sf_obj.ElevationDatumCV)
             row.append(site.SiteTypeCV)
             row.append(site.Latitude)
             row.append(site.Longitude)
-            row.append(site.SpatialReferenceObj.SpatialReferenceID)
-            row.append(site.SpatialReferenceObj.SRSCode)
-            row.append(site.SpatialReferenceObj.SRSDescription)
-            row.append(site.SpatialReferenceObj.SRSName)
+            row.append(sr_obj.SpatialReferenceID)
+            row.append(sr_obj.SRSCode)
+            row.append(sr_obj.SRSDescription)
+            row.append(sr_obj.SRSName)
             
             writer.writerow(row)
+            #writer.writerow([s.encode("utf-8") for s in row])
             
         self._session.close()
         return response
@@ -241,33 +248,36 @@ class MultipleRepresentations(Service):
 
         for site in self.items:
 
+            sf_obj = site.SamplingFeatureObj
+            sr_obj = site.SpatialReferenceObj
+
             st = OrderedDict()
             st['SamplingFeatureID'] = "*SamplingFeatureID%03d" % site.SamplingFeatureID
             st['SiteTypeCV'] = site.SiteTypeCV
             st['Longitude'] = site.Longitude
             st['Latitude'] = site.Latitude
-            st['LatLonDatumID'] = "*SRSID%03d" % site.SpatialReferenceObj.SpatialReferenceID
+            st['LatLonDatumID'] = "*SRSID%03d" % sr_obj.SpatialReferenceID
             sts.append(st)
 
             sr = OrderedDict()
-            sr['SpatialReference'] = "&SRSID%03d" % site.SpatialReferenceObj.SpatialReferenceID
-            sr['SpatialReferenceID'] = site.SpatialReferenceObj.SpatialReferenceID
-            sr['SRSCode'] = site.SpatialReferenceObj.SRSCode
-            sr['SRSDescription'] = site.SpatialReferenceObj.SRSDescription
-            sr['SRSName'] = site.SpatialReferenceObj.SRSName
+            sr['SpatialReference'] = "&SRSID%03d" % sr_obj.SpatialReferenceID
+            sr['SpatialReferenceID'] = sr_obj.SpatialReferenceID
+            sr['SRSCode'] = sr_obj.SRSCode
+            sr['SRSDescription'] = sr_obj.SRSDescription
+            sr['SRSName'] = sr_obj.SRSName
             srs.append(sr)
             srs = [i for n, i in enumerate(srs) if i not in srs[n + 1:]]
 
             sf = OrderedDict()
-            sf['SamplingFeature'] = "&SamplingFeatureID%03d" % site.SamplingFeatureObj.SamplingFeatureID
-            sf['SamplingFeatureTypeCV'] = site.SamplingFeatureObj.SamplingFeatureTypeCV
-            sf['SamplingFeatureCode'] = site.SamplingFeatureObj.SamplingFeatureCode
-            sf['SamplingFeatureName'] = site.SamplingFeatureObj.SamplingFeatureName
-            sf['SamplingFeatureDescription'] = site.SamplingFeatureObj.SamplingFeatureDescription
-            sf['SamplingFeatureGeotypeCV'] = site.SamplingFeatureObj.SamplingFeatureGeotypeCV
-            sf['FeatureGeometry'] = site.SamplingFeatureObj.FeatureGeometry
-            sf['Elevation_m'] = site.SamplingFeatureObj.Elevation_m
-            sf['ElevationDatumCV'] = site.SamplingFeatureObj.ElevationDatumCV
+            sf['SamplingFeature'] = "&SamplingFeatureID%03d" % sf_obj.SamplingFeatureID
+            sf['SamplingFeatureTypeCV'] = sf_obj.SamplingFeatureTypeCV
+            sf['SamplingFeatureCode'] = sf_obj.SamplingFeatureCode
+            sf['SamplingFeatureName'] = sf_obj.SamplingFeatureName
+            sf['SamplingFeatureDescription'] = sf_obj.SamplingFeatureDescription
+            sf['SamplingFeatureGeotypeCV'] = sf_obj.SamplingFeatureGeotypeCV
+            sf['FeatureGeometry'] = sf_obj.FeatureGeometry
+            sf['Elevation_m'] = sf_obj.Elevation_m
+            sf['ElevationDatumCV'] = sf_obj.ElevationDatumCV
             sfs.append(sf)
             sfs = [i for n, i in enumerate(sfs) if i not in sfs[n + 1:]]
 
@@ -291,26 +301,29 @@ class MultipleRepresentations(Service):
         sts = []
         for site in self.items:
 
+            sf_obj = site.SamplingFeatureObj
+            sr_obj = site.SpatialReferenceObj
+
             st = {}
             st['SiteTypeCV'] = site.SiteTypeCV
             st['Longitude'] = site.Longitude
             st['Latitude'] = site.Latitude
 
             sr = {}
-            sr['SRSCode'] = site.SpatialReferenceObj.SRSCode
-            sr['SRSDescription'] = site.SpatialReferenceObj.SRSDescription
-            sr['SRSName'] = site.SpatialReferenceObj.SRSName
+            sr['SRSCode'] = sr_obj.SRSCode
+            sr['SRSDescription'] = sr_obj.SRSDescription
+            sr['SRSName'] = sr_obj.SRSName
             st['SpatialReference'] = sr
 
             sf = {}
-            sf['SamplingFeatureTypeCV'] = site.SamplingFeatureObj.SamplingFeatureTypeCV
-            sf['SamplingFeatureCode'] = site.SamplingFeatureObj.SamplingFeatureCode
-            sf['SamplingFeatureName'] = site.SamplingFeatureObj.SamplingFeatureName
-            sf['SamplingFeatureDescription'] = site.SamplingFeatureObj.SamplingFeatureDescription
-            sf['SamplingFeatureGeotypeCV'] = site.SamplingFeatureObj.SamplingFeatureGeotypeCV
-            sf['FeatureGeometry'] = site.SamplingFeatureObj.FeatureGeometry
-            sf['Elevation_m'] = site.SamplingFeatureObj.Elevation_m
-            sf['ElevationDatumCV'] = site.SamplingFeatureObj.ElevationDatumCV
+            sf['SamplingFeatureTypeCV'] = sf_obj.SamplingFeatureTypeCV
+            sf['SamplingFeatureCode'] = sf_obj.SamplingFeatureCode
+            sf['SamplingFeatureName'] = sf_obj.SamplingFeatureName
+            sf['SamplingFeatureDescription'] = sf_obj.SamplingFeatureDescription
+            sf['SamplingFeatureGeotypeCV'] = sf_obj.SamplingFeatureGeotypeCV
+            sf['FeatureGeometry'] = sf_obj.FeatureGeometry
+            sf['Elevation_m'] = sf_obj.Elevation_m
+            sf['ElevationDatumCV'] = sf_obj.ElevationDatumCV
             st['SamplingFeature'] = sf
 
             sts.append(st)
