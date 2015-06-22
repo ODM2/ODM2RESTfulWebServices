@@ -45,6 +45,12 @@ class odm2Service(object):
         except:
             return None
 
+    def getActionByActionType(self, actionType):
+        try:
+            return self._session.query(Actions).filter_by(ActionTypeCV=actionType).all()
+        except:
+            return None
+
     """
     Datasets
     """
@@ -121,6 +127,40 @@ class odm2Service(object):
     def getSitesBySiteType(self, siteType):
         try:
             return self._session.query(Sites).filter_by(SiteTypeCV=siteType).all()
+        except:
+            return None
+
+    """
+    SamplingFeatures
+    """
+
+    def getSamplingFeatures(self):
+        try:
+            return self._session.query(SamplingFeatures).all()
+        except:
+            return None
+
+    def getSamplingFeaturesByPage(self, page=0, page_size=None):
+        try:
+            return self._session.query(SamplingFeatures).offset(page*page_size).limit(page_size).all()
+        except:
+            return None
+
+    def getSamplingFeatureBySFCode(self, sfCode):
+        try:
+            return self._session.query(SamplingFeatures).filter_by(SamplingFeatureCode = sfCode).one()
+        except:
+            return None
+
+    def getSpecimenBySFID(self, sfID):
+        try:
+            return self._session.query(Specimens).filter_by(SamplingFeatureID = sfID).one()
+        except:
+            return None
+
+    def getSamplingFeatureBySFType(self, sfType):
+        try:
+            return self._session.query(SamplingFeatures).filter_by(SamplingFeatureTypeCV=sfType).all()
         except:
             return None
 
@@ -285,7 +325,8 @@ class odm2Service(object):
                 join(FeatureActions).\
                 join(SamplingFeatures).\
                 join(Sites).\
-                filter(Results.ResultTypeCV==rTypeCV, Sites.Latitude >= ymin, Sites.Latitude <= ymax, Sites.Longitude >= xmin, Sites.Longitude <= xmax, Results.ResultDateTime >= beginDate, Results.ResultDateTime <= endDate).all()
+                join(Actions).\
+                filter(Results.ResultTypeCV==rTypeCV, Sites.Latitude >= ymin, Sites.Latitude <= ymax, Sites.Longitude >= xmin, Sites.Longitude <= xmax, Actions.BeginDateTime >= beginDate, Actions.BeginDateTime <= endDate).all()
         except:
             return None
 

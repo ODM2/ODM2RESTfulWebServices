@@ -94,14 +94,14 @@ class ActionsViewSet(APIView):
 
         return mr.content_format(items, format)
 
-class ActionIDViewSet(APIView):
+class ActionTypeViewSet(APIView):
     """
     All ODM2 Action Retrieval
     """
 
     content_negotiation_class = IgnoreClientContentNegotiation
 
-    def get(self, request, format=None, actionID=None):
+    def get(self, request, format=None, actionType=None):
         """
         ---
         parameters:
@@ -118,17 +118,17 @@ class ActionIDViewSet(APIView):
               message: Not authenticated
         """
 
-        if actionID is None:
+        if actionType is None:
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
         format = request.query_params.get('format', 'yaml')
         #accept = request.accepted_renderer.media_type
         mr = MultipleRepresentations()
         readConn = mr.readService()
-        items = readConn.getActionByActionID(actionID)
+        items = readConn.getActionByActionType(actionType)
 
         if items == None:
-            return Response('"%s" is not existed.' % actionID,
+            return Response('"%s" is not existed.' % actionType,
                             status=status.HTTP_400_BAD_REQUEST)
 
         return mr.content_format(items, format)
@@ -144,27 +144,39 @@ class MultipleRepresentations(Service):
         response = HttpResponse(content_type='text/csv')
         response['Content-Disposition'] = 'attachment; filename="actions.csv"'
 
-        action_csv_header = ["#fields=ActionID[type='string']","ActionTypeCV[type='string']","ActionDescription[type='string']","ActionFileLink[type='string']","MethodTypeCV[type='string']","MethodCode[type='string']","MethodName[type='string']","MethodDescription[type='string']","MethodLink[type='string']","OrganizationID","BeginDateTime[type='date' format='yyyy-MM-dd HH:MM:SS']","BeginDateTimeUTCOffset","EndDateTime[type='date' format='yyyy-MM-dd HH:MM:SS']","EndDateTimeUTCOffset"]
-        
+        item_csv_header = []
+        item_csv_header.extend(["#fields=ActionTypeCV[type='string']","BeginDateTime[type='date' format='yyyy-MM-dd HH:MM:SS']","BeginDateTimeUTCOffset","EndDateTime[type='date' format='yyyy-MM-dd HH:MM:SS']","EndDateTimeUTCOffset","ActionDescription[type='string']","ActionFileLink[type='string']"])
+        item_csv_header.extend(["MethodTypeCV[type='string']","MethodCode[type='string']","MethodName[type='string']","MethodDescription[type='string']","MethodLink[type='string']"])
+        item_csv_header.extend(["OrganizationTypeCV[type='string']","OrganizationCode[type='string']","OrganizationName[type='string']","OrganizationDescription[type='string']","OrganizationLink[type='string']","ParentOrganizationID"])
+
         writer = csv.writer(response)
-        writer.writerow(action_csv_header)
+        writer.writerow(item_csv_header)
             
         for item in self.items:
+            m_obj = item.MethodObj
+            o_obj = m_obj.OrganizationObj            
+
             row = []
-            row.append(item.ActionID)
             row.append(item.ActionTypeCV)
-            row.append(item.ActionDescription)
-            row.append(item.ActionFileLink)
-            row.append(item.MethodObj.MethodTypeCV)
-            row.append(item.MethodObj.MethodCode)
-            row.append(item.MethodObj.MethodName)
-            row.append(item.MethodObj.MethodDescription)
-            row.append(item.MethodObj.MethodLink)
-            row.append(item.MethodObj.OrganizationID)
             row.append(item.BeginDateTime)
             row.append(item.BeginDateTimeUTCOffset)
             row.append(item.EndDateTime)
             row.append(item.EndDateTimeUTCOffset)
+            row.append(item.ActionDescription)
+            row.append(item.ActionFileLink)
+
+            row.append(m_obj.MethodTypeCV)
+            row.append(m_obj.MethodCode)
+            row.append(m_obj.MethodName)
+            row.append(m_obj.MethodDescription)
+            row.append(m_obj.MethodLink)
+
+            row.append(o_obj.OrganizationTypeCV)
+            row.append(o_obj.OrganizationCode)
+            row.append(o_obj.OrganizationName)
+            row.append(o_obj.OrganizationDescription)
+            row.append(o_obj.OrganizationLink)
+            row.append(o_obj.ParentOrganizationID)
 
             writer.writerow(row)
 
@@ -181,12 +193,13 @@ class MultipleRepresentations(Service):
 
         ats = []
         mts = []
+        orgs = []
 
         for action in self.items:
             m_obj = action.MethodObj
+            o_obj = m_obj.OrganizationObj            
 
             at = OrderedDict()
-            at['ActionID'] = action.ActionID
             at['ActionTypeCV'] = action.ActionTypeCV
             at['MethodID'] = "*MethodID%03d" % action.MethodID 
             at['ActionDescription'] = action.ActionDescription
@@ -204,12 +217,25 @@ class MultipleRepresentations(Service):
             m['MethodName'] = m_obj.MethodName
             m['MethodDescription'] = m_obj.MethodDescription
             m['MethodLink'] = m_obj.MethodLink
-            m['OrganizationID'] = m_obj.OrganizationID
+            m['OrganizationID'] = "*OrganizationID%03d" % m_obj.OrganizationID 
             mts.append(m)
             mts = [i for n, i in enumerate(mts) if i not in mts[n + 1:]]
 
+
+            o = OrderedDict()
+            o['OrganizationID'] = "&OrganizationID%03d" % o_obj.OrganizationID
+            o['OrganizationTypeCV'] = o_obj.OrganizationTypeCV
+            o['OrganizationCode'] = o_obj.OrganizationCode
+            o['OrganizationName'] = o_obj.OrganizationName
+            o['OrganizationDescription'] = o_obj.OrganizationDescription
+            o['OrganizationLink'] = o_obj.OrganizationLink
+            o['ParentOrganizationID'] = o_obj.ParentOrganizationID
+            orgs.append(o)
+            orgs = [i for n, i in enumerate(orgs) if i not in orgs[n + 1:]]
+            
         allactions["Actions"] = ats
         allactions["Methods"] = mts
+        allactions["Organizations"] = orgs
         response.write(pyaml.dump(allactions, vspacing=[1, 0]))
 
         self._session.close()
@@ -230,10 +256,15 @@ class MultipleRepresentations(Service):
         allactions = []
         for action in self.items:
             m_obj = action.MethodObj
+            o_obj = m_obj.OrganizationObj
 
             queryset = OrderedDict()
-            queryset['ActionID'] = action.ActionID
+            #queryset['ActionID'] = action.ActionID
             queryset['ActionTypeCV'] = action.ActionTypeCV
+            queryset['BeginDateTime'] = action.BeginDateTime
+            queryset['BeginDateTimeUTCOffset'] = action.BeginDateTimeUTCOffset
+            queryset['EndDateTime'] = action.EndDateTime
+            queryset['EndDateTimeUTCOffset'] = action.EndDateTimeUTCOffset
             queryset['ActionDescription'] = action.ActionDescription
             queryset['ActionFileLink'] = action.ActionFileLink
 
@@ -243,13 +274,18 @@ class MultipleRepresentations(Service):
             m['MethodName'] = m_obj.MethodName
             m['MethodDescription'] = m_obj.MethodDescription
             m['MethodLink'] = m_obj.MethodLink
-            m['OrganizationID'] = m_obj.OrganizationID
-            queryset['Method'] = m
 
-            queryset['BeginDateTime'] = action.BeginDateTime
-            queryset['BeginDateTimeUTCOffset'] = action.BeginDateTimeUTCOffset
-            queryset['EndDateTime'] = action.EndDateTime
-            queryset['EndDateTimeUTCOffset'] = action.EndDateTimeUTCOffset
+            o = OrderedDict()
+            o['OrganizationID'] = o_obj.OrganizationID
+            o['OrganizationTypeCV'] = o_obj.OrganizationTypeCV
+            o['OrganizationCode'] = o_obj.OrganizationCode
+            o['OrganizationName'] = o_obj.OrganizationName
+            o['OrganizationDescription'] = o_obj.OrganizationDescription
+            o['OrganizationLink'] = o_obj.OrganizationLink
+            o['ParentOrganizationID'] = o_obj.ParentOrganizationID
+            m['Organization'] = o
+
+            queryset['Method'] = m
 
             allactions.append(queryset)
 

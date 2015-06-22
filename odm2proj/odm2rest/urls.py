@@ -5,8 +5,9 @@ from rest_framework import routers
 from odm2rest.variable_views import VariableViewSet, VariableCodeViewSet
 from odm2rest import views
 from odm2rest.site_views import SiteViewSet, SiteSamplingFeatureCodeViewSet, SiteTypeViewSet
+from odm2rest.samplingfeature_views import SamplingfeatureViewSet, SFCodeViewSet, SFTypeViewSet
 #from odm2rest.cv_views import ODMVocabulariesViewSet, TermsViewSet, TermsDetailViewSet, CVtermViewSet
-from odm2rest.action_views import ActionsViewSet, ActionIDViewSet
+from odm2rest.action_views import ActionsViewSet, ActionTypeViewSet
 from odm2rest.value_views import ValuesViewSet
 from odm2rest.result_views import ResultsViewSet, ResultsVarCodeViewSet, ResultsSFCodeViewSet, ResultsSFUUIDViewSet, ResultsBBoxViewSet, ResultsActionDateViewSet, ResultsRTypeCVViewSet, ResultsComplexViewSet
 from odm2rest.method_views import MethodsViewSet, MethodCodeViewSet
@@ -25,7 +26,7 @@ urlpatterns = [
     url(r'^organizations/$', OrgsViewSet.as_view(), name='org-list'),
     url(r'^organizations/(?P<organizationCode>.+)/$', OrgCodeViewSet.as_view(), name='org-detail'),
     url(r'^actions/$', ActionsViewSet.as_view(), name='action-list'),
-    url(r'^actions/(?P<actionID>.+)/$', ActionIDViewSet.as_view(), name='action-list'),
+    url(r'^actions/(?P<actionType>.+)/$', ActionTypeViewSet.as_view(), name='action-typ-list'),
     url(r'^Observations/$', ResultsViewSet.as_view(), name='observ-list'),
     url(r'^Observations/variableCode/(?P<variableCode>.+)/$', ResultsVarCodeViewSet.as_view(), name='resultvarcode-list'),
     url(r'^Observations/samplingfeatureCode/(?P<samplingfeatureCode>.+)/$', ResultsSFCodeViewSet.as_view(), name='resultsfcode-list'),
@@ -47,6 +48,9 @@ urlpatterns = [
     url(r'^externalidentifiers/citation/$', ExternalIdentifierCitationViewSet.as_view(), name='externalidentifier-citation-list'),
     url(r'^externalidentifiers/people/$', ExternalIdentifierPeopleViewSet.as_view(), name='externalidentifier-people-list'),
     url(r'^externalidentifiers/samplingfeature/$', ExternalIdentifierSamplingFeatureViewSet.as_view(), name='externalidentifier-sf-list'),
+    url(r'^samplingfeatures/$',  SamplingfeatureViewSet.as_view(), name='sf-list'),
+    url(r'^samplingfeatures/samplingfeatureCode/(?P<samplingfeatureCode>.+)/$', SFCodeViewSet.as_view(), name='sf-detail-sfc'),
+    url(r'^samplingfeatures/samplingfeatureType/(?P<samplingfeatureType>.+)/$',  SFTypeViewSet.as_view(), name='sf-detail-sft'),
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns)

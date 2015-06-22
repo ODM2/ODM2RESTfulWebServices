@@ -302,7 +302,7 @@ class ResultsBBoxViewSet(APIView):
 
 class ResultsActionDateViewSet(APIView):
     """
-    All ODM2 Result records Retrieval
+    All ODM2 Result records Retrieval based on the begin date in "Actions" table.
 
     """
     #serializer_class = DummySerializer
@@ -322,12 +322,12 @@ class ResultsActionDateViewSet(APIView):
               type: string
               paramType: query
             - name: startDate    
-              description: ISO date, for example, 2008-03-20.
+              description: ISO date, for example, 1983-01-17.
               required: true
               type: datetime
               paramType: query
             - name: endDate    
-              description: ISO date, for example, 2008-05-20.
+              description: ISO date, for example, 1983-01-18.
               required: true
               type: datetime
               paramType: query
@@ -459,12 +459,12 @@ class ResultsComplexViewSet(APIView):
               type: float
               paramType: query
             - name: startDate    
-              description: ISO date, for example, 2014-10-20.
+              description: ISO date, for example, 2015-04-28 (the begin date time in "actions" table).
               required: true
               type: datetime
               paramType: query
             - name: endDate    
-              description: ISO date, for example, 2014-10-21.
+              description: ISO date, for example, 2015-04-29 (the begin date time in "actions" table).
               required: true
               type: datetime
               paramType: query
@@ -546,7 +546,8 @@ class MultipleRepresentations(Service):
             row.append(sf_obj.SamplingFeatureUUID)
             row.append(sf_obj.SamplingFeatureTypeCV)
             row.append(sf_obj.SamplingFeatureCode)
-            row.append(sf_obj.SamplingFeatureName)
+            sf_name = u'%s' % sf_obj.SamplingFeatureName
+            row.append(sf_name.encode("utf-8"))
             row.append(sf_obj.SamplingFeatureDescription)
             row.append(sf_obj.SamplingFeatureGeotypeCV)
             row.append(str(sf_obj.Elevation_m))
@@ -599,7 +600,8 @@ class MultipleRepresentations(Service):
                     row1.append(rf_obj.SamplingFeatureUUID)
                     row1.append(rf_obj.SamplingFeatureTypeCV)
                     row1.append(rf_obj.SamplingFeatureCode)
-                    row1.append(rf_obj.SamplingFeatureName)
+                    sf_name = u'%s' % rf_obj.SamplingFeatureName
+                    row1.append(sf_name.encode("utf-8"))
                     row1.append(rf_obj.SamplingFeatureDescription)
                     row1.append(rf_obj.SamplingFeatureGeotypeCV)
                     row1.append(str(rf_obj.Elevation_m))
@@ -673,18 +675,35 @@ class MultipleRepresentations(Service):
             r += u'           ElevationDatumCV: "%s"\n' % sf_obj.ElevationDatumCV
             r += u'           FeatureGeometry: "%s"\n' % sf_obj.FeatureGeometry
 
-            r += u'           Action:\n'
-            #r += u'               ActionID: %d\n' % a_obj.ActionID
-            r += u'               ActionTypeCV: "%s"\n' % a_obj.ActionTypeCV
-            r += u'               BeginDateTime: "%s"\n' % str(a_obj.BeginDateTime)
-            r += u'               BeginDateTimeUTCOffset: %s\n' % str(a_obj.BeginDateTimeUTCOffset)
-            r += u'               EndDateTime: "%s"\n' % str(a_obj.EndDateTime)
-            r += u'               EndDateTimeUTCOffset: %s\n' % str(a_obj.EndDateTimeUTCOffset)
-            r += u'               Method:\n'
-            #r += u'                   MethodID: %d\n' % m_obj.MethodID
-            r += u'                   MethodTypeCV: %s\n' % m_obj.MethodTypeCV
-            r += u'                   MethodCode: %s\n' % m_obj.MethodCode
-            r += u'                   MethodName: %s\n' % m_obj.MethodName
+            r += u'       Action:\n'
+            #r += u'          ActionID: %d\n' % a_obj.ActionID
+            r += u'           ActionTypeCV: "%s"\n' % a_obj.ActionTypeCV
+            r += u'           BeginDateTime: "%s"\n' % str(a_obj.BeginDateTime)
+            r += u'           BeginDateTimeUTCOffset: %s\n' % str(a_obj.BeginDateTimeUTCOffset)
+            r += u'           EndDateTime: "%s"\n' % str(a_obj.EndDateTime)
+            r += u'           EndDateTimeUTCOffset: %s\n' % str(a_obj.EndDateTimeUTCOffset)
+            r += u'           Method:\n'
+            #r += u'              MethodID: %d\n' % m_obj.MethodID
+            r += u'               MethodTypeCV: %s\n' % m_obj.MethodTypeCV
+            r += u'               MethodCode: %s\n' % m_obj.MethodCode
+            r += u'               MethodName: %s\n' % m_obj.MethodName
+
+            raction = conn.getRelatedActionsByActionID(a_obj.ActionID)
+            if raction != None and len(raction) > 0:
+                r += u'   RelatedActions:\n'
+                for x in raction:
+                    ra_obj = x.RelatedActionObj
+                    ram_obj = ra_obj.MethodObj
+
+                    r += u'     - RelationshipTypeCV: %s\n' % x.RelationshipTypeCV
+                    r += u'       BeginDateTime: "%s"\n' % str(ra_obj.BeginDateTime)
+                    r += u'       BeginDateTimeUTCOffset: %s\n' % str(ra_obj.BeginDateTimeUTCOffset)
+                    r += u'       EndDateTime: "%s"\n' % str(ra_obj.EndDateTime)
+                    r += u'       EndDateTimeUTCOffset: %s\n' % str(ra_obj.EndDateTimeUTCOffset)
+                    r += u'       Method:\n'
+                    r += u'           MethodTypeCV: %s\n' % m_obj.MethodTypeCV
+                    r += u'           MethodCode: %s\n' % ram_obj.MethodCode
+                    r += u'           MethodName: %s\n' % ram_obj.MethodName
 
             sfid = sf_obj.SamplingFeatureID
             rfeature = conn.getRelatedFeaturesBySamplingFeatureID(sfid)
@@ -692,30 +711,29 @@ class MultipleRepresentations(Service):
                 r += u'   RelatedFeatures:\n'
                 for x in rfeature:
                     rf_obj = x.RelatedFeatureObj
-                    r += u'       RelatedFeature:\n'
-                    r += u'           RelationshipTypeCV: %s\n' % x.RelationshipTypeCV
-                    #r += u'           SamplingFeatureID: %d\n' % rf_obj.SamplingFeatureID
-                    r += u'           SamplingFeatureUUID: %s\n' % rf_obj.SamplingFeatureUUID
-                    r += u'           SamplingFeatureTypeCV: %s\n' % rf_obj.SamplingFeatureTypeCV
-                    r += u'           SamplingFeatureCode: %s\n' % rf_obj.SamplingFeatureCode
-                    r += u'           SamplingFeatureName: "%s"\n' % rf_obj.SamplingFeatureName
-                    r += u'           SamplingFeatureDescription: "%s"\n' % rf_obj.SamplingFeatureDescription
-                    r += u'           SamplingFeatureGeotypeCV: "%s"\n' % rf_obj.SamplingFeatureGeotypeCV
-                    r += u'           Elevation_m: %s\n' % str(rf_obj.Elevation_m)
-                    r += u'           ElevationDatumCV: "%s"\n' % rf_obj.ElevationDatumCV
-                    r += u'           FeatureGeometry: "%s"\n' % rf_obj.FeatureGeometry
+                    r += u'     - RelationshipTypeCV: %s\n' % x.RelationshipTypeCV
+                    #r += u'       SamplingFeatureID: %d\n' % rf_obj.SamplingFeatureID
+                    r += u'       SamplingFeatureUUID: %s\n' % rf_obj.SamplingFeatureUUID
+                    r += u'       SamplingFeatureTypeCV: %s\n' % rf_obj.SamplingFeatureTypeCV
+                    r += u'       SamplingFeatureCode: %s\n' % rf_obj.SamplingFeatureCode
+                    r += u'       SamplingFeatureName: "%s"\n' % rf_obj.SamplingFeatureName
+                    r += u'       SamplingFeatureDescription: "%s"\n' % rf_obj.SamplingFeatureDescription
+                    r += u'       SamplingFeatureGeotypeCV: "%s"\n' % rf_obj.SamplingFeatureGeotypeCV
+                    r += u'       Elevation_m: %s\n' % str(rf_obj.Elevation_m)
+                    r += u'       ElevationDatumCV: "%s"\n' % rf_obj.ElevationDatumCV
+                    r += u'       FeatureGeometry: "%s"\n' % rf_obj.FeatureGeometry
 
                     rsite = conn.getSiteBySFId(rf_obj.SamplingFeatureID)
                     if rsite != None:
-                        r += u'           Site:\n'
-                        r += u'               SiteTypeCV: %s\n' % rsite.SiteTypeCV
-                        r += u'               Latitude: %f\n' % rsite.Latitude
-                        r += u'               Longitude: %f\n' % rsite.Longitude
+                        r += u'       Site:\n'
+                        r += u'           SiteTypeCV: %s\n' % rsite.SiteTypeCV
+                        r += u'           Latitude: %f\n' % rsite.Latitude
+                        r += u'           Longitude: %f\n' % rsite.Longitude
                         sr_obj = rsite.SpatialReferenceObj
-                        r += u'               SpatialReference:\n'
-                        #r += u'                   SRSID: %d\n' % sr_obj.SpatialReferenceID
-                        r += u'                   SRSCode: "%s"\n' % sr_obj.SRSCode
-                        r += u'                   SRSName: %s\n' % sr_obj.SRSName
+                        r += u'           SpatialReference:\n'
+                        #r += u'               SRSID: %d\n' % sr_obj.SpatialReferenceID
+                        r += u'               SRSCode: "%s"\n' % sr_obj.SRSCode
+                        r += u'               SRSName: %s\n' % sr_obj.SRSName
 
             site = conn.getSiteBySFId(sfid)
             if site != None:
@@ -810,6 +828,25 @@ class MultipleRepresentations(Service):
             method['MethodName'] = m_obj.MethodName
             action['Method'] = method
             result['FeatureAction'] = {'SamplingFeature': samplingfeature, 'Action': action}
+
+            raction = conn.getRelatedActionsByActionID(a_obj.ActionID)
+            if raction != None and len(raction) > 0:
+                ractions = []
+                for x in raction:
+                    ra_obj = x.RelatedActionObj
+                    ram_obj = ra_obj.MethodObj
+                    ra = {}
+                    ra['RelationshipTypeCV'] = x.RelationshipTypeCV
+                    ra['BeginDateTime'] = str(ra_obj.BeginDateTime)
+                    ra['BeginDateTimeUTCOffset'] = str(ra_obj.BeginDateTimeUTCOffset)
+                    ra['EndDateTime'] = str(ra_obj.EndDateTime)
+                    ra['EndDateTimeUTCOffset'] = str(ra_obj.EndDateTimeUTCOffset)
+                    ram = {}
+                    ram['MethodTypeCV'] = ram_obj.MethodTypeCV
+                    ram['MethodCode'] = ram_obj.MethodCode
+                    ram['MethodName'] = ram_obj.MethodName
+                    ra['Method'] = ram
+                    ractions.append(ra)
 
             sfid = sf_obj.SamplingFeatureID
             rfeature = conn.getRelatedFeaturesBySamplingFeatureID(sfid)
