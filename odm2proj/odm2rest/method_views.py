@@ -1,36 +1,27 @@
 import sys
+
 sys.path.append('ODM2PythonAPI')
 
-#from rest_framework import viewsets
-from odm2rest.serializers import DummySerializer
-from odm2rest.serializers import Odm2JsonSerializer
+# from rest_framework import viewsets
 
 from django.http import HttpResponse
-from django.views.decorators.csrf import csrf_exempt
 from rest_framework.renderers import JSONRenderer
-from rest_framework.parsers import JSONParser
 
 # Create your views here.
 
-from django.http import Http404
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 
-from rest_framework import viewsets
-import json
 from collections import OrderedDict
 
-import csv,cStringIO
-import yaml, pyaml
+import csv
+import pyaml
 
 from odm2rest.odm2service import Service
-from rest_framework_csv.renderers import CSVRenderer
-from rest_framework_xml.renderers import XMLRenderer
-from rest_framework_yaml.renderers import YAMLRenderer
-from rest_framework.renderers import BrowsableAPIRenderer
 from negotiation import IgnoreClientContentNegotiation
 from dict2xml import dict2xml as xmlify
+
 
 class MethodsViewSet(APIView):
     """
@@ -56,7 +47,7 @@ class MethodsViewSet(APIView):
         """
 
         format = request.query_params.get('format', 'yaml')
-        #accept = request.accepted_renderer.media_type
+        # accept = request.accepted_renderer.media_type
         mr = MultipleRepresentations()
         readConn = mr.readService()
         items = readConn.getMethods()
@@ -66,6 +57,7 @@ class MethodsViewSet(APIView):
                             status=status.HTTP_400_BAD_REQUEST)
 
         return mr.content_format(items, format)
+
 
 class MethodCodeViewSet(APIView):
     """
@@ -94,7 +86,7 @@ class MethodCodeViewSet(APIView):
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
         format = request.query_params.get('format', 'yaml')
-        #accept = request.accepted_renderer.media_type
+        # accept = request.accepted_renderer.media_type
         mr = MultipleRepresentations()
         readConn = mr.readService()
         items = readConn.getMethodByCode(methodCode)
@@ -105,8 +97,8 @@ class MethodCodeViewSet(APIView):
 
         return mr.content_format(items, format)
 
-class MultipleRepresentations(Service):
 
+class MultipleRepresentations(Service):
     def json_format(self):
 
         return self.sqlalchemy_object_to_dict()
@@ -116,11 +108,13 @@ class MultipleRepresentations(Service):
         response = HttpResponse(content_type='text/csv')
         response['Content-Disposition'] = 'attachment; filename="methods.csv"'
 
-        item_csv_header = ["#fields=MethodID[type='string']","MethodTypeCV[type='string']","MethodCode[type='string']","MethodName[type='string']","MethodDescription[type='string']","MethodLink[type='string']","OrganizationID"]
+        item_csv_header = ["#fields=MethodID[type='string']", "MethodTypeCV[type='string']",
+                           "MethodCode[type='string']", "MethodName[type='string']", "MethodDescription[type='string']",
+                           "MethodLink[type='string']", "OrganizationID"]
 
         writer = csv.writer(response)
         writer.writerow(item_csv_header)
-            
+
         for item in self.items:
             row = []
             row.append(item.MethodID)
@@ -145,7 +139,7 @@ class MultipleRepresentations(Service):
         allitems = {}
         records = self.sqlalchemy_object_to_dict()
         allitems["Methods"] = records
-        response.write(pyaml.dump(allitems,vspacing=[0, 0]))
+        response.write(pyaml.dump(allitems, vspacing=[0, 0]))
         return response
 
     def xml_format(self):
@@ -176,12 +170,13 @@ class MultipleRepresentations(Service):
         self._session.close()
         return allitems
 
+
 class JSONResponse(HttpResponse):
     """
     An HttpResponse that renders its content into JSON.
     """
+
     def __init__(self, data, **kwargs):
         content = JSONRenderer().render(data)
         kwargs['content_type'] = 'application/json'
         super(JSONResponse, self).__init__(content, **kwargs)
-

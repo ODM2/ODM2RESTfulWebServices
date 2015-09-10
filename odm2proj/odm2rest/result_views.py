@@ -1,4 +1,5 @@
 import sys
+
 sys.path.append('ODM2PythonAPI')
 
 from odm2rest.serializers import DummySerializer
@@ -17,7 +18,7 @@ from rest_framework import viewsets
 from collections import OrderedDict
 
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-import csv,cStringIO
+import csv, cStringIO
 
 from odm2rest.odm2service import Service
 from rest_framework_csv.renderers import CSVRenderer
@@ -32,18 +33,19 @@ from datetime import datetime, timedelta
 from odm2rest.ODM2ALLServices import odm2Service as ODM2Read
 from dict2xml import dict2xml as xmlify
 
+
 class ResultsViewSet(APIView):
     """
     All ODM2 Result records Retrieval
 
     """
 
-    #serializer_class = DummySerializer
+    # serializer_class = DummySerializer
     paginate_by = 10
     paginate_by_param = 'page_size'
     max_paginate_by = 100
     content_negotiation_class = IgnoreClientContentNegotiation
-    #renderer_classes = (XMLRenderer, JSONRenderer, CSVRenderer, YAMLRenderer, BrowsableAPIRenderer,)
+    # renderer_classes = (XMLRenderer, JSONRenderer, CSVRenderer, YAMLRenderer, BrowsableAPIRenderer,)
 
     def get(self, request, format=None):
         """
@@ -73,9 +75,9 @@ class ResultsViewSet(APIView):
         """
 
         format = request.query_params.get('format', 'yaml')
-        #accept = request.accepted_renderer.media_type
-        page = request.query_params.get('page','0')
-        page_size = request.query_params.get('page_size','100')
+        # accept = request.accepted_renderer.media_type
+        page = request.query_params.get('page', '0')
+        page_size = request.query_params.get('page_size', '100')
 
         page = int(page)
         page_size = int(page_size)
@@ -83,24 +85,25 @@ class ResultsViewSet(APIView):
         mr = MultipleRepresentations()
         readConn = mr.readService()
         items = readConn.getResultsByPage(page, page_size)
-        #items = readConn.getResults()
+        # items = readConn.getResults()
         if items == None or len(items) == 0:
             return Response('The data is not existed.',
                             status=status.HTTP_400_BAD_REQUEST)
 
         return mr.content_format(items, format)
 
+
 class ResultsVarCodeViewSet(APIView):
     """
     All ODM2 Result records Retrieval
 
     """
-    #serializer_class = DummySerializer
+    # serializer_class = DummySerializer
     paginate_by = 10
     paginate_by_param = 'page_size'
     max_paginate_by = 100
     content_negotiation_class = IgnoreClientContentNegotiation
-    #renderer_classes = (XMLRenderer, JSONRenderer, CSVRenderer, YAMLRenderer, BrowsableAPIRenderer,)
+    # renderer_classes = (XMLRenderer, JSONRenderer, CSVRenderer, YAMLRenderer, BrowsableAPIRenderer,)
 
     def get(self, request, format=None, variableCode=None):
         """
@@ -120,12 +123,12 @@ class ResultsVarCodeViewSet(APIView):
         """
 
         format = request.query_params.get('format', 'yaml')
-        #accept = request.accepted_renderer.media_type
-        #page = request.query_params.get('page','0')
-        #page_size = request.query_params.get('page_size','10')
+        # accept = request.accepted_renderer.media_type
+        # page = request.query_params.get('page','0')
+        # page_size = request.query_params.get('page_size','10')
 
-        #page = int(page)
-        #page_size = int(page_size)
+        # page = int(page)
+        # page_size = int(page_size)
 
         mr = MultipleRepresentations()
         readConn = mr.readService()
@@ -137,17 +140,18 @@ class ResultsVarCodeViewSet(APIView):
 
         return mr.content_format(items, format)
 
+
 class ResultsSFCodeViewSet(APIView):
     """
     All ODM2 Result records Retrieval
 
     """
-    #serializer_class = DummySerializer
+    # serializer_class = DummySerializer
     paginate_by = 10
     paginate_by_param = 'page_size'
     max_paginate_by = 100
     content_negotiation_class = IgnoreClientContentNegotiation
-    #renderer_classes = (XMLRenderer, JSONRenderer, CSVRenderer, YAMLRenderer, BrowsableAPIRenderer,)
+    # renderer_classes = (XMLRenderer, JSONRenderer, CSVRenderer, YAMLRenderer, BrowsableAPIRenderer,)
 
     def get(self, request, format=None, samplingfeatureCode=None):
         """
@@ -167,12 +171,12 @@ class ResultsSFCodeViewSet(APIView):
         """
 
         format = request.query_params.get('format', 'yaml')
-        #accept = request.accepted_renderer.media_type
-        #page = request.query_params.get('page','0')
-        #page_size = request.query_params.get('page_size','10')
+        # accept = request.accepted_renderer.media_type
+        # page = request.query_params.get('page','0')
+        # page_size = request.query_params.get('page_size','10')
 
-        #page = int(page)
-        #page_size = int(page_size)
+        # page = int(page)
+        # page_size = int(page_size)
 
         mr = MultipleRepresentations()
         readConn = mr.readService()
@@ -183,17 +187,18 @@ class ResultsSFCodeViewSet(APIView):
 
         return mr.content_format(items, format)
 
+
 class ResultsSFUUIDViewSet(APIView):
     """
     All ODM2 Result records Retrieval
 
     """
-    #serializer_class = DummySerializer
+    # serializer_class = DummySerializer
     paginate_by = 10
     paginate_by_param = 'page_size'
     max_paginate_by = 100
     content_negotiation_class = IgnoreClientContentNegotiation
-    #renderer_classes = (XMLRenderer, JSONRenderer, CSVRenderer, YAMLRenderer, BrowsableAPIRenderer,)
+    # renderer_classes = (XMLRenderer, JSONRenderer, CSVRenderer, YAMLRenderer, BrowsableAPIRenderer,)
 
     def get(self, request, format=None, samplingfeatureUUID=None):
         """
@@ -213,12 +218,12 @@ class ResultsSFUUIDViewSet(APIView):
         """
 
         format = request.query_params.get('format', 'yaml')
-        #accept = request.accepted_renderer.media_type
-        #page = request.query_params.get('page','0')
-        #page_size = request.query_params.get('page_size','10')
+        # accept = request.accepted_renderer.media_type
+        # page = request.query_params.get('page','0')
+        # page_size = request.query_params.get('page_size','10')
 
-        #page = int(page)
-        #page_size = int(page_size)
+        # page = int(page)
+        # page_size = int(page_size)
 
         mr = MultipleRepresentations()
         readConn = mr.readService()
@@ -229,17 +234,18 @@ class ResultsSFUUIDViewSet(APIView):
 
         return mr.content_format(items, format)
 
+
 class ResultsBBoxViewSet(APIView):
     """
     All ODM2 Result records Retrieval
 
     """
-    #serializer_class = DummySerializer
+    # serializer_class = DummySerializer
     paginate_by = 10
     paginate_by_param = 'page_size'
     max_paginate_by = 100
     content_negotiation_class = IgnoreClientContentNegotiation
-    #renderer_classes = (XMLRenderer, JSONRenderer, CSVRenderer, YAMLRenderer, BrowsableAPIRenderer,)
+    # renderer_classes = (XMLRenderer, JSONRenderer, CSVRenderer, YAMLRenderer, BrowsableAPIRenderer,)
 
     def get(self, request, format=None):
         """
@@ -283,34 +289,35 @@ class ResultsBBoxViewSet(APIView):
         south = request.query_params.get('south')
         east = request.query_params.get('east')
         north = request.query_params.get('north')
-        #accept = request.accepted_renderer.media_type
-        #page = request.query_params.get('page','0')
-        #page_size = request.query_params.get('page_size','10')
+        # accept = request.accepted_renderer.media_type
+        # page = request.query_params.get('page','0')
+        # page_size = request.query_params.get('page_size','10')
 
-        #page = int(page)
-        #page_size = int(page_size)
+        # page = int(page)
+        # page_size = int(page_size)
 
         mr = MultipleRepresentations()
         readConn = mr.readService()
         items = readConn.getResultsByBBoxForSite(west, south, east, north)
-        #items = readConn.getResultsByBBoxForSamplingfeature(west, south, east, north)
+        # items = readConn.getResultsByBBoxForSamplingfeature(west, south, east, north)
         if items == None or len(items) == 0:
             return Response('There are no available data.',
                             status=status.HTTP_400_BAD_REQUEST)
 
         return mr.content_format(items, format)
 
+
 class ResultsActionDateViewSet(APIView):
     """
     All ODM2 Result records Retrieval based on the begin date in "Actions" table.
 
     """
-    #serializer_class = DummySerializer
+    # serializer_class = DummySerializer
     paginate_by = 10
     paginate_by_param = 'page_size'
     max_paginate_by = 100
     content_negotiation_class = IgnoreClientContentNegotiation
-    #renderer_classes = (XMLRenderer, JSONRenderer, CSVRenderer, YAMLRenderer, BrowsableAPIRenderer,)
+    # renderer_classes = (XMLRenderer, JSONRenderer, CSVRenderer, YAMLRenderer, BrowsableAPIRenderer,)
 
     def get(self, request, format=None):
         """
@@ -345,12 +352,12 @@ class ResultsActionDateViewSet(APIView):
         fromDate = datetime.strptime(sDate, '%Y-%m-%d')
         toDate = datetime.strptime(eDate, '%Y-%m-%d')
 
-        #accept = request.accepted_renderer.media_type
-        #page = request.query_params.get('page','0')
-        #page_size = request.query_params.get('page_size','10')
+        # accept = request.accepted_renderer.media_type
+        # page = request.query_params.get('page','0')
+        # page_size = request.query_params.get('page_size','10')
 
-        #page = int(page)
-        #page_size = int(page_size)
+        # page = int(page)
+        # page_size = int(page_size)
 
         mr = MultipleRepresentations()
         readConn = mr.readService()
@@ -361,17 +368,18 @@ class ResultsActionDateViewSet(APIView):
 
         return mr.content_format(items, format)
 
+
 class ResultsRTypeCVViewSet(APIView):
     """
     All ODM2 Result records Retrieval
 
     """
-    #serializer_class = DummySerializer
+    # serializer_class = DummySerializer
     paginate_by = 10
     paginate_by_param = 'page_size'
     max_paginate_by = 100
     content_negotiation_class = IgnoreClientContentNegotiation
-    #renderer_classes = (XMLRenderer, JSONRenderer, CSVRenderer, YAMLRenderer, BrowsableAPIRenderer,)
+    # renderer_classes = (XMLRenderer, JSONRenderer, CSVRenderer, YAMLRenderer, BrowsableAPIRenderer,)
 
     def get(self, request, format=None, resultType=None):
         """
@@ -396,12 +404,12 @@ class ResultsRTypeCVViewSet(APIView):
         """
 
         format = request.query_params.get('format', 'yaml')
-        #accept = request.accepted_renderer.media_type
-        #page = request.query_params.get('page','0')
-        #page_size = request.query_params.get('page_size','10')
+        # accept = request.accepted_renderer.media_type
+        # page = request.query_params.get('page','0')
+        # page_size = request.query_params.get('page_size','10')
 
-        #page = int(page)
-        #page_size = int(page_size)
+        # page = int(page)
+        # page_size = int(page_size)
 
         mr = MultipleRepresentations()
         readConn = mr.readService()
@@ -412,17 +420,18 @@ class ResultsRTypeCVViewSet(APIView):
 
         return mr.content_format(items, format)
 
+
 class ResultsComplexViewSet(APIView):
     """
     All ODM2 Result records Retrieval
 
     """
-    #serializer_class = DummySerializer
+    # serializer_class = DummySerializer
     paginate_by = 10
     paginate_by_param = 'page_size'
     max_paginate_by = 100
     content_negotiation_class = IgnoreClientContentNegotiation
-    #renderer_classes = (XMLRenderer, JSONRenderer, CSVRenderer, YAMLRenderer, BrowsableAPIRenderer,)
+    # renderer_classes = (XMLRenderer, JSONRenderer, CSVRenderer, YAMLRenderer, BrowsableAPIRenderer,)
 
     def get(self, request, format=None):
         """
@@ -486,12 +495,12 @@ class ResultsComplexViewSet(APIView):
         eDate = request.query_params.get('endDate')
         beginDate = datetime.strptime(sDate, '%Y-%m-%d')
         endDate = datetime.strptime(eDate, '%Y-%m-%d')
-        #accept = request.accepted_renderer.media_type
-        #page = request.query_params.get('page','0')
-        #page_size = request.query_params.get('page_size','10')
+        # accept = request.accepted_renderer.media_type
+        # page = request.query_params.get('page','0')
+        # page_size = request.query_params.get('page_size','10')
 
-        #page = int(page)
-        #page_size = int(page_size)
+        # page = int(page)
+        # page_size = int(page_size)
 
         mr = MultipleRepresentations()
         readConn = mr.readService()
@@ -503,8 +512,8 @@ class ResultsComplexViewSet(APIView):
 
         return mr.content_format(items, format)
 
-class MultipleRepresentations(Service):
 
+class MultipleRepresentations(Service):
     def json_format(self):
         return self.sqlalchemy_object_to_dict()
 
@@ -514,17 +523,49 @@ class MultipleRepresentations(Service):
         response['Content-Disposition'] = 'attachment; filename="results.csv"'
 
         item_csv_header = []
-        item_csv_header.extend(["#fields=Result.ResultID","Result.ResultUUID[type='string']","Result.ResultTypeCV[type='string']", "Result.ResultDateTime[type='date' format='yyyy-MM-dd HH:MM:SS']","Result.ResultDateTimeUTCOffset","Result.StatusCV[type='string']","Result.SampledMediumCV[type='string']","Result.ValueCount"])
-        item_csv_header.extend(["SamplingFeature.SamplingFeatureUUID[type='string']","SamplingFeature.SamplingFeatureTypeCV[type='string']","SamplingFeature.SamplingFeatureCode[type='string']","SamplingFeature.SamplingFeatureName[type='string']","SamplingFeature.SamplingFeatureDescription[type='string']","SamplingFeature.SamplingFeatureGeotypeCV[type='string']","SamplingFeature.Elevation_m[unit='m']","SamplingFeature.ElevationDatumCV[type='string']","SamplingFeature.FeatureGeometry[type='string']"])
-        item_csv_header.extend(["Action.ActionTypeCV[type='string']","Action.ActionTypeCV[type='date' format='yyyy-MM-dd HH:MM:SS']","Action.BeginDateTimeUTCOffset","Action.EndDateTime[type='date' format='yyyy-MM-dd HH:MM:SS']","Action.EndDateTimeUTCOffset","Method.MethodTypeCV[type='string']","Method.MethodCode[type='string']","Method.MethodName[type='string']"])
-        item_csv_header.extend(["Variable.VariableTypeCV[type='string']","Variable.VariableCode[type='string']","Variable.VariableNameCV[type='string']","Variable.NoDataValue","Unit.UnitsTypeCV[type='string']","Unit.UnitsAbbreviation[type='string']","Unit.UnitsName[type='string']","ProcessingLevel.ProcessingLevelCode[type='string']","ProcessingLevel.Definition[type='string']","ProcessingLevel.Explanation[type='string']"])
-        item_csv_header.extend(["Site.SiteTypeCV[type='string']","Site.Latitude[unit='degrees']","Site.Longitude[unit='degrees']","Site.SpatialReference.SRSCode[type='string']","Site.SpatialReference.SRSName[type='string']"])
-        item_csv_header.extend(["RelatedFeature.RelationshipTypeCV[type='string']","RelatedFeature.SamplingFeatureUUID[type='string']","RelatedFeature.SamplingFeatureTypeCV[type='string']","RelatedFeature.SamplingFeatureCode[type='string']","RelatedFeature.SamplingFeatureName[type='string']","RelatedFeature.SamplingFeatureDescription[type='string']","RelatedFeature.SamplingFeatureGeotypeCV[type='string']","RelatedFeature.Elevation_m[unit='m']","RelatedFeature.ElevationDatumCV[type='string']","RelatedFeature.FeatureGeometry[type='string']","RelatedFeature.Site.SiteTypeCV[type='string']","RelatedFeature.Site.Latitude[unit='degrees']","RelatedFeature.Site.Longitude[unit='degrees']","RelatedFeature.Site.SpatialReference.SRSCode[type='string']","RelatedFeature.Site.SpatialReference.SRSName[type='string']"])
+        item_csv_header.extend(
+            ["#fields=Result.ResultID", "Result.ResultUUID[type='string']", "Result.ResultTypeCV[type='string']",
+             "Result.ResultDateTime[type='date' format='yyyy-MM-dd HH:MM:SS']", "Result.ResultDateTimeUTCOffset",
+             "Result.StatusCV[type='string']", "Result.SampledMediumCV[type='string']", "Result.ValueCount"])
+        item_csv_header.extend(["SamplingFeature.SamplingFeatureUUID[type='string']",
+                                "SamplingFeature.SamplingFeatureTypeCV[type='string']",
+                                "SamplingFeature.SamplingFeatureCode[type='string']",
+                                "SamplingFeature.SamplingFeatureName[type='string']",
+                                "SamplingFeature.SamplingFeatureDescription[type='string']",
+                                "SamplingFeature.SamplingFeatureGeotypeCV[type='string']",
+                                "SamplingFeature.Elevation_m[unit='m']",
+                                "SamplingFeature.ElevationDatumCV[type='string']",
+                                "SamplingFeature.FeatureGeometry[type='string']"])
+        item_csv_header.extend(
+            ["Action.ActionTypeCV[type='string']", "Action.ActionTypeCV[type='date' format='yyyy-MM-dd HH:MM:SS']",
+             "Action.BeginDateTimeUTCOffset", "Action.EndDateTime[type='date' format='yyyy-MM-dd HH:MM:SS']",
+             "Action.EndDateTimeUTCOffset", "Method.MethodTypeCV[type='string']", "Method.MethodCode[type='string']",
+             "Method.MethodName[type='string']"])
+        item_csv_header.extend(["Variable.VariableTypeCV[type='string']", "Variable.VariableCode[type='string']",
+                                "Variable.VariableNameCV[type='string']", "Variable.NoDataValue",
+                                "Unit.UnitsTypeCV[type='string']", "Unit.UnitsAbbreviation[type='string']",
+                                "Unit.UnitsName[type='string']", "ProcessingLevel.ProcessingLevelCode[type='string']",
+                                "ProcessingLevel.Definition[type='string']",
+                                "ProcessingLevel.Explanation[type='string']"])
+        item_csv_header.extend(
+            ["Site.SiteTypeCV[type='string']", "Site.Latitude[unit='degrees']", "Site.Longitude[unit='degrees']",
+             "Site.SpatialReference.SRSCode[type='string']", "Site.SpatialReference.SRSName[type='string']"])
+        item_csv_header.extend(
+            ["RelatedFeature.RelationshipTypeCV[type='string']", "RelatedFeature.SamplingFeatureUUID[type='string']",
+             "RelatedFeature.SamplingFeatureTypeCV[type='string']", "RelatedFeature.SamplingFeatureCode[type='string']",
+             "RelatedFeature.SamplingFeatureName[type='string']",
+             "RelatedFeature.SamplingFeatureDescription[type='string']",
+             "RelatedFeature.SamplingFeatureGeotypeCV[type='string']", "RelatedFeature.Elevation_m[unit='m']",
+             "RelatedFeature.ElevationDatumCV[type='string']", "RelatedFeature.FeatureGeometry[type='string']",
+             "RelatedFeature.Site.SiteTypeCV[type='string']", "RelatedFeature.Site.Latitude[unit='degrees']",
+             "RelatedFeature.Site.Longitude[unit='degrees']",
+             "RelatedFeature.Site.SpatialReference.SRSCode[type='string']",
+             "RelatedFeature.Site.SpatialReference.SRSName[type='string']"])
 
         writer = csv.writer(response)
         writer.writerow(item_csv_header)
         conn = ODM2Read(self._session)
-            
+
         for value in self.items:
             row = []
             sf_obj = value.FeatureActionObj.SamplingFeatureObj
@@ -572,7 +613,7 @@ class MultipleRepresentations(Service):
             row.append(u_obj.UnitsTypeCV)
             row.append(u_obj.UnitsAbbreviation)
             row.append(u_obj.UnitsName)
-                    
+
             row.append(p_obj.ProcessingLevelCode)
             row.append(p_obj.Definition)
             row.append(p_obj.Explanation)
@@ -626,7 +667,7 @@ class MultipleRepresentations(Service):
                 for i in range(15):
                     row1.append(None)
                 rf_list.append(row1)
-            
+
             for i in rf_list:
                 row.extend(i)
                 writer.writerow(row)
@@ -652,8 +693,8 @@ class MultipleRepresentations(Service):
             u_obj = value.UnitsObj
             p_obj = value.ProcessingLevelObj
 
-            #r  = u' - ResultID: %d\n' % value.ResultID
-            r  = u' - ResultUUID: "%s"\n' % value.ResultUUID
+            # r  = u' - ResultID: %d\n' % value.ResultID
+            r = u' - ResultUUID: "%s"\n' % value.ResultUUID
             r += u'   ResultTypeCV: \'%s\'\n' % value.ResultTypeCV
             r += u'   ResultDateTime: "%s"\n' % str(value.ResultDateTime)
             r += u'   ResultDateTimeUTCOffset: %s\n' % str(value.ResultDateTimeUTCOffset)
@@ -662,9 +703,9 @@ class MultipleRepresentations(Service):
             r += u'   ValueCount: %d\n' % value.ValueCount
 
             r += u'   FeatureAction: \n'
-            #r += u'       FeatureActionID: %d\n' % value.FeatureActionObj.FeatureActionID
+            # r += u'       FeatureActionID: %d\n' % value.FeatureActionObj.FeatureActionID
             r += u'       SamplingFeature:\n'
-            #r += u'           SamplingFeatureID: %d\n' % sf_obj.SamplingFeatureID
+            # r += u'           SamplingFeatureID: %d\n' % sf_obj.SamplingFeatureID
             r += u'           SamplingFeatureUUID: %s\n' % sf_obj.SamplingFeatureUUID
             r += u'           SamplingFeatureTypeCV: %s\n' % sf_obj.SamplingFeatureTypeCV
             r += u'           SamplingFeatureCode: %s\n' % sf_obj.SamplingFeatureCode
@@ -676,14 +717,14 @@ class MultipleRepresentations(Service):
             r += u'           FeatureGeometry: "%s"\n' % sf_obj.FeatureGeometry
 
             r += u'       Action:\n'
-            #r += u'          ActionID: %d\n' % a_obj.ActionID
+            # r += u'          ActionID: %d\n' % a_obj.ActionID
             r += u'           ActionTypeCV: "%s"\n' % a_obj.ActionTypeCV
             r += u'           BeginDateTime: "%s"\n' % str(a_obj.BeginDateTime)
             r += u'           BeginDateTimeUTCOffset: %s\n' % str(a_obj.BeginDateTimeUTCOffset)
             r += u'           EndDateTime: "%s"\n' % str(a_obj.EndDateTime)
             r += u'           EndDateTimeUTCOffset: %s\n' % str(a_obj.EndDateTimeUTCOffset)
             r += u'           Method:\n'
-            #r += u'              MethodID: %d\n' % m_obj.MethodID
+            # r += u'              MethodID: %d\n' % m_obj.MethodID
             r += u'               MethodTypeCV: %s\n' % m_obj.MethodTypeCV
             r += u'               MethodCode: %s\n' % m_obj.MethodCode
             r += u'               MethodName: %s\n' % m_obj.MethodName
@@ -712,7 +753,7 @@ class MultipleRepresentations(Service):
                 for x in rfeature:
                     rf_obj = x.RelatedFeatureObj
                     r += u'     - RelationshipTypeCV: %s\n' % x.RelationshipTypeCV
-                    #r += u'       SamplingFeatureID: %d\n' % rf_obj.SamplingFeatureID
+                    # r += u'       SamplingFeatureID: %d\n' % rf_obj.SamplingFeatureID
                     r += u'       SamplingFeatureUUID: %s\n' % rf_obj.SamplingFeatureUUID
                     r += u'       SamplingFeatureTypeCV: %s\n' % rf_obj.SamplingFeatureTypeCV
                     r += u'       SamplingFeatureCode: %s\n' % rf_obj.SamplingFeatureCode
@@ -731,7 +772,7 @@ class MultipleRepresentations(Service):
                         r += u'           Longitude: %f\n' % rsite.Longitude
                         sr_obj = rsite.SpatialReferenceObj
                         r += u'           SpatialReference:\n'
-                        #r += u'               SRSID: %d\n' % sr_obj.SpatialReferenceID
+                        # r += u'               SRSID: %d\n' % sr_obj.SpatialReferenceID
                         r += u'               SRSCode: "%s"\n' % sr_obj.SRSCode
                         r += u'               SRSName: %s\n' % sr_obj.SRSName
 
@@ -743,25 +784,25 @@ class MultipleRepresentations(Service):
                 r += u'       Longitude: %f\n' % site.Longitude
                 sr_obj = site.SpatialReferenceObj
                 r += u'       SpatialReference:\n'
-                #r += u'           SRSID: %d\n' % sr_obj.SpatialReferenceID
+                # r += u'           SRSID: %d\n' % sr_obj.SpatialReferenceID
                 r += u'           SRSCode: "%s"\n' % sr_obj.SRSCode
                 r += u'           SRSName: %s\n' % sr_obj.SRSName
 
             r += u'   Variable:\n'
-            #r += u'       VariableID: %d\n' % v_obj.VariableID
+            # r += u'       VariableID: %d\n' % v_obj.VariableID
             r += u'       VariableTypeCV: %s\n' % v_obj.VariableTypeCV
             r += u'       VariableCode: %s\n' % v_obj.VariableCode
             r += u'       VariableNameCV: %s\n' % v_obj.VariableNameCV
             r += u'       NoDataValue: %d\n' % v_obj.NoDataValue
-            
+
             r += u'   Unit:\n'
-            #r += u'       UnitID: %d\n' % u_obj.UnitsID
+            # r += u'       UnitID: %d\n' % u_obj.UnitsID
             r += u'       UnitsTypeCV: %s\n' % u_obj.UnitsTypeCV
             r += u'       UnitsAbbreviation: %s\n' % u_obj.UnitsAbbreviation
             r += u'       UnitsName: %s\n' % u_obj.UnitsName
-            
+
             r += u'   ProcessingLevel:\n'
-            #r += u'       ProcessingLevelID: %d\n' % p_obj.ProcessingLevelID
+            # r += u'       ProcessingLevelID: %d\n' % p_obj.ProcessingLevelID
             r += u'       ProcessingLevelCode: "%s"\n' % p_obj.ProcessingLevelCode
             r += u'       Definition: "%s"\n' % p_obj.Definition
             r += u'       Explanation: "%s"\n' % p_obj.Explanation
@@ -778,10 +819,9 @@ class MultipleRepresentations(Service):
 
         response.write("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n")
         results = self.sqlalchemy_object_to_dict()
-        response.write(xmlify({'Result':results}, wrap="Results", indent="  "))
-        
-        return response
+        response.write(xmlify({'Result': results}, wrap="Results", indent="  "))
 
+        return response
 
     def sqlalchemy_object_to_dict(self):
 
@@ -901,13 +941,13 @@ class MultipleRepresentations(Service):
             varone['VariableNameCV'] = v_obj.VariableNameCV
             varone['NoDataValue'] = v_obj.NoDataValue
             result['Variable'] = varone
-            
+
             unit = {}
             unit['UnitsTypeCV'] = u_obj.UnitsTypeCV
             unit['UnitsAbbreviation'] = u_obj.UnitsAbbreviation
             unit['UnitsName'] = u_obj.UnitsName
             result['Unit'] = unit
-            
+
             pl = {}
             pl['ProcessingLevelCode'] = p_obj.ProcessingLevelCode
             pl['Definition'] = p_obj.Definition

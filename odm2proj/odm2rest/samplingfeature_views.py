@@ -1,35 +1,25 @@
 import sys
+
 sys.path.append('ODM2PythonAPI')
 
-#from rest_framework import viewsets
-from odm2rest.serializers import DummySerializer
-from odm2rest.serializers import Odm2JsonSerializer
+# from rest_framework import viewsets
 
 from django.http import HttpResponse
 from rest_framework.renderers import JSONRenderer
 
 # Create your views here.
 
-from django.http import Http404
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 
-from rest_framework import viewsets
-import json
-from collections import OrderedDict
-
-import csv,cStringIO
+import csv
 
 from odm2rest.odm2service import Service
-from rest_framework_csv.renderers import CSVRenderer
-from rest_framework_xml.renderers import XMLRenderer
-from rest_framework_yaml.renderers import YAMLRenderer
-from rest_framework.renderers import BrowsableAPIRenderer
-import yaml, pyaml
 from negotiation import IgnoreClientContentNegotiation
 from dict2xml import dict2xml as xmlify
 from odm2rest.ODM2ALLServices import odm2Service as ODM2Read
+
 
 class SamplingfeatureViewSet(APIView):
     """
@@ -65,22 +55,23 @@ class SamplingfeatureViewSet(APIView):
         """
 
         format = request.query_params.get('format', 'yaml')
-        #accept = request.accepted_renderer.media_type
-        page = request.query_params.get('page','0')
-        page_size = request.query_params.get('page_size','100')
+        # accept = request.accepted_renderer.media_type
+        page = request.query_params.get('page', '0')
+        page_size = request.query_params.get('page_size', '100')
 
         page = int(page)
         page_size = int(page_size)
 
         mr = MultipleRepresentations()
         readConn = mr.readService()
-        items = readConn.getSamplingFeaturesByPage(page,page_size)
+        items = readConn.getSamplingFeaturesByPage(page, page_size)
 
         if items == None or len(items) == 0:
             return Response('samplingfeatures are not existed.',
                             status=status.HTTP_400_BAD_REQUEST)
 
         return mr.content_format(items, format)
+
 
 class SFCodeViewSet(APIView):
     """
@@ -105,12 +96,12 @@ class SFCodeViewSet(APIView):
               message: Not authenticated
         """
 
-        #samplingfeatureCode = request.query_params.get('SamplingFeatureCode', None)
+        # samplingfeatureCode = request.query_params.get('SamplingFeatureCode', None)
         if samplingfeatureCode is None:
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
         format = request.query_params.get('format', 'yaml')
-        #accept = request.accepted_renderer.media_type
+        # accept = request.accepted_renderer.media_type
         mr = MultipleRepresentations()
         readConn = mr.readService()
         items = readConn.getSamplingFeatureBySFCode(samplingfeatureCode)
@@ -120,6 +111,7 @@ class SFCodeViewSet(APIView):
                             status=status.HTTP_400_BAD_REQUEST)
 
         return mr.content_format(items, format)
+
 
 class SFTypeViewSet(APIView):
     """
@@ -144,12 +136,12 @@ class SFTypeViewSet(APIView):
               message: Not authenticated
         """
 
-        #samplingfeatureCode = request.query_params.get('SamplingFeatureCode', None)
+        # samplingfeatureCode = request.query_params.get('SamplingFeatureCode', None)
         if samplingfeatureType is None:
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
         format = request.query_params.get('format', 'yaml')
-        #accept = request.accepted_renderer.media_type
+        # accept = request.accepted_renderer.media_type
         mr = MultipleRepresentations()
         readConn = mr.readService()
         items = readConn.getSamplingFeatureBySFType(samplingfeatureType)
@@ -162,7 +154,6 @@ class SFTypeViewSet(APIView):
 
 
 class MultipleRepresentations(Service):
-
     def json_format(self):
 
         return self.sqlalchemy_object_to_dict()
@@ -173,15 +164,35 @@ class MultipleRepresentations(Service):
         response['Content-Disposition'] = 'attachment; filename="samplingfeatures.csv"'
 
         item_csv_header = []
-        item_csv_header.extend(["#fields=SamplingFeatureUUID[type='string']","SamplingFeatureTypeCV[type='string']","SamplingFeatureCode[type='string']","SamplingFeatureName[type='string']","SamplingFeatureDescription[type='string']","SamplingFeatureGeotypeCV[type='string']","Elevation_m[unit='m']","ElevationDatumCV[type='string']","FeatureGeometry[type='string']"])
-        item_csv_header.extend(["Site.SiteTypeCV[type='string']","Site.Latitude[unit='degrees']","Site.Longitude[unit='degrees']","Site.SpatialReference.SRSCode[type='string']","Site.SpatialReference.SRSName[type='string']","Site.SpatialReference.SRSDescription[type='string']","Site.SpatialReference.SRSLink[type='string']"])
-        item_csv_header.extend(["Specimen.SpecimenTypeCV[type='string']","Specimen.SpecimenMediumCV[type='string']","Specimen.IsFieldSpecimen[type='boolean']"])
-        item_csv_header.extend(["RelatedFeature.RelationshipTypeCV[type='string']","RelatedFeature.SamplingFeatureUUID[type='string']","RelatedFeature.SamplingFeatureTypeCV[type='string']","RelatedFeature.SamplingFeatureCode[type='string']","RelatedFeature.SamplingFeatureName[type='string']","RelatedFeature.SamplingFeatureDescription[type='string']","RelatedFeature.SamplingFeatureGeotypeCV[type='string']","RelatedFeature.Elevation_m[unit='m']","RelatedFeature.ElevationDatumCV[type='string']","RelatedFeature.FeatureGeometry[type='string']","RelatedFeature.Site.SiteTypeCV[type='string']","RelatedFeature.Site.Latitude[unit='degrees']","RelatedFeature.Site.Longitude[unit='degrees']","RelatedFeature.Site.SpatialReference.SRSCode[type='string']","RelatedFeature.Site.SpatialReference.SRSName[type='string']","RelatedFeature.Site.SpatialReference.SRSDescription[type='string']","RelatedFeature.Site.SpatialReference.SRSLink[type='string']"])
+        item_csv_header.extend(["#fields=SamplingFeatureUUID[type='string']", "SamplingFeatureTypeCV[type='string']",
+                                "SamplingFeatureCode[type='string']", "SamplingFeatureName[type='string']",
+                                "SamplingFeatureDescription[type='string']", "SamplingFeatureGeotypeCV[type='string']",
+                                "Elevation_m[unit='m']", "ElevationDatumCV[type='string']",
+                                "FeatureGeometry[type='string']"])
+        item_csv_header.extend(
+            ["Site.SiteTypeCV[type='string']", "Site.Latitude[unit='degrees']", "Site.Longitude[unit='degrees']",
+             "Site.SpatialReference.SRSCode[type='string']", "Site.SpatialReference.SRSName[type='string']",
+             "Site.SpatialReference.SRSDescription[type='string']", "Site.SpatialReference.SRSLink[type='string']"])
+        item_csv_header.extend(["Specimen.SpecimenTypeCV[type='string']", "Specimen.SpecimenMediumCV[type='string']",
+                                "Specimen.IsFieldSpecimen[type='boolean']"])
+        item_csv_header.extend(
+            ["RelatedFeature.RelationshipTypeCV[type='string']", "RelatedFeature.SamplingFeatureUUID[type='string']",
+             "RelatedFeature.SamplingFeatureTypeCV[type='string']", "RelatedFeature.SamplingFeatureCode[type='string']",
+             "RelatedFeature.SamplingFeatureName[type='string']",
+             "RelatedFeature.SamplingFeatureDescription[type='string']",
+             "RelatedFeature.SamplingFeatureGeotypeCV[type='string']", "RelatedFeature.Elevation_m[unit='m']",
+             "RelatedFeature.ElevationDatumCV[type='string']", "RelatedFeature.FeatureGeometry[type='string']",
+             "RelatedFeature.Site.SiteTypeCV[type='string']", "RelatedFeature.Site.Latitude[unit='degrees']",
+             "RelatedFeature.Site.Longitude[unit='degrees']",
+             "RelatedFeature.Site.SpatialReference.SRSCode[type='string']",
+             "RelatedFeature.Site.SpatialReference.SRSName[type='string']",
+             "RelatedFeature.Site.SpatialReference.SRSDescription[type='string']",
+             "RelatedFeature.Site.SpatialReference.SRSLink[type='string']"])
 
         writer = csv.writer(response)
         writer.writerow(item_csv_header)
         conn = ODM2Read(self._session)
-            
+
         for value in self.items:
             row = []
 
@@ -230,7 +241,7 @@ class MultipleRepresentations(Service):
                     row1.append(rf_obj.SamplingFeatureUUID)
                     row1.append(rf_obj.SamplingFeatureTypeCV)
                     row1.append(rf_obj.SamplingFeatureCode)
-                    #row1.append(rf_obj.SamplingFeatureName)
+                    # row1.append(rf_obj.SamplingFeatureName)
                     sf_name = u'%s' % rf_obj.SamplingFeatureName
                     row1.append(sf_name.encode("utf-8"))
                     row1.append(rf_obj.SamplingFeatureDescription)
@@ -259,14 +270,14 @@ class MultipleRepresentations(Service):
                 for i in range(17):
                     row1.append(None)
                 rf_list.append(row1)
-            
+
             for i in rf_list:
                 row.extend(i)
                 writer.writerow(row)
 
         self._session.close()
         return response
-        
+
     def yaml_format(self):
 
         response = HttpResponse(content_type='application/yaml')
@@ -313,7 +324,7 @@ class MultipleRepresentations(Service):
                         r += u'           Longitude: %f\n' % rsite.Longitude
                         sr_obj = rsite.SpatialReferenceObj
                         r += u'           SpatialReference:\n'
-                        #r += u'                   SRSID: %d\n' % sr_obj.SpatialReferenceID
+                        # r += u'                   SRSID: %d\n' % sr_obj.SpatialReferenceID
                         r += u'               SRSCode: "%s"\n' % sr_obj.SRSCode
                         r += u'               SRSName: %s\n' % sr_obj.SRSName
                         r += u'               SRSDescription: %s\n' % sr_obj.SRSDescription
@@ -327,7 +338,7 @@ class MultipleRepresentations(Service):
                 r += u'       Longitude: %f\n' % site.Longitude
                 sr_obj = site.SpatialReferenceObj
                 r += u'       SpatialReference:\n'
-                #r += u'           SRSID: %d\n' % sr_obj.SpatialReferenceID
+                # r += u'           SRSID: %d\n' % sr_obj.SpatialReferenceID
                 r += u'           SRSCode: "%s"\n' % sr_obj.SRSCode
                 r += u'           SRSName: %s\n' % sr_obj.SRSName
                 r += u'           SRSDescription: %s\n' % sr_obj.SRSDescription
@@ -439,10 +450,12 @@ class MultipleRepresentations(Service):
         self._session.close()
         return sfs
 
+
 class JSONResponse(HttpResponse):
     """
     An HttpResponse that renders its content into JSON.
     """
+
     def __init__(self, data, **kwargs):
         content = JSONRenderer().render(data)
         kwargs['content_type'] = 'application/json'

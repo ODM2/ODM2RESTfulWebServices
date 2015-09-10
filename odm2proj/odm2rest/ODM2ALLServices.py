@@ -1,6 +1,7 @@
 __author__ = 'Choonhan Youn'
 
 import sys
+
 sys.path.append('ODM2PythonAPI')
 
 import os
@@ -12,8 +13,8 @@ import datetime as dt
 from src.api.ODM2.apiCustomType import Geometry
 from sqlalchemy import func
 
-class odm2Service(object):
 
+class odm2Service(object):
     def __init__(self, session):
         self._session = session
 
@@ -30,14 +31,15 @@ class odm2Service(object):
             items = self._session.query(Actions).order_by(Actions.ActionID).all()
         except:
             items = None
-        #finally:
+        # finally:
         #    self._session.close()
 
         return items
 
     def getActionsByPage(self, page=0, page_size=None):
         try:
-            return self._session.query(Actions).order_by(Actions.ActionID).offset(page*page_size).limit(page_size).all()
+            return self._session.query(Actions).order_by(Actions.ActionID).offset(page * page_size).limit(
+                page_size).all()
         except:
             return None
 
@@ -56,6 +58,7 @@ class odm2Service(object):
     """
     Datasets
     """
+
     def getDataSets(self):
 
         try:
@@ -63,42 +66,43 @@ class odm2Service(object):
         except:
             return None
 
-    def getDataSetCitations(self,datasetID):
+    def getDataSetCitations(self, datasetID):
 
         try:
             return self._session.query(DatasetCitations).filter_by(DatasetID=datasetID).all()
         except:
             return None
 
-    def getAuthorLists(self,citationID):
+    def getAuthorLists(self, citationID):
 
         try:
             return self._session.query(AuthorLists).filter_by(CitationID=citationID).all()
         except:
             return None
 
-    def getDataSetResultsByUUID(self,dsuuid):
+    def getDataSetResultsByUUID(self, dsuuid):
 
         try:
-            return self._session.query(DatasetsResults).join(Datasets).filter(Datasets.DatasetUUID==dsuuid).all()
+            return self._session.query(DatasetsResults).join(Datasets).filter(Datasets.DatasetUUID == dsuuid).all()
         except:
             return None
 
-    def getCountForDataSetResultsByUUID(self,dsuuid):
+    def getCountForDataSetResultsByUUID(self, dsuuid):
 
         try:
-            rows = self._session.query(func.count(DatasetsResults.ResultID)).\
-                   join(Datasets).\
-                   filter(Datasets.DatasetUUID==dsuuid).\
-                   scalar()
+            rows = self._session.query(func.count(DatasetsResults.ResultID)). \
+                join(Datasets). \
+                filter(Datasets.DatasetUUID == dsuuid). \
+                scalar()
             return rows
         except:
             return None
 
-    def getDataSetResultsByUUIDByPage(self,dsuuid,page,page_size):
+    def getDataSetResultsByUUIDByPage(self, dsuuid, page, page_size):
 
         try:
-            q=self._session.query(DatasetsResults).join(Datasets).filter(Datasets.DatasetUUID==dsuuid).order_by(DatasetsResults.ResultID).offset(page*page_size).limit(page_size).all()
+            q = self._session.query(DatasetsResults).join(Datasets).filter(Datasets.DatasetUUID == dsuuid).order_by(
+                DatasetsResults.ResultID).offset(page * page_size).limit(page_size).all()
             return q
         except:
             return None
@@ -121,8 +125,8 @@ class odm2Service(object):
 
     def getSiteBySFCode(self, siteCode):
         try:
-            sf= self._session.query(SamplingFeatures).filter_by(SamplingFeatureCode = siteCode).one()
-            return self._session.query(Sites).filter_by(SamplingFeatureID = sf.SamplingFeatureID).one()
+            sf = self._session.query(SamplingFeatures).filter_by(SamplingFeatureCode=siteCode).one()
+            return self._session.query(Sites).filter_by(SamplingFeatureID=sf.SamplingFeatureID).one()
         except:
             return None
 
@@ -144,19 +148,19 @@ class odm2Service(object):
 
     def getSamplingFeaturesByPage(self, page=0, page_size=None):
         try:
-            return self._session.query(SamplingFeatures).offset(page*page_size).limit(page_size).all()
+            return self._session.query(SamplingFeatures).offset(page * page_size).limit(page_size).all()
         except:
             return None
 
     def getSamplingFeatureBySFCode(self, sfCode):
         try:
-            return self._session.query(SamplingFeatures).filter_by(SamplingFeatureCode = sfCode).one()
+            return self._session.query(SamplingFeatures).filter_by(SamplingFeatureCode=sfCode).one()
         except:
             return None
 
     def getSpecimenBySFID(self, sfID):
         try:
-            return self._session.query(Specimens).filter_by(SamplingFeatureID = sfID).one()
+            return self._session.query(Specimens).filter_by(SamplingFeatureID=sfID).one()
         except:
             return None
 
@@ -169,6 +173,7 @@ class odm2Service(object):
     """
     Method
     """
+
     def getMethods(self):
         try:
             return self._session.query(Methods).all()
@@ -184,6 +189,7 @@ class odm2Service(object):
     """
     Organization
     """
+
     def getOrganizations(self):
         try:
             return self._session.query(Organizations).all()
@@ -199,6 +205,7 @@ class odm2Service(object):
     """
     Variables
     """
+
     def getVariables(self):
         try:
             return self._session.query(Variables).all()
@@ -228,38 +235,38 @@ class odm2Service(object):
         except:
             return None
 
-    def getResultsByPage(self,page,page_size):
+    def getResultsByPage(self, page, page_size):
 
         try:
-            q=self._session.query(Results).order_by(Results.ResultID).offset(page*page_size).limit(page_size).all()
+            q = self._session.query(Results).order_by(Results.ResultID).offset(page * page_size).limit(page_size).all()
             return q
         except:
             return None
 
-    def getResultsByVariableCode(self,variableCode):
+    def getResultsByVariableCode(self, variableCode):
 
         try:
             return self._session.query(Results).join(Variables).filter_by(VariableCode=variableCode).all()
         except:
             return None
 
-    def getResultsBySamplingfeatureCode(self,samplingfeatureCode):
+    def getResultsBySamplingfeatureCode(self, samplingfeatureCode):
 
         try:
-            return self._session.query(Results).\
-                join(FeatureActions).\
-                join(SamplingFeatures).\
-                filter(SamplingFeatures.SamplingFeatureCode==samplingfeatureCode).all()
+            return self._session.query(Results). \
+                join(FeatureActions). \
+                join(SamplingFeatures). \
+                filter(SamplingFeatures.SamplingFeatureCode == samplingfeatureCode).all()
         except:
             return None
 
-    def getResultsBySamplingfeatureUUID(self,samplingfeatureUUID):
+    def getResultsBySamplingfeatureUUID(self, samplingfeatureUUID):
 
         try:
-            return self._session.query(Results).\
-                join(FeatureActions).\
-                join(SamplingFeatures).\
-                filter(SamplingFeatures.SamplingFeatureUUID==samplingfeatureUUID).all()
+            return self._session.query(Results). \
+                join(FeatureActions). \
+                join(SamplingFeatures). \
+                filter(SamplingFeatures.SamplingFeatureUUID == samplingfeatureUUID).all()
         except:
             return None
 
@@ -272,11 +279,12 @@ class odm2Service(object):
         """
 
         try:
-            return self._session.query(Results).\
-                join(FeatureActions).\
-                join(SamplingFeatures).\
-                join(Sites).\
-                filter(Sites.Latitude >= ymin, Sites.Latitude <= ymax, Sites.Longitude >= xmin, Sites.Longitude <= xmax).all()
+            return self._session.query(Results). \
+                join(FeatureActions). \
+                join(SamplingFeatures). \
+                join(Sites). \
+                filter(Sites.Latitude >= ymin, Sites.Latitude <= ymax, Sites.Longitude >= xmin,
+                       Sites.Longitude <= xmax).all()
         except:
             return None
 
@@ -289,26 +297,28 @@ class odm2Service(object):
         """
 
         try:
-            wkt_geometry = 'POLYGON((%s %s,%s %s,%s %s,%s %s,%s %s))' % (xmin,ymin,xmin,ymax,xmax,ymax,xmax,ymin,xmin,ymin)
-            return self._session.query(Results).\
-                join(FeatureActions).\
-                join(SamplingFeatures).\
-                filter(func.ST_Contains(func.ST_AsText(wkt_geometry), func.ST_AsText(SamplingFeatures.FeatureGeometry))).all()
+            wkt_geometry = 'POLYGON((%s %s,%s %s,%s %s,%s %s,%s %s))' % (
+            xmin, ymin, xmin, ymax, xmax, ymax, xmax, ymin, xmin, ymin)
+            return self._session.query(Results). \
+                join(FeatureActions). \
+                join(SamplingFeatures). \
+                filter(
+                func.ST_Contains(func.ST_AsText(wkt_geometry), func.ST_AsText(SamplingFeatures.FeatureGeometry))).all()
         except:
             return None
 
     def getResultsByActionByDate(self, beginDate, endDate):
 
         try:
-            return self._session.query(Results).\
-                join(FeatureActions).\
-                join(Actions).\
-                filter(Actions.BeginDateTime >= beginDate, Actions.BeginDateTime <= endDate).\
+            return self._session.query(Results). \
+                join(FeatureActions). \
+                join(Actions). \
+                filter(Actions.BeginDateTime >= beginDate, Actions.BeginDateTime <= endDate). \
                 order_by(Actions.BeginDateTime).all()
         except:
             return None
 
-    def getResultsByResultTypeCV(self,rTypeCV):
+    def getResultsByResultTypeCV(self, rTypeCV):
         try:
             return self._session.query(Results).filter_by(ResultTypeCV=rTypeCV).all()
         except:
@@ -323,21 +333,22 @@ class odm2Service(object):
         """
 
         try:
-            return self._session.query(Results).\
-                join(FeatureActions).\
-                join(SamplingFeatures).\
-                join(Sites).\
-                join(Actions).\
-                filter(Results.ResultTypeCV==rTypeCV, Sites.Latitude >= ymin, Sites.Latitude <= ymax, Sites.Longitude >= xmin, Sites.Longitude <= xmax, Actions.BeginDateTime >= beginDate, Actions.BeginDateTime <= endDate).all()
+            return self._session.query(Results). \
+                join(FeatureActions). \
+                join(SamplingFeatures). \
+                join(Sites). \
+                join(Actions). \
+                filter(Results.ResultTypeCV == rTypeCV, Sites.Latitude >= ymin, Sites.Latitude <= ymax,
+                       Sites.Longitude >= xmin, Sites.Longitude <= xmax, Actions.BeginDateTime >= beginDate,
+                       Actions.BeginDateTime <= endDate).all()
         except:
             return None
 
-    def getResultByUUID(self,resultUUID):
+    def getResultByUUID(self, resultUUID):
         try:
-            return self._session.query(Results.ResultID,Results.ResultTypeCV).filter_by(ResultUUID=resultUUID).one()
+            return self._session.query(Results.ResultID, Results.ResultTypeCV).filter_by(ResultUUID=resultUUID).one()
         except:
             return None
-            
 
     """
     Time Series Values
@@ -345,66 +356,64 @@ class odm2Service(object):
 
     def getCountForTimeSeriesResultValuesByResultID(self, resultID):
         try:
-            rows = self._session.query(func.count(TimeSeriesResultValues.ResultID)).\
-                   filter_by(ResultID=resultID).\
-                   scalar()
+            rows = self._session.query(func.count(TimeSeriesResultValues.ResultID)). \
+                filter_by(ResultID=resultID). \
+                scalar()
             return rows
         except:
             return None
-            
+
     def getTimeSeriesResultValuesByResultID(self, resultID):
         try:
-            q=self._session.query(TimeSeriesResultValues).\
-               filter_by(ResultID=resultID).\
-               order_by(TimeSeriesResultValues.ValueDateTime).all()
+            q = self._session.query(TimeSeriesResultValues). \
+                filter_by(ResultID=resultID). \
+                order_by(TimeSeriesResultValues.ValueDateTime).all()
             return q
         except:
             return None
 
-
     def getTimeSeriesResultValuesByResultIDByPage(self, resultID, page, page_size):
         try:
-            q=self._session.query(TimeSeriesResultValues).\
-               filter_by(ResultID=resultID).\
-               order_by(TimeSeriesResultValues.ValueDateTime).offset(page*page_size).limit(page_size).all()
+            q = self._session.query(TimeSeriesResultValues). \
+                filter_by(ResultID=resultID). \
+                order_by(TimeSeriesResultValues.ValueDateTime).offset(page * page_size).limit(page_size).all()
             return q
         except:
             return None
 
     def getCountForMeasurementResultValuesByResultID(self, resultID):
         try:
-            rows = self._session.query(func.count(MeasurementResultValues.ResultID)).\
-                   filter_by(ResultID=resultID).\
-                   scalar()
+            rows = self._session.query(func.count(MeasurementResultValues.ResultID)). \
+                filter_by(ResultID=resultID). \
+                scalar()
             return rows
         except:
             return None
 
     def getMeasurementResultValuesByResultID(self, resultID):
         try:
-            q=self._session.query(MeasurementResultValues).\
-               filter_by(ResultID=resultID).\
-               order_by(MeasurementResultValues.ValueDateTime).all()
+            q = self._session.query(MeasurementResultValues). \
+                filter_by(ResultID=resultID). \
+                order_by(MeasurementResultValues.ValueDateTime).all()
             return q
         except:
             return None
 
     def getMeasurementResultValuesByResultIDByPage(self, resultID, page, page_size):
         try:
-            q=self._session.query(MeasurementResultValues).\
-               filter_by(ResultID=resultID).\
-               order_by(MeasurementResultValues.ValueDateTime).\
-               offset(page*page_size).limit(page_size).all()
+            q = self._session.query(MeasurementResultValues). \
+                filter_by(ResultID=resultID). \
+                order_by(MeasurementResultValues.ValueDateTime). \
+                offset(page * page_size).limit(page_size).all()
             return q
         except:
             return None
-
 
     """
     RelatedActions
     """
 
-    def getRelatedActionsByActionID(self,actionID):
+    def getRelatedActionsByActionID(self, actionID):
 
         try:
             return self._session.query(RelatedActions).filter_by(ActionID=actionID).all()
@@ -415,13 +424,12 @@ class odm2Service(object):
     RelatedFeatures
     """
 
-    def getRelatedFeaturesBySamplingFeatureID(self,samplingfeatureID):
+    def getRelatedFeaturesBySamplingFeatureID(self, samplingfeatureID):
 
         try:
             return self._session.query(RelatedFeatures).filter_by(SamplingFeatureID=samplingfeatureID).all()
         except:
             return None
-
 
     """
     ExternalIdentifiers
@@ -454,5 +462,3 @@ class odm2Service(object):
             return self._session.query(SamplingFeatureExternalIdentifiers).all()
         except:
             return None
-
-

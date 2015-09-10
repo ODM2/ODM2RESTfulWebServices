@@ -1,44 +1,35 @@
 import sys
+
 sys.path.append('ODM2PythonAPI')
 
-#from rest_framework import viewsets
-from odm2rest.serializers import DummySerializer
-from odm2rest.serializers import Odm2JsonSerializer
+# from rest_framework import viewsets
 
 from django.http import HttpResponse
-from django.views.decorators.csrf import csrf_exempt
 from rest_framework.renderers import JSONRenderer
-from rest_framework.parsers import JSONParser
 
 # Create your views here.
 
-from django.http import Http404
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 
-from rest_framework import viewsets
-import json
 from collections import OrderedDict
 
-import csv,cStringIO
-import yaml, pyaml
+import csv
+import pyaml
 
 from odm2rest.odm2service import Service
-from rest_framework_csv.renderers import CSVRenderer
-from rest_framework_xml.renderers import XMLRenderer
-from rest_framework_yaml.renderers import YAMLRenderer
-from rest_framework.renderers import BrowsableAPIRenderer
 from negotiation import IgnoreClientContentNegotiation
 from dict2xml import dict2xml as xmlify
+
 
 class ExternalIdentifierCitationViewSet(APIView):
     """
     All ODM2 ExternalIdentifiers For Citation Retrieval
     """
     content_negotiation_class = IgnoreClientContentNegotiation
-    #renderer_classes = (JSONRenderer, YAMLRenderer)
-    #serializer_class = VariableSerializer
+    # renderer_classes = (JSONRenderer, YAMLRenderer)
+    # serializer_class = VariableSerializer
 
     def get(self, request, format=None):
         """
@@ -58,7 +49,7 @@ class ExternalIdentifierCitationViewSet(APIView):
         """
 
         format = request.query_params.get('format', 'yaml')
-        #accept = request.accepted_renderer.media_type
+        # accept = request.accepted_renderer.media_type
         mr = MultipleRepresentations()
         readConn = mr.readService()
         items = readConn.getExternalIdentifiersForCitation()
@@ -68,8 +59,8 @@ class ExternalIdentifierCitationViewSet(APIView):
 
         return mr.content_format(items, format)
 
-class MultipleRepresentations(Service):
 
+class MultipleRepresentations(Service):
     def json_format(self):
 
         return self.sqlalchemy_object_to_dict()
@@ -79,11 +70,22 @@ class MultipleRepresentations(Service):
         response = HttpResponse(content_type='text/csv')
         response['Content-Disposition'] = 'attachment; filename="citationexternalidentifiersystem.csv"'
 
-        item_csv_header = ["#fields=CitationExternalIdentifier[type='string']","CitationExternalIdentifierURI[type='string']","ExternalIdentifierSystemID","ExternalIdentifierSystemName[type='string']","ExternalIdentifierSystemDescription[type='string']","ExternalIdentifierSystemURL[type='string']","IdentifierSystemOrganization.OrganizationID","IdentifierSystemOrganization.OrganizationTypeCV[type='string']","IdentifierSystemOrganization.OrganizationCode[type='string']","IdentifierSystemOrganization.OrganizationName[type='string']","IdentifierSystemOrganization.OrganizationDescription[type='string']","IdentifierSystemOrganization.OrganizationLink[type='string']","IdentifierSystemOrganization.ParentOrganizationID","CitationID","Title[type='string']","Publisher[type='string']","PublicationYear","CitationLink[type='string']"]
+        item_csv_header = ["#fields=CitationExternalIdentifier[type='string']",
+                           "CitationExternalIdentifierURI[type='string']", "ExternalIdentifierSystemID",
+                           "ExternalIdentifierSystemName[type='string']",
+                           "ExternalIdentifierSystemDescription[type='string']",
+                           "ExternalIdentifierSystemURL[type='string']", "IdentifierSystemOrganization.OrganizationID",
+                           "IdentifierSystemOrganization.OrganizationTypeCV[type='string']",
+                           "IdentifierSystemOrganization.OrganizationCode[type='string']",
+                           "IdentifierSystemOrganization.OrganizationName[type='string']",
+                           "IdentifierSystemOrganization.OrganizationDescription[type='string']",
+                           "IdentifierSystemOrganization.OrganizationLink[type='string']",
+                           "IdentifierSystemOrganization.ParentOrganizationID", "CitationID", "Title[type='string']",
+                           "Publisher[type='string']", "PublicationYear", "CitationLink[type='string']"]
 
         writer = csv.writer(response)
         writer.writerow(item_csv_header)
-            
+
         for item in self.items:
             row = []
 
@@ -129,7 +131,6 @@ class MultipleRepresentations(Service):
         cs = []
 
         for item in self.items:
-
             cei = OrderedDict()
             cei['Citation'] = "*CitationID%03d" % item.CitationID
             cei['ExternalIdentifierSystem'] = "*ExternalIdentifierSystemID%03d" % item.ExternalIdentifierSystemID
@@ -139,11 +140,13 @@ class MultipleRepresentations(Service):
 
             eis_obj = item.ExternalIdentifierSystemObj
             queryset = OrderedDict()
-            queryset['ExternalIdentifierSystem'] = "&ExternalIdentifierSystemID%03d" % eis_obj.ExternalIdentifierSystemID
+            queryset[
+                'ExternalIdentifierSystem'] = "&ExternalIdentifierSystemID%03d" % eis_obj.ExternalIdentifierSystemID
             queryset['ExternalIdentifierSystemName'] = eis_obj.ExternalIdentifierSystemName
             queryset['ExternalIdentifierSystemDescription'] = eis_obj.ExternalIdentifierSystemDescription
             queryset['ExternalIdentifierSystemURL'] = eis_obj.ExternalIdentifierSystemURL
-            queryset['IdentifierSystemOrganization'] = "*IdentifierSystemOrganizationID%03d" % eis_obj.IdentifierSystemOrganizationID 
+            queryset[
+                'IdentifierSystemOrganization'] = "*IdentifierSystemOrganizationID%03d" % eis_obj.IdentifierSystemOrganizationID
             eis.append(queryset)
             eis = [i for n, i in enumerate(eis) if i not in eis[n + 1:]]
 
@@ -185,14 +188,14 @@ class MultipleRepresentations(Service):
 
         response.write("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n")
         allitems = self.sqlalchemy_object_to_dict()
-        response.write(xmlify({'CitationExternalIdentifier': allitems}, wrap="CitationExternalIdentifiers", indent="  "))
+        response.write(
+            xmlify({'CitationExternalIdentifier': allitems}, wrap="CitationExternalIdentifiers", indent="  "))
         return response
 
     def sqlalchemy_object_to_dict(self):
 
         allitems = []
         for item in self.items:
-
             cei = OrderedDict()
             cei['CitationExternalIdentifier'] = item.CitationExternalIdentifier
             cei['CitationExternalIdentifierURI'] = item.CitationExternalIdentifierURI
@@ -231,12 +234,13 @@ class MultipleRepresentations(Service):
         self._session.close()
         return allitems
 
+
 class JSONResponse(HttpResponse):
     """
     An HttpResponse that renders its content into JSON.
     """
+
     def __init__(self, data, **kwargs):
         content = JSONRenderer().render(data)
         kwargs['content_type'] = 'application/json'
         super(JSONResponse, self).__init__(content, **kwargs)
-

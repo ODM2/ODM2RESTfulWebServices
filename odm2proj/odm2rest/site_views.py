@@ -1,49 +1,42 @@
 import sys
+
 sys.path.append('ODM2PythonAPI')
 
-#from rest_framework import viewsets
-from odm2rest.serializers import DummySerializer
-from odm2rest.serializers import Odm2JsonSerializer
+# from rest_framework import viewsets
 
 from django.http import HttpResponse
 from rest_framework.renderers import JSONRenderer
 
 # Create your views here.
 
-from django.http import Http404
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 
-from rest_framework import viewsets
-import json
 from collections import OrderedDict
 
-import csv,cStringIO
+import csv
 
 from odm2rest.odm2service import Service
-from rest_framework_csv.renderers import CSVRenderer
-from rest_framework_xml.renderers import XMLRenderer
-from rest_framework_yaml.renderers import YAMLRenderer
-from rest_framework.renderers import BrowsableAPIRenderer
-import yaml, pyaml
+import pyaml
 from negotiation import IgnoreClientContentNegotiation
 from dict2xml import dict2xml as xmlify
+
 
 class SiteViewSet(APIView):
     """
     All ODM2 sites Retrieval
     """
 
-    #queryset = Snippet.objects.all()
-    #serializer_class = SnippetModelSerializer
+    # queryset = Snippet.objects.all()
+    # serializer_class = SnippetModelSerializer
 
-    #queryset = Snippet.objects.all()
+    # queryset = Snippet.objects.all()
     ##serializer_class = DummySerializer
     content_negotiation_class = IgnoreClientContentNegotiation
     ##renderer_classes = (XMLRenderer, JSONRenderer, CSVRenderer, YAMLRenderer, BrowsableAPIRenderer,)
-    #renderer_classes = (CSVRenderer, )
-    #parser_classes = (YAMLParser, XMLParser,)
+    # renderer_classes = (CSVRenderer, )
+    # parser_classes = (YAMLParser, XMLParser,)
 
     def get(self, request, format=None):
         """
@@ -63,7 +56,7 @@ class SiteViewSet(APIView):
         """
 
         format = request.query_params.get('format', 'yaml')
-        #accept = request.accepted_renderer.media_type
+        # accept = request.accepted_renderer.media_type
         mr = MultipleRepresentations()
         readConn = mr.readService()
         items = readConn.getAllSites()
@@ -73,6 +66,7 @@ class SiteViewSet(APIView):
                             status=status.HTTP_400_BAD_REQUEST)
 
         return mr.content_format(items, format)
+
 
 class SiteSamplingFeatureCodeViewSet(APIView):
     """
@@ -97,12 +91,12 @@ class SiteSamplingFeatureCodeViewSet(APIView):
               message: Not authenticated
         """
 
-        #samplingfeatureCode = request.query_params.get('SamplingFeatureCode', None)
+        # samplingfeatureCode = request.query_params.get('SamplingFeatureCode', None)
         if samplingfeatureCode is None:
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
         format = request.query_params.get('format', 'yaml')
-        #accept = request.accepted_renderer.media_type
+        # accept = request.accepted_renderer.media_type
         mr = MultipleRepresentations()
         readConn = mr.readService()
         items = readConn.getSiteBySFCode(samplingfeatureCode)
@@ -112,6 +106,7 @@ class SiteSamplingFeatureCodeViewSet(APIView):
                             status=status.HTTP_400_BAD_REQUEST)
 
         return mr.content_format(items, format)
+
 
 class SiteTypeViewSet(APIView):
     """
@@ -136,12 +131,12 @@ class SiteTypeViewSet(APIView):
               message: Not authenticated
         """
 
-        #samplingfeatureCode = request.query_params.get('SamplingFeatureCode', None)
+        # samplingfeatureCode = request.query_params.get('SamplingFeatureCode', None)
         if siteType is None:
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
         format = request.query_params.get('format', 'yaml')
-        #accept = request.accepted_renderer.media_type
+        # accept = request.accepted_renderer.media_type
         mr = MultipleRepresentations()
         readConn = mr.readService()
         items = readConn.getSitesBySiteType(siteType)
@@ -154,7 +149,6 @@ class SiteTypeViewSet(APIView):
 
 
 class MultipleRepresentations(Service):
-
     def json_format(self):
 
         allsites = OrderedDict()
@@ -199,13 +193,18 @@ class MultipleRepresentations(Service):
         response = HttpResponse(content_type='text/csv')
         response['Content-Disposition'] = 'attachment; filename="sites.csv"'
 
-        #fields=SamplingFeatureDescription[type="string"],SamplingFeatureGeotypeCV[type="string"],LatLonDatumID,SamplingFeatureName[type="string"],ElevationDatumCV[type="string"],elevation[unit="m"],SamplingFeatureTypeCV[type="string"],Longitude[unit="degrees"],SamplingFeatureCode[type="string"],Latitude[unit="degrees"],SamplingFeatureID,SiteTypeCV[type="string"]
+        # fields=SamplingFeatureDescription[type="string"],SamplingFeatureGeotypeCV[type="string"],LatLonDatumID,SamplingFeatureName[type="string"],ElevationDatumCV[type="string"],elevation[unit="m"],SamplingFeatureTypeCV[type="string"],Longitude[unit="degrees"],SamplingFeatureCode[type="string"],Latitude[unit="degrees"],SamplingFeatureID,SiteTypeCV[type="string"]
 
-        site_csv_header = ["#fields=SamplingFeatureTypeCV[type='string']","SamplingFeatureCode[type='string']","SamplingFeatureName[type='string']","SamplingFeatureDescription[type='string']","SamplingFeatureGeoTypeCV[type='string']","FeatureGeometry[type='string']","Elevation[unit='m']","ElevationDatumCV[type='string']","SiteTypeCV[type='string']","Latitude[unit='degrees']","Longitude[unit='degrees']","SpatialReferenceID","SRSCode[type='string']","SRSDescription[type='string']","SRSName[type='string']"]
+        site_csv_header = ["#fields=SamplingFeatureTypeCV[type='string']", "SamplingFeatureCode[type='string']",
+                           "SamplingFeatureName[type='string']", "SamplingFeatureDescription[type='string']",
+                           "SamplingFeatureGeoTypeCV[type='string']", "FeatureGeometry[type='string']",
+                           "Elevation[unit='m']", "ElevationDatumCV[type='string']", "SiteTypeCV[type='string']",
+                           "Latitude[unit='degrees']", "Longitude[unit='degrees']", "SpatialReferenceID",
+                           "SRSCode[type='string']", "SRSDescription[type='string']", "SRSName[type='string']"]
 
         writer = csv.writer(response)
         writer.writerow(site_csv_header)
-            
+
         for site in self.items:
             row = []
             sf_obj = site.SamplingFeatureObj
@@ -227,13 +226,13 @@ class MultipleRepresentations(Service):
             row.append(sr_obj.SRSCode)
             row.append(sr_obj.SRSDescription)
             row.append(sr_obj.SRSName)
-            
+
             writer.writerow(row)
-            #writer.writerow([s.encode("utf-8") for s in row])
-            
+            # writer.writerow([s.encode("utf-8") for s in row])
+
         self._session.close()
         return response
-        
+
     def yaml_format(self):
 
         response = HttpResponse(content_type='application/yaml')
@@ -247,7 +246,6 @@ class MultipleRepresentations(Service):
         srs = []
 
         for site in self.items:
-
             sf_obj = site.SamplingFeatureObj
             sr_obj = site.SpatialReferenceObj
 
@@ -285,7 +283,7 @@ class MultipleRepresentations(Service):
         allsites["SpatialReferences"] = srs
         allsites["SamplingFeatures"] = sfs
 
-        response.write(pyaml.dump(allsites,vspacing=[1, 0]))
+        response.write(pyaml.dump(allsites, vspacing=[1, 0]))
 
         self._session.close()
         return response
@@ -300,7 +298,6 @@ class MultipleRepresentations(Service):
 
         sts = []
         for site in self.items:
-
             sf_obj = site.SamplingFeatureObj
             sr_obj = site.SpatialReferenceObj
 
@@ -332,10 +329,12 @@ class MultipleRepresentations(Service):
         self._session.close()
         return response
 
+
 class JSONResponse(HttpResponse):
     """
     An HttpResponse that renders its content into JSON.
     """
+
     def __init__(self, data, **kwargs):
         content = JSONRenderer().render(data)
         kwargs['content_type'] = 'application/json'

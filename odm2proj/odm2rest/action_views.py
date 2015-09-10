@@ -1,35 +1,25 @@
 import sys
-sys.path.append('ODM2PythonAPI')
 
-from odm2rest.serializers import DummySerializer
-from odm2rest.serializers import Odm2JsonSerializer
+sys.path.append('ODM2PythonAPI')
 
 from django.http import HttpResponse
 from rest_framework.renderers import JSONRenderer
 
-from django.http import Http404
-from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 
-from rest_framework import viewsets
 from collections import OrderedDict
 
-from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-import csv,cStringIO
+import csv
 
 from odm2rest.odm2service import Service
-from rest_framework_csv.renderers import CSVRenderer
-from rest_framework_xml.renderers import XMLRenderer
-from rest_framework_yaml.renderers import YAMLRenderer
-from rest_framework.renderers import BrowsableAPIRenderer
 
 from rest_framework.views import APIView
-import yaml, pyaml
-import json
+import pyaml
 
 from dict2xml import dict2xml as xmlify
 from negotiation import IgnoreClientContentNegotiation
+
 
 class JSONResponse(HttpResponse):
     """
@@ -41,10 +31,12 @@ class JSONResponse(HttpResponse):
               paramType: query
 
     """
+
     def __init__(self, data, **kwargs):
         content = JSONRenderer().render(data)
         kwargs['content_type'] = 'application/json'
         super(JSONResponse, self).__init__(content, **kwargs)
+
 
 class ActionsViewSet(APIView):
     """
@@ -52,15 +44,14 @@ class ActionsViewSet(APIView):
 
     """
 
-    #serializer_class = DummySerializer
+    # serializer_class = DummySerializer
     paginate_by = 10
     paginate_by_param = 'page_size'
     max_paginate_by = 100
     content_negotiation_class = IgnoreClientContentNegotiation
-    #renderer_classes = (XMLRenderer, JSONRenderer, CSVRenderer, YAMLRenderer, BrowsableAPIRenderer,)
+    # renderer_classes = (XMLRenderer, JSONRenderer, CSVRenderer, YAMLRenderer, BrowsableAPIRenderer,)
 
     def get(self, request, format=None):
-
         """
         ---
         parameters:
@@ -77,22 +68,23 @@ class ActionsViewSet(APIView):
         """
 
         format = request.query_params.get('format', 'yaml')
-        #accept = request.accepted_renderer.media_type
-        #page = request.query_params.get('page','1')
-        #page_size = request.query_params.get('page_size','100')
+        # accept = request.accepted_renderer.media_type
+        # page = request.query_params.get('page','1')
+        # page_size = request.query_params.get('page_size','100')
 
-        #page = int(page)
-        #page_size = int(page_size)
+        # page = int(page)
+        # page_size = int(page_size)
 
         mr = MultipleRepresentations()
         readConn = mr.readService()
-        #items = readConn.getActionsByPAge(page,page_size)
+        # items = readConn.getActionsByPAge(page,page_size)
         items = readConn.getActions()
         if items == None or len(items) == 0:
             return Response('The data is not existed.',
                             status=status.HTTP_400_BAD_REQUEST)
 
         return mr.content_format(items, format)
+
 
 class ActionTypeViewSet(APIView):
     """
@@ -122,7 +114,7 @@ class ActionTypeViewSet(APIView):
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
         format = request.query_params.get('format', 'yaml')
-        #accept = request.accepted_renderer.media_type
+        # accept = request.accepted_renderer.media_type
         mr = MultipleRepresentations()
         readConn = mr.readService()
         items = readConn.getActionByActionType(actionType)
@@ -133,8 +125,8 @@ class ActionTypeViewSet(APIView):
 
         return mr.content_format(items, format)
 
-class MultipleRepresentations(Service):
 
+class MultipleRepresentations(Service):
     def json_format(self):
 
         return self.sqlalchemy_object_to_dict()
@@ -145,16 +137,22 @@ class MultipleRepresentations(Service):
         response['Content-Disposition'] = 'attachment; filename="actions.csv"'
 
         item_csv_header = []
-        item_csv_header.extend(["#fields=ActionTypeCV[type='string']","BeginDateTime[type='date' format='yyyy-MM-dd HH:MM:SS']","BeginDateTimeUTCOffset","EndDateTime[type='date' format='yyyy-MM-dd HH:MM:SS']","EndDateTimeUTCOffset","ActionDescription[type='string']","ActionFileLink[type='string']"])
-        item_csv_header.extend(["MethodTypeCV[type='string']","MethodCode[type='string']","MethodName[type='string']","MethodDescription[type='string']","MethodLink[type='string']"])
-        item_csv_header.extend(["OrganizationTypeCV[type='string']","OrganizationCode[type='string']","OrganizationName[type='string']","OrganizationDescription[type='string']","OrganizationLink[type='string']","ParentOrganizationID"])
+        item_csv_header.extend(
+            ["#fields=ActionTypeCV[type='string']", "BeginDateTime[type='date' format='yyyy-MM-dd HH:MM:SS']",
+             "BeginDateTimeUTCOffset", "EndDateTime[type='date' format='yyyy-MM-dd HH:MM:SS']", "EndDateTimeUTCOffset",
+             "ActionDescription[type='string']", "ActionFileLink[type='string']"])
+        item_csv_header.extend(["MethodTypeCV[type='string']", "MethodCode[type='string']", "MethodName[type='string']",
+                                "MethodDescription[type='string']", "MethodLink[type='string']"])
+        item_csv_header.extend(
+            ["OrganizationTypeCV[type='string']", "OrganizationCode[type='string']", "OrganizationName[type='string']",
+             "OrganizationDescription[type='string']", "OrganizationLink[type='string']", "ParentOrganizationID"])
 
         writer = csv.writer(response)
         writer.writerow(item_csv_header)
-            
+
         for item in self.items:
             m_obj = item.MethodObj
-            o_obj = m_obj.OrganizationObj            
+            o_obj = m_obj.OrganizationObj
 
             row = []
             row.append(item.ActionTypeCV)
@@ -197,11 +195,11 @@ class MultipleRepresentations(Service):
 
         for action in self.items:
             m_obj = action.MethodObj
-            o_obj = m_obj.OrganizationObj            
+            o_obj = m_obj.OrganizationObj
 
             at = OrderedDict()
             at['ActionTypeCV'] = action.ActionTypeCV
-            at['MethodID'] = "*MethodID%03d" % action.MethodID 
+            at['MethodID'] = "*MethodID%03d" % action.MethodID
             at['ActionDescription'] = action.ActionDescription
             at['ActionFileLink'] = action.ActionFileLink
             at['BeginDateTime'] = action.BeginDateTime
@@ -217,10 +215,9 @@ class MultipleRepresentations(Service):
             m['MethodName'] = m_obj.MethodName
             m['MethodDescription'] = m_obj.MethodDescription
             m['MethodLink'] = m_obj.MethodLink
-            m['OrganizationID'] = "*OrganizationID%03d" % m_obj.OrganizationID 
+            m['OrganizationID'] = "*OrganizationID%03d" % m_obj.OrganizationID
             mts.append(m)
             mts = [i for n, i in enumerate(mts) if i not in mts[n + 1:]]
-
 
             o = OrderedDict()
             o['OrganizationID'] = "&OrganizationID%03d" % o_obj.OrganizationID
@@ -232,7 +229,7 @@ class MultipleRepresentations(Service):
             o['ParentOrganizationID'] = o_obj.ParentOrganizationID
             orgs.append(o)
             orgs = [i for n, i in enumerate(orgs) if i not in orgs[n + 1:]]
-            
+
         allactions["Actions"] = ats
         allactions["Methods"] = mts
         allactions["Organizations"] = orgs
@@ -259,7 +256,7 @@ class MultipleRepresentations(Service):
             o_obj = m_obj.OrganizationObj
 
             queryset = OrderedDict()
-            #queryset['ActionID'] = action.ActionID
+            # queryset['ActionID'] = action.ActionID
             queryset['ActionTypeCV'] = action.ActionTypeCV
             queryset['BeginDateTime'] = action.BeginDateTime
             queryset['BeginDateTimeUTCOffset'] = action.BeginDateTimeUTCOffset
