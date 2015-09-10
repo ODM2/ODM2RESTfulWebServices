@@ -2,7 +2,7 @@ import sys
 sys.path.append('ODM2PythonAPI')
 
 from rest_framework import serializers
-from ODM2.models import Variables
+from src.api.ODM2.models import Variables
 
 from sqlalchemy.ext.declarative import DeclarativeMeta
 import json

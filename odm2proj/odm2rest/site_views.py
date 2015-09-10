@@ -97,7 +97,7 @@ class SiteSamplingFeatureCodeViewSet(APIView):
               message: Not authenticated
         """
 
-        #samplingfeatureCode = request.QUERY_PARAMS.get('SamplingFeatureCode', None)
+        #samplingfeatureCode = request.query_params.get('SamplingFeatureCode', None)
         if samplingfeatureCode is None:
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
@@ -136,7 +136,7 @@ class SiteTypeViewSet(APIView):
               message: Not authenticated
         """
 
-        #samplingfeatureCode = request.QUERY_PARAMS.get('SamplingFeatureCode', None)
+        #samplingfeatureCode = request.query_params.get('SamplingFeatureCode', None)
         if siteType is None:
             return Response(status=status.HTTP_400_BAD_REQUEST)
 

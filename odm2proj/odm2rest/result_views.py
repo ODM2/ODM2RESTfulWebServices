@@ -74,8 +74,8 @@ class ResultsViewSet(APIView):
 
         format = request.query_params.get('format', 'yaml')
         #accept = request.accepted_renderer.media_type
-        page = request.QUERY_PARAMS.get('page','0')
-        page_size = request.QUERY_PARAMS.get('page_size','100')
+        page = request.query_params.get('page','0')
+        page_size = request.query_params.get('page_size','100')
 
         page = int(page)
         page_size = int(page_size)
@@ -121,8 +121,8 @@ class ResultsVarCodeViewSet(APIView):
 
         format = request.query_params.get('format', 'yaml')
         #accept = request.accepted_renderer.media_type
-        #page = request.QUERY_PARAMS.get('page','0')
-        #page_size = request.QUERY_PARAMS.get('page_size','10')
+        #page = request.query_params.get('page','0')
+        #page_size = request.query_params.get('page_size','10')
 
         #page = int(page)
         #page_size = int(page_size)
@@ -168,8 +168,8 @@ class ResultsSFCodeViewSet(APIView):
 
         format = request.query_params.get('format', 'yaml')
         #accept = request.accepted_renderer.media_type
-        #page = request.QUERY_PARAMS.get('page','0')
-        #page_size = request.QUERY_PARAMS.get('page_size','10')
+        #page = request.query_params.get('page','0')
+        #page_size = request.query_params.get('page_size','10')
 
         #page = int(page)
         #page_size = int(page_size)
@@ -214,8 +214,8 @@ class ResultsSFUUIDViewSet(APIView):
 
         format = request.query_params.get('format', 'yaml')
         #accept = request.accepted_renderer.media_type
-        #page = request.QUERY_PARAMS.get('page','0')
-        #page_size = request.QUERY_PARAMS.get('page_size','10')
+        #page = request.query_params.get('page','0')
+        #page_size = request.query_params.get('page_size','10')
 
         #page = int(page)
         #page_size = int(page_size)
@@ -284,8 +284,8 @@ class ResultsBBoxViewSet(APIView):
         east = request.query_params.get('east')
         north = request.query_params.get('north')
         #accept = request.accepted_renderer.media_type
-        #page = request.QUERY_PARAMS.get('page','0')
-        #page_size = request.QUERY_PARAMS.get('page_size','10')
+        #page = request.query_params.get('page','0')
+        #page_size = request.query_params.get('page_size','10')
 
         #page = int(page)
         #page_size = int(page_size)
@@ -346,8 +346,8 @@ class ResultsActionDateViewSet(APIView):
         toDate = datetime.strptime(eDate, '%Y-%m-%d')
 
         #accept = request.accepted_renderer.media_type
-        #page = request.QUERY_PARAMS.get('page','0')
-        #page_size = request.QUERY_PARAMS.get('page_size','10')
+        #page = request.query_params.get('page','0')
+        #page_size = request.query_params.get('page_size','10')
 
         #page = int(page)
         #page_size = int(page_size)
@@ -397,8 +397,8 @@ class ResultsRTypeCVViewSet(APIView):
 
         format = request.query_params.get('format', 'yaml')
         #accept = request.accepted_renderer.media_type
-        #page = request.QUERY_PARAMS.get('page','0')
-        #page_size = request.QUERY_PARAMS.get('page_size','10')
+        #page = request.query_params.get('page','0')
+        #page_size = request.query_params.get('page_size','10')
 
         #page = int(page)
         #page_size = int(page_size)
@@ -487,8 +487,8 @@ class ResultsComplexViewSet(APIView):
         beginDate = datetime.strptime(sDate, '%Y-%m-%d')
         endDate = datetime.strptime(eDate, '%Y-%m-%d')
         #accept = request.accepted_renderer.media_type
-        #page = request.QUERY_PARAMS.get('page','0')
-        #page_size = request.QUERY_PARAMS.get('page_size','10')
+        #page = request.query_params.get('page','0')
+        #page_size = request.query_params.get('page_size','10')
 
         #page = int(page)
         #page_size = int(page_size)

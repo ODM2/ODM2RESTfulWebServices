@@ -1,4 +1,7 @@
-from ODM2PythonAPI.ODMconnection import dbconnection
+import sys
+sys.path.append('ODM2PythonAPI')
+
+from src.api.ODMconnection import dbconnection
 from odm2rest.ODM2ALLServices import odm2Service as ODM2Read
 from rest_framework.response import Response
 from rest_framework import status
@@ -14,7 +17,7 @@ class Service:
         #self.password = 'cinergi'
         #postgresql
         self.engine = 'postgresql'
-        self.address = 'localhost'
+        self.address = 'sis-devel.cloudapp.net'
         self.db = 'marchantariats'
         self.user = 'postgres'
         self.password = 'cinergi'

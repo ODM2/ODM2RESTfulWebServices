@@ -1,13 +1,15 @@
 __author__ = 'Choonhan Youn'
 
 import sys
+sys.path.append('ODM2PythonAPI')
+
 import os
 import uuid
 
-from ODM2.base import serviceBase
-from ODM2.models import *
+from src.api.base import serviceBase
+from src.api.ODM2.models import *
 import datetime as dt
-from ODM2.apiCustomType import Geometry
+from src.api.ODM2.apiCustomType import Geometry
 from sqlalchemy import func
 
 class odm2Service(object):

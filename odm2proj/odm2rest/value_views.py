@@ -76,8 +76,8 @@ class ValuesViewSet(APIView):
 
         format = request.query_params.get('format', 'yaml')
         #accept = request.accepted_renderer.media_type
-        page = request.QUERY_PARAMS.get('page','0')
-        page_size = request.QUERY_PARAMS.get('page_size','100')
+        page = request.query_params.get('page','0')
+        page_size = request.query_params.get('page_size','100')
 
         page = int(page)
         page_size = int(page_size)
