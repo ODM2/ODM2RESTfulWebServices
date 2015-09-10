@@ -1,17 +1,17 @@
 import logging
 
-
 from sqlalchemy import distinct, func
 
-
 from ...ODMconnection import SessionFactory
-from ...versionSwitcher import ODM#.models import Site, Variable, Unit, Series, DataValue, Qualifier, OffsetType, Sample, Method, QualityControlLevel, ODMVersion
+from ...versionSwitcher import \
+    ODM  # .models import Site, Variable, Unit, Series, DataValue, Qualifier, OffsetType, Sample, Method, QualityControlLevel, ODMVersion
 from ...base import serviceBase
-#from odmtools.common.logger import LoggerTool
+# from odmtools.common.logger import LoggerTool
 import pandas as pd
 
-#tool = LoggerTool()
-#logger = tool.setupLogger(__name__, __name__ + '.log', 'w', logging.DEBUG)
+
+# tool = LoggerTool()
+# logger = tool.setupLogger(__name__, __name__ + '.log', 'w', logging.DEBUG)
 
 
 class SeriesService(serviceBase):
@@ -24,11 +24,11 @@ class SeriesService(serviceBase):
     def get_db_version(self):
         return self._session.query(ODM.ODMVersion).first().version_number
 
-#####################
-#
-# Get functions
-#
-#####################
+    #####################
+    #
+    # Get functions
+    #
+    #####################
 
     # Site methods
     def get_all_sites(self):
@@ -37,7 +37,6 @@ class SeriesService(serviceBase):
         :return: List[Sites]
         """
         return self._session.query(ODM.Site).order_by(ODM.Site.code).all()
-
 
     def get_used_sites(self):
         """
@@ -57,7 +56,6 @@ class SeriesService(serviceBase):
             Sites.append(self._session.query(ODM.Site).filter_by(id=site_id).first())
 
         return Sites
-
 
     def get_site_by_id(self, site_id):
         """
@@ -87,7 +85,7 @@ class SeriesService(serviceBase):
 
         Variables = []
 
-        #create list of variables from the list of ids
+        # create list of variables from the list of ids
         for var_id in var_ids:
             Variables.append(self._session.query(ODM.Variable).filter_by(id=var_id).first())
 
@@ -170,7 +168,6 @@ class SeriesService(serviceBase):
         except:
             return None
 
-
     def get_all_qualifiers(self):
         """
 
@@ -186,10 +183,11 @@ class SeriesService(serviceBase):
         :return:
         """
         subquery = self._session.query(ODM.DataValue.qualifier_id).outerjoin(
-            ODM.Series.data_values).filter(ODM.Series.id == series_id, ODM.DataValue.qualifier_id != None).distinct().subquery()
+            ODM.Series.data_values).filter(ODM.Series.id == series_id,
+                                           ODM.DataValue.qualifier_id != None).distinct().subquery()
         return self._session.query(ODM.Qualifier).join(subquery).distinct().all()
 
-    #QCL methods
+    # QCL methods
     def get_all_qcls(self):
         return self._session.query(ODM.QualityControlLevel).all()
 
@@ -230,7 +228,8 @@ class SeriesService(serviceBase):
         :return:
         """
         subquery = self._session.query(ODM.DataValue.offset_type_id).outerjoin(
-            ODM.Series.data_values).filter(ODM.Series.id == series_id, ODM.DataValue.offset_type_id != None).distinct().subquery()
+            ODM.Series.data_values).filter(ODM.Series.id == series_id,
+                                           ODM.DataValue.offset_type_id != None).distinct().subquery()
         return self._session.query(ODM.OffsetType).join(subquery).distinct().all()
 
     def get_samples_by_series_id(self, series_id):
@@ -240,7 +239,8 @@ class SeriesService(serviceBase):
         :return:
         """
 
-        subquery = self._session.query(ODM.DataValue.sample_id).outerjoin(ODM.Series.data_values).filter(ODM.Series.id == series_id, ODM.DataValue.sample_id != None).distinct().subquery()
+        subquery = self._session.query(ODM.DataValue.sample_id).outerjoin(ODM.Series.data_values).filter(
+            ODM.Series.id == series_id, ODM.DataValue.sample_id != None).distinct().subquery()
         return self._session.query(ODM.Sample).join(subquery).distinct().all()
 
     # Series Catalog methods
@@ -250,10 +250,10 @@ class SeriesService(serviceBase):
         :return: List[Series]
         """
 
-        #logger.debug("%s" % self._session.query(Series).order_by(Series.id).all())
+        # logger.debug("%s" % self._session.query(Series).order_by(Series.id).all())
         return self._session.query(ODM.Series).order_by(ODM.Series.id).all()
 
-    def get_series_by_site(self , site_id):
+    def get_series_by_site(self, site_id):
         """
 
         :param site_id: int
@@ -298,28 +298,27 @@ class SeriesService(serviceBase):
         # Pass in probably a Series object, match it against the database
         pass
 
-
-    #Data Value Methods
+    # Data Value Methods
     def get_values_by_series(self, series_id):
         '''
 
         :param series_id:  Series id
         :return: pandas dataframe
         '''
-        series= self.get_series_by_id(series_id)
+        series = self.get_series_by_id(series_id)
         if series:
             q = self._session.query(ODM.DataValue).filter_by(
-                    site_id=series.site_id,
-                    variable_id=series.variable_id,
-                    method_id=series.method_id,
-                    source_id=series.source_id,
-                    quality_control_level_id=series.quality_control_level_id)
+                site_id=series.site_id,
+                variable_id=series.variable_id,
+                method_id=series.method_id,
+                source_id=series.source_id,
+                quality_control_level_id=series.quality_control_level_id)
 
-            query=q.statement.compile(dialect=self._session_factory.engine.dialect)
-            data= pd.read_sql_query(sql= query,
-                              con = self._session_factory.engine,
-                              params = query.params )
-            #return data.set_index(data['LocalDateTime'])
+            query = q.statement.compile(dialect=self._session_factory.engine.dialect)
+            data = pd.read_sql_query(sql=query,
+                                     con=self._session_factory.engine,
+                                     params=query.params)
+            # return data.set_index(data['LocalDateTime'])
             return data
         else:
             return None
@@ -332,7 +331,7 @@ class SeriesService(serviceBase):
         q = self._session.query(ODM.DataValue).order_by(ODM.DataValue.local_date_time)
         query = q.statement.compile(dialect=self._session_factory.engine.dialect)
         data = pd.read_sql_query(sql=query, con=self._session_factory.engine,
-                          params=query.params)
+                                 params=query.params)
         columns = list(data)
 
         columns.insert(0, columns.pop(columns.index("DataValue")))
@@ -360,7 +359,7 @@ class SeriesService(serviceBase):
 
         if month in [1, 2, 3]:
             return 1
-        elif month in[4, 5, 6]:
+        elif month in [4, 5, 6]:
             return 2
         elif month in [7, 8, 9]:
             return 3
@@ -373,13 +372,13 @@ class SeriesService(serviceBase):
         :return:
         """
         q = self._session.query(ODM.DataValue.data_value.label('DataValue'),
-                                   ODM.DataValue.local_date_time.label('LocalDateTime'),
-                                   ODM.DataValue.censor_code.label('CensorCode'),
-                                   func.strftime('%m', ODM.DataValue.local_date_time).label('Month'),
-                                   func.strftime('%Y',ODM.DataValue.local_date_time).label('Year')
-                                   #DataValue.local_date_time.strftime('%m'),
-                                   #DataValue.local_date_time.strftime('%Y'))
-        ).order_by(ODM.DataValue.local_date_time)
+                                ODM.DataValue.local_date_time.label('LocalDateTime'),
+                                ODM.DataValue.censor_code.label('CensorCode'),
+                                func.strftime('%m', ODM.DataValue.local_date_time).label('Month'),
+                                func.strftime('%Y', ODM.DataValue.local_date_time).label('Year')
+                                # DataValue.local_date_time.strftime('%m'),
+                                # DataValue.local_date_time.strftime('%Y'))
+                                ).order_by(ODM.DataValue.local_date_time)
         query = q.statement.compile(dialect=self._session_factory.engine.dialect)
         data = pd.read_sql_query(sql=query,
                                  con=self._session_factory.engine,
@@ -387,7 +386,7 @@ class SeriesService(serviceBase):
         data["Season"] = data.apply(self.calcSeason, axis=1)
         return data.set_index(data['LocalDateTime'])
 
-    def get_plot_values(self, seriesID, noDataValue, startDate = None, endDate = None ):
+    def get_plot_values(self, seriesID, noDataValue, startDate=None, endDate=None):
         """
 
         :param seriesID:
@@ -400,16 +399,14 @@ class SeriesService(serviceBase):
 
         DataValues = [
             (dv.data_value, dv.local_date_time, dv.censor_code, dv.local_date_time.strftime('%m'),
-                dv.local_date_time.strftime('%Y'))
+             dv.local_date_time.strftime('%Y'))
             for dv in series.data_values
             if dv.data_value != noDataValue if dv.local_date_time >= startDate if dv.local_date_time <= endDate
-        ]
+            ]
         data = pd.DataFrame(DataValues, columns=["DataValue", "LocalDateTime", "CensorCode", "Month", "Year"])
         data.set_index(data['LocalDateTime'], inplace=True)
         data["Season"] = data.apply(self.calcSeason, axis=1)
         return data
-
-
 
     def get_data_value_by_id(self, id):
         """
@@ -429,11 +426,12 @@ class SeriesService(serviceBase):
             return None
 
 
-#####################
-#
-#Update functions
-#
-#####################
+        #####################
+        #
+        # Update functions
+        #
+        #####################
+
     def update_series(self, series):
         """
 
@@ -454,11 +452,11 @@ class SeriesService(serviceBase):
         self._session.add_all(merged_dv_list)
         self._session.commit()
 
-#####################
-#
-#Create functions
-#
-#####################
+    #####################
+    #
+    # Create functions
+    #
+    #####################
     def save_series(self, series, dvs):
         """ Save to an Existing Series
         :param series:
@@ -475,13 +473,12 @@ class SeriesService(serviceBase):
             except Exception as e:
                 self._session.rollback()
                 raise e
-            #logger.debug("Existing File was overwritten with new information")
+            # logger.debug("Existing File was overwritten with new information")
             return True
         else:
-            #logger.debug("There wasn't an existing file to overwrite, please select 'Save As' first")
+            # logger.debug("There wasn't an existing file to overwrite, please select 'Save As' first")
             # there wasn't an existing file to overwrite
             raise Exception("Series does not exist, unable to save. Please select 'Save As'")
-
 
     def save_new_series(self, series, dvs):
         """ Create as a new catalog entry
@@ -492,20 +489,20 @@ class SeriesService(serviceBase):
         # Save As case
         if self.series_exists(series):
             msg = "There is already an existing file with this information. Please select 'Save' or 'Save Existing' to overwrite"
-            #logger.debug(msg)
+            # logger.debug(msg)
             raise Exception(msg)
         else:
             try:
                 self._session.add(series)
                 self._session.commit()
                 self.save_values(dvs)
-                #self._session.add_all(dvs)
+                # self._session.add_all(dvs)
             except Exception as e:
                 self._session.rollback()
                 raise e
 
 
-        #logger.debug("A new series was added to the database, series id: "+str(series.id))
+        # logger.debug("A new series was added to the database, series id: "+str(series.id))
         return True
 
     def save_values(self, values):
@@ -515,7 +512,6 @@ class SeriesService(serviceBase):
         :return:
         """
         values.to_sql(name="datavalues", if_exists='append', con=self._session_factory.engine, index=False)
-
 
     def create_new_series(self, data_values, site_id, variable_id, method_id, source_id, qcl_id):
         """
@@ -624,13 +620,12 @@ class SeriesService(serviceBase):
         self._session.commit()
         return qcl
 
-
     def create_qualifier_by_qual(self, qualifier):
         self._session.add(qualifier)
         self._session.commit()
         return qualifier
 
-    def create_qualifier(self,  code, description):
+    def create_qualifier(self, code, description):
         """
 
         :param code:
@@ -643,11 +638,11 @@ class SeriesService(serviceBase):
 
         return self.create_qualifier_by_qual(qual)
 
-#####################
-#
-# Delete functions
-#
-#####################
+    #####################
+    #
+    # Delete functions
+    #
+    #####################
 
     def delete_series(self, series):
         """
@@ -661,7 +656,6 @@ class SeriesService(serviceBase):
         self._session.delete(delete_series)
         self._session.commit()
 
-
     def delete_values_by_series(self, series):
         """
 
@@ -669,11 +663,11 @@ class SeriesService(serviceBase):
         :return:
         """
         try:
-            return self._session.query(ODM.DataValue).filter_by(site_id = series.site_id,
-                                                                 variable_id = series.variable_id,
-                                                                 method_id = series.method_id,
-                                                                 source_id = series.source_id,
-                                                                 quality_control_level_id = series.quality_control_level_id).delete()
+            return self._session.query(ODM.DataValue).filter_by(site_id=series.site_id,
+                                                                variable_id=series.variable_id,
+                                                                method_id=series.method_id,
+                                                                source_id=series.source_id,
+                                                                quality_control_level_id=series.quality_control_level_id).delete()
         except:
             return None
 
@@ -685,11 +679,11 @@ class SeriesService(serviceBase):
         """
         self._session.query(ODM.DataValue).filter(ODM.DataValue.id.in_(id_list)).delete(False)
 
-#####################
-#
-#Exist functions
-#
-#####################
+    #####################
+    #
+    # Exist functions
+    #
+    #####################
 
 
     def series_exists(self, series):
@@ -728,6 +722,7 @@ class SeriesService(serviceBase):
             return True
         except:
             return False
+
     def qcl_exists(self, q):
         """
 
@@ -761,14 +756,14 @@ class SeriesService(serviceBase):
         """
         try:
             result = self._session.query(ODM.Variable).filter_by(code=v.code,
-                                                                  name=v.name, speciation=v.speciation,
-                                                                  variable_unit_id=v.variable_unit_id,
-                                                                  sample_medium=v.sample_medium,
-                                                                  value_type=v.value_type, is_regular=v.is_regular,
-                                                                  time_support=v.time_support,
-                                                                  time_unit_id=v.time_unit_id, data_type=v.data_type,
-                                                                  general_category=v.general_category,
-                                                                  no_data_value=v.no_data_value).one()
+                                                                 name=v.name, speciation=v.speciation,
+                                                                 variable_unit_id=v.variable_unit_id,
+                                                                 sample_medium=v.sample_medium,
+                                                                 value_type=v.value_type, is_regular=v.is_regular,
+                                                                 time_support=v.time_support,
+                                                                 time_unit_id=v.time_unit_id, data_type=v.data_type,
+                                                                 general_category=v.general_category,
+                                                                 no_data_value=v.no_data_value).one()
             return result
         except:
             return None

@@ -1,7 +1,8 @@
 import sys
 import os
-from src.api.ODMconnection import dbconnection
 import pprint
+
+from src.api.ODMconnection import dbconnection
 from src.api.ODM1_1_1.services import SeriesService
 
 this_file = os.path.realpath(__file__)
@@ -18,7 +19,7 @@ sys.path.insert(0, directory)
 # conn = dbconnection.createConnection('mysql', '127.0.0.1:3306', 'ODM2', 'Stephanie', 'odm')
 # -------------------------------------------------
 
-#ODM1 DB
+# ODM1 DB
 conn = dbconnection.createConnection('mysql', 'jws.uwrl.usu.edu', 'odm', "ODM", "ODM123!!", 1.1)
 
 pp = pprint.PrettyPrinter(indent=8)
@@ -72,14 +73,13 @@ print
 
 pp.pprint(odm1service.get_all_sources())
 
-
 print
 print "************************************************"
 print "\t\tData Values: get_all_series()"
 print "************************************************"
 print
 
-#pp.pprint(odm1service.get_all_series())
+# pp.pprint(odm1service.get_all_series())
 
 
 print
@@ -88,7 +88,7 @@ print "\t\tData Values: get_all_DataValues()"
 print "************************************************"
 print
 
-#pp.pprint(odm1service.get_values_by_series(1))
+# pp.pprint(odm1service.get_values_by_series(1))
 
 
 #

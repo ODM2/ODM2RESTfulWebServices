@@ -1,10 +1,6 @@
-import pytest
-import sqlalchemy.orm.exc
-from odmtools.odmdata import Qualifier
 from odmtools.odmservices import CVService
 
 from tests import test_util
-
 
 session = None
 
@@ -33,8 +29,6 @@ class TestCVService:
         db_sample = self.cv_service.get_samples()[0]
         assert sample.id == db_sample.id
         assert sample.lab_method_id == db_sample.lab_method_id
-
-
 
     def test_get_site_type_cvs(self):
         assert self.cv_service.get_site_type_cvs() == []
@@ -137,4 +131,3 @@ class TestCVService:
         assert db_unit is not None
         assert unit.name == db_unit.name
     '''
-

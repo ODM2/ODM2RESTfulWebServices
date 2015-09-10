@@ -3,7 +3,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 from .ODM2.models import Variables as Variable2, change_schema
-from .versionSwitcher import ODM, refreshDB #import Variable as Variable1
+from .versionSwitcher import ODM, refreshDB  # import Variable as Variable1
 
 
 class SessionFactory():
@@ -12,11 +12,15 @@ class SessionFactory():
             self.engine = create_engine(connection_string, encoding='utf-8', echo=echo)
             self.test_engine = self.engine
         if 'mssql' in connection_string:
-              self.engine = create_engine(connection_string, encoding='utf-8', echo=echo, pool_recycle=3600, pool_timeout=5, pool_size=20, max_overflow=0)
-              self.test_engine = create_engine(connection_string, encoding='utf-8', echo=echo, pool_recycle=3600, pool_timeout=5, max_overflow=0, connect_args={'timeout': 1})
+            self.engine = create_engine(connection_string, encoding='utf-8', echo=echo, pool_recycle=3600,
+                                        pool_timeout=5, pool_size=20, max_overflow=0)
+            self.test_engine = create_engine(connection_string, encoding='utf-8', echo=echo, pool_recycle=3600,
+                                             pool_timeout=5, max_overflow=0, connect_args={'timeout': 1})
         elif 'postgresql' in connection_string or 'mysql' in connection_string:
-            self.engine = create_engine(connection_string, encoding='utf-8', echo=echo, pool_recycle=3600, pool_timeout=5, pool_size=20, max_overflow=0)
-            self.test_engine = create_engine(connection_string, encoding='utf-8', echo=echo, pool_recycle=3600, pool_timeout=5, max_overflow=0, connect_args={'connect_timeout': 1})
+            self.engine = create_engine(connection_string, encoding='utf-8', echo=echo, pool_recycle=3600,
+                                        pool_timeout=5, pool_size=20, max_overflow=0)
+            self.test_engine = create_engine(connection_string, encoding='utf-8', echo=echo, pool_recycle=3600,
+                                             pool_timeout=5, max_overflow=0, connect_args={'connect_timeout': 1})
 
         # Create session maker
         self.Session = sessionmaker(bind=self.engine)
@@ -37,10 +41,10 @@ class dbconnection():
         self._connection_format = "%s+%s://%s:%s@%s/%s"
 
     @classmethod
-    def createConnection(self, engine, address, db=None, user=None, password=None, dbtype = 2.0):
+    def createConnection(self, engine, address, db=None, user=None, password=None, dbtype=2.0):
 
         if engine == 'sqlite':
-            connection_string = engine +':///'+address
+            connection_string = engine + ':///' + address
         else:
             connection_string = dbconnection.buildConnDict(dbconnection(), engine, address, db, user, password)
         # if self.testConnection(connection_string):
@@ -63,10 +67,10 @@ class dbconnection():
     def _getSchema(engine):
         from sqlalchemy.engine import reflection
 
-        insp=reflection.Inspector.from_engine(engine)
+        insp = reflection.Inspector.from_engine(engine)
 
         for name in insp.get_schema_names():
-            if 'odm2'== name.lower():
+            if 'odm2' == name.lower():
                 return name
         else:
             return insp.default_schema_name
@@ -77,12 +81,11 @@ class dbconnection():
         s = self._getSchema(engine)
 
 
-        #print "orig", Variable2.__table__.schema
-        #print "New", s
+        # print "orig", Variable2.__table__.schema
+        # print "New", s
         change_schema(s)
 
-        #print "set new", Variable2.__table__.schema
-
+        # print "set new", Variable2.__table__.schema
 
     @classmethod
     def testEngine(self, connection_string):

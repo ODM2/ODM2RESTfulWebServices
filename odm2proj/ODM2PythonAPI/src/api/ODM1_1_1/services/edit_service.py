@@ -3,17 +3,18 @@ import sqlite3
 from ...versionSwitcher import ODM
 from series_service import SeriesService
 
-#from odmtools.odmdata import series as series_module
+# from odmtools.odmdata import series as series_module
 
 import pandas as pd
 import datetime
 import numpy as np
 
-#import logging
-#from odmtools.common.logger import LoggerTool
 
-#tool = LoggerTool()
-#logger = tool.setupLogger(__name__, __name__ + '.log', 'w', logging.DEBUG)
+# import logging
+# from odmtools.common.logger import LoggerTool
+
+# tool = LoggerTool()
+# logger = tool.setupLogger(__name__, __name__ + '.log', 'w', logging.DEBUG)
 
 
 class EditService():
@@ -32,22 +33,22 @@ class EditService():
         self._filter_from_selection = False
         self._debug = debug
 
-        if connection_string is  "" and connection is not None:
-            self.memDB= connection
-            #self._series_service = self.memDB.series_service#SeriesService(connection_string, debug)
+        if connection_string is "" and connection is not None:
+            self.memDB = connection
+            # self._series_service = self.memDB.series_service#SeriesService(connection_string, debug)
 
         elif connection_string is not "" and connection is None:
             from ..memory_database import MemoryDatabase
-            self.memDB= MemoryDatabase()#(series_service)
+            self.memDB = MemoryDatabase()  # (series_service)
             self.memDB.set_series_service(SeriesService(connection_string, False))
 
 
         else:
             print ("ERROR: must send in either a remote db connection string or a memory database object")
 
-        #logger.debug("Initializing Memory Database")
+        # logger.debug("Initializing Memory Database")
         self.memDB.initEditValues(series_id)
-        #logger.debug("Finished Initializing Memory Database")
+        # logger.debug("Finished Initializing Memory Database")
         self._populate_series()
         self.reset_filter()
 
@@ -56,10 +57,9 @@ class EditService():
 
     def _populate_series(self):
         # [(ID, value, datetime), ...]
-        #self._cursor.execute("SELECT ValueID, DataValue, LocalDateTime FROM DataValues ORDER BY LocalDateTime")
+        # self._cursor.execute("SELECT ValueID, DataValue, LocalDateTime FROM DataValues ORDER BY LocalDateTime")
 
         self._series_points_df = self.memDB.getDataValuesDF()
-
 
     def _test_filter_previous(self):
 
@@ -97,7 +97,6 @@ class EditService():
         result = None
 
         if isinstance(datetime_list, list):
-
             result = pd.DataFrame(datetime_list, columns=["LocalDateTime"])
 
             result.set_index("LocalDateTime", inplace=True)
@@ -134,7 +133,6 @@ class EditService():
 
         if ops == '<':
             self.filtered_dataframe = df[df['DataValue'] < value]
-
 
     def filter_date(self, before, after):
         df = self._test_filter_previous()
@@ -207,13 +205,12 @@ class EditService():
         del copy_df
         self.filtered_dataframe = df[df.index.isin(tmplist)]
 
-
     def select_points_tf(self, tf_list):
         self._filter_list = tf_list
 
-    #def select_points(self, id_list=[], datetime_list=[]):
+    # def select_points(self, id_list=[], datetime_list=[]):
     def select_points(self, id_list=[], dataframe=[]):
-        #self.reset_filter()
+        # self.reset_filter()
 
         # This should be either one or the other. If it's both, id is used first.
         # If neither are set this function does nothing.
@@ -227,7 +224,6 @@ class EditService():
             result = dataframe.index.astype(datetime.datetime)
             self.filtered_dataframe = self._series_points_df[self._series_points_df.index.isin(dataframe.index)]
 
-
     def reset_filter(self):
         self.filtered_dataframe = None
 
@@ -236,7 +232,6 @@ class EditService():
 
     def get_toggle(self):
         return self._filter_from_selection
-
 
     ###################
     # Gets
@@ -282,9 +277,8 @@ class EditService():
         return self.memDB.series_service.get_method_by_id(method_id)
 
     def get_variable(self, variable_id):
-        #logger.debug(variable_id)
+        # logger.debug(variable_id)
         return self.memDB.series_service.get_variable_by_id(variable_id)
-
 
     #################
     # Edits
@@ -325,20 +319,19 @@ class EditService():
         In [77]: interp_s = ser.reindex(new_index).interpolate(method='pchip')
         '''
 
-        tmp_filter_list =self.get_filtered_points()
+        tmp_filter_list = self.get_filtered_points()
         df = self._series_points_df
         issel = df.index.isin(tmp_filter_list.index)
 
         mdf = df["DataValue"].mask(issel)
-        mdf.interpolate(method = "time", inplace=True)
-        tmp_filter_list["DataValue"]=mdf[issel]
+        mdf.interpolate(method="time", inplace=True)
+        tmp_filter_list["DataValue"] = mdf[issel]
         ids = tmp_filter_list['ValueID'].tolist()
 
-        #update_list = [(row["DataValue"], row["ValueID"]) for index, row in tmp_filter_list.iterrows()]
+        # update_list = [(row["DataValue"], row["ValueID"]) for index, row in tmp_filter_list.iterrows()]
         update_list = [{"value": row["DataValue"], "id": row["ValueID"]} for index, row in tmp_filter_list.iterrows()]
 
         self.memDB.update(update_list)
-
 
         self._populate_series()
 
@@ -346,19 +339,19 @@ class EditService():
 
     def drift_correction(self, gap_width):
         if self.isOneGroup():
-            tmp_filter_list =self.get_filtered_points()
-            startdate =tmp_filter_list.index[0]
-            x_l = (tmp_filter_list.index[-1]-startdate).total_seconds()
+            tmp_filter_list = self.get_filtered_points()
+            startdate = tmp_filter_list.index[0]
+            x_l = (tmp_filter_list.index[-1] - startdate).total_seconds()
 
             # y_n = y_0 + G(x_i / x_l)
-            f = lambda row :  row["DataValue"]+(gap_width * ((row.name-startdate).total_seconds() / x_l))
-            tmp_filter_list["DataValue"]=tmp_filter_list.apply(f, axis = 1)
+            f = lambda row: row["DataValue"] + (gap_width * ((row.name - startdate).total_seconds() / x_l))
+            tmp_filter_list["DataValue"] = tmp_filter_list.apply(f, axis=1)
 
-            update_list = [{"value": row["DataValue"], "id": row["ValueID"]} for index, row in tmp_filter_list.iterrows()]
+            update_list = [{"value": row["DataValue"], "id": row["ValueID"]} for index, row in
+                           tmp_filter_list.iterrows()]
 
             ids = tmp_filter_list['ValueID'].tolist()
             self.memDB.update(update_list)
-
 
             self._populate_series()
 
@@ -376,16 +369,15 @@ class EditService():
         for x in issel:
             if x:
                 if not found_group:
-                    found_group=True
-                    count =count+1
+                    found_group = True
+                    count = count + 1
             else:
                 found_group = False
 
-            if count >1:
+            if count > 1:
                 return False
         if count == 1:
             return True
-
 
     def flag(self, qualifier_id):
 
@@ -420,7 +412,7 @@ class EditService():
         var_id = var.id if var is not None else None
         method_id = method.id if method is not None else None
         qcl_id = qcl.id if qcl is not None else None
-        #self.memDB.changeSeriesIDs(var_id, method_id, qcl_id)
+        # self.memDB.changeSeriesIDs(var_id, method_id, qcl_id)
         dvs = self.memDB.getDataValuesDF()
         if var_id is not None:
             dvs["VariableID"] = var_id
@@ -431,8 +423,8 @@ class EditService():
 
 
 
-        #if is new series remove valueids
-        #if is_new_series:
+        # if is new series remove valueids
+        # if is_new_series:
         dvs["ValueID"] = None
         '''
             for dv in dvs:
@@ -442,14 +434,15 @@ class EditService():
         series = self.memDB.series_service.get_series_by_id(self._series_id)
         print("original editing series id: %s" % str(series.id))
 
-        if (var or method or qcl ):
+        if (var or method or qcl):
             tseries = self.memDB.series_service.get_series_by_id_quint(site_id=int(series.site_id),
-                                                                  var_id=var_id if var else int(series.variable_id),
-                                                                  method_id=method_id if method else int(
-                                                                      series.method_id),
-                                                                  source_id=series.source_id,
-                                                                  qcl_id=qcl_id if qcl else int(
-                                                                      series.quality_control_level_id))
+                                                                       var_id=var_id if var else int(
+                                                                           series.variable_id),
+                                                                       method_id=method_id if method else int(
+                                                                           series.method_id),
+                                                                       source_id=series.source_id,
+                                                                       qcl_id=qcl_id if qcl else int(
+                                                                           series.quality_control_level_id))
             if tseries:
                 print("Save existing series ID: %s" % str(series.id))
                 series = tseries
@@ -458,9 +451,7 @@ class EditService():
 
         if is_new_series:
 
-
             series = ODM.Series.copy_series(series)
-
 
             if var:
                 series.variable_id = var_id
@@ -489,25 +480,25 @@ class EditService():
         dvs["DateTimeUTC"] = pd.to_datetime(dvs["DateTimeUTC"])
         '''
 
-
-
-
-
         form = "%Y-%m-%d %H:%M:%S"
-        series.begin_date_time = datetime.datetime.strptime(str(np.min(dvs["LocalDateTime"])), form)#np.min(dvs["LocalDateTime"])#dvs[0].local_date_time
-        series.end_date_time = datetime.datetime.strptime(str(np.max(dvs["LocalDateTime"])), form)#np.max(dvs["LocalDateTime"])#dvs[-1].local_date_time
-        series.begin_date_time_utc = datetime.datetime.strptime(str(np.min(dvs["DateTimeUTC"])), form) #dvs[0].date_time_utc
-        series.end_date_time_utc = datetime.datetime.strptime(str(np.max(dvs["DateTimeUTC"])), form) #dvs[-1].date_time_utc
+        series.begin_date_time = datetime.datetime.strptime(str(np.min(dvs["LocalDateTime"])),
+                                                            form)  # np.min(dvs["LocalDateTime"])#dvs[0].local_date_time
+        series.end_date_time = datetime.datetime.strptime(str(np.max(dvs["LocalDateTime"])),
+                                                          form)  # np.max(dvs["LocalDateTime"])#dvs[-1].local_date_time
+        series.begin_date_time_utc = datetime.datetime.strptime(str(np.min(dvs["DateTimeUTC"])),
+                                                                form)  # dvs[0].date_time_utc
+        series.end_date_time_utc = datetime.datetime.strptime(str(np.max(dvs["DateTimeUTC"])),
+                                                              form)  # dvs[-1].date_time_utc
         series.value_count = len(dvs)
 
         ## Override previous save
         if not is_new_series:
             # delete old dvs
-            #pass
+            # pass
             self.memDB.series_service.delete_values_by_series(series)
 
 
-        #logger.debug("series.data_values: %s" % ([x for x in series.data_values]))
+        # logger.debug("series.data_values: %s" % ([x for x in series.data_values]))
         dvs.drop('ValueID', axis=1, inplace=True)
         return series, dvs
 
@@ -571,12 +562,10 @@ class EditService():
                         value_type, is_regular, time_support, time_unit_id, data_type, general_category, no_data_value):
 
         return self.memDB.series_service.create_variable(code, name, speciation, variable_unit_id, sample_medium,
-                                                    value_type, is_regular, time_support, time_unit_id, data_type,
-                                                    general_category, no_data_value)
+                                                         value_type, is_regular, time_support, time_unit_id, data_type,
+                                                         general_category, no_data_value)
 
     def reconcile_dates(self, parent_series_id):
         # FUTURE FEATURE: pull in new field data from another series and add to this series
         # (i.e one series contains new field data of an edited series at a higher qcl)
         pass
-
-

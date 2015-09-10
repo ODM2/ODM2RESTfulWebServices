@@ -65,13 +65,11 @@ __all__ = [
 ]
 '''
 
+from collections import OrderedDict  # Requires Python 2.7 >=
+
 from sqlalchemy.ext.declarative import declarative_base
-
-
-from collections import OrderedDict # Requires Python 2.7 >=
 from sqlalchemy import Column, Integer, Float, DateTime, ForeignKey, String, Boolean
 from sqlalchemy.orm import relationship
-
 
 Base = declarative_base()
 metadata = Base.metadata
@@ -137,9 +135,6 @@ class DataTypeCV(Base):
 
     def __repr__(self):
         return "<DataTypeCV('%s', '%s')>" % (self.term, self.definition)
-
-
-
 
 
 class GeneralCategoryCV(Base):
@@ -271,6 +266,7 @@ class SampleTypeCV(Base):
     def __repr__(self):
         return "<SampleTypeCV('%s', '%s')>" % (self.term, self.definition)
 
+
 class SpatialReference(Base):
     __tablename__ = 'SpatialReferences'
 
@@ -282,6 +278,7 @@ class SpatialReference(Base):
 
     def __repr__(self):
         return "<SpatialReference('%s', '%s')>" % (self.id, self.srs_name)
+
 
 class Site(Base):
     __tablename__ = 'Sites'
@@ -350,9 +347,6 @@ class Source(Base):
         return "<Source('%s', '%s', '%s')>" % (self.id, self.organization, self.description)
 
 
-
-
-
 class Variable(Base):
     __tablename__ = 'Variables'
 
@@ -372,7 +366,7 @@ class Variable(Base):
 
     # relationships
     variable_unit = relationship(Unit, primaryjoin=(
-    "Unit.id==Variable.variable_unit_id"))  # <-- Uses class attribute names, not table column names
+        "Unit.id==Variable.variable_unit_id"))  # <-- Uses class attribute names, not table column names
     time_unit = relationship(Unit, primaryjoin=("Unit.id==Variable.time_unit_id"))
 
     def __repr__(self):
@@ -397,6 +391,7 @@ class VerticalDatumCV(Base):
 
     def __repr__(self):
         return "<VerticalDatumCV('%s', '%s')>" % (self.term, self.definition)
+
 
 def copy_data_value(from_dv):
     new = DataValue()
@@ -461,6 +456,7 @@ class DataValue(Base):
 
     def __repr__(self):
         return "<DataValue('%s', '%s', '%s')>" % (self.data_value, self.local_date_time, self.value_accuracy)
+
 
 def copy_series(from_series):
     new = Series()

@@ -19,7 +19,7 @@ class TestSeriesService:
 
     def test_get_all_sites_empty(self):
         sites = self.series_service.get_used_sites()
-        #assert len(sites) == 0
+        # assert len(sites) == 0
         assert sites is None
 
     def test_create_qualifier(self):
@@ -33,11 +33,10 @@ class TestSeriesService:
     def test_get_qualifiers(self):
         assert self.series_service.get_all_qualifiers() == []
 
-        qual= self.series_service.create_qualifier("ABC123","This is a test")
+        qual = self.series_service.create_qualifier("ABC123", "This is a test")
 
         db_qual = self.series_service.get_all_qualifiers()[0]
         assert qual.id == db_qual.id
-
 
     def test_get_all_sites(self):
         assert self.series_service.get_used_sites() is None
@@ -54,7 +53,6 @@ class TestSeriesService:
         assert len(sites) == 1
         if isinstance(sites, list) and len(sites) > 0:
             assert site.code == sites[0].code
-
 
     def test_get_site_by_id_fail(self):
         assert self.series_service.get_site_by_id(0) == None

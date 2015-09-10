@@ -15,12 +15,14 @@ class frmDBConfig(wx.Dialog):
         self.SetSizer(self.sizer)
         self.sizer.Fit(self.panel)
 
+
 # Implementing clsDBConfiguration
 class pnlDBConfig(clsDBConfiguration):
     def __init__(self, parent, service_manager, is_main=False):
         clsDBConfiguration.__init__(self, parent)
 
-        self.choices = {"Microsoft SQL Server": 'mssql', "MySQL": 'mysql', "PostgreSQL": "postgresql", "SQLite": "sqlite"}
+        self.choices = {"Microsoft SQL Server": 'mssql', "MySQL": 'mysql', "PostgreSQL": "postgresql",
+                        "SQLite": "sqlite"}
         self.cbDatabaseType.AppendItems(self.choices.keys())
 
         self.parent = parent
@@ -45,7 +47,6 @@ class pnlDBConfig(clsDBConfiguration):
         except:
             pass
 
-
     # Handlers for clsDBConfiguration events.
     def OnBtnTest(self, event):
         conn_dict = self.getFieldValues()
@@ -53,16 +54,13 @@ class pnlDBConfig(clsDBConfiguration):
             self.btnSave.Enable(True)
             self.conn_dict = conn_dict
 
-
     def OnBtnSave(self, event):
-        
-        self.parent.EndModal(wx.ID_OK)
 
+        self.parent.EndModal(wx.ID_OK)
 
     def OnBtnCancel(self, event):
         self.parent.SetReturnCode(wx.ID_CANCEL)
         self.parent.EndModal(wx.ID_CANCEL)
-
 
     def validateInput(self, conn_dict):
         message = ""
@@ -73,13 +71,12 @@ class pnlDBConfig(clsDBConfiguration):
             wx.MessageBox(message, 'Database Connection', wx.OK | wx.ICON_EXCLAMATION)
             return False
 
-
         try:
             if self.service_manager.test_connection(conn_dict):
                 message = "This connection is valid"
                 wx.MessageBox(message, 'Test Connection', wx.OK)
             else:
-                #TODO add error message if user cannont connect to the database ( not using VPN) but the db is still 1.1.1)
+                # TODO add error message if user cannont connect to the database ( not using VPN) but the db is still 1.1.1)
                 if not (self.service_manager.get_db_version(conn_dict)):
                     message = "Cannot connect to the database"
                 else:
@@ -95,9 +92,6 @@ class pnlDBConfig(clsDBConfiguration):
 
         return True
 
-
-
-
     # Returns a dictionary of the database values entered in the form
     def getFieldValues(self):
         conn_dict = {}
@@ -107,7 +101,7 @@ class pnlDBConfig(clsDBConfiguration):
         conn_dict['password'] = self.txtPass.GetValue()
         conn_dict['address'] = self.txtServer.GetValue()
         conn_dict['db'] = self.txtDBName.GetValue()
-        conn_dict['version']= ""
+        conn_dict['version'] = ""
 
         return conn_dict
 

@@ -6,6 +6,7 @@ from sqlalchemy.orm import relationship
 # from sqlalchemy.dialects.mssql.base import BIT
 
 from apiCustomType import Geometry
+
 '''
 from sqlalchemy.ext.declarative import declarative_base
 
@@ -14,9 +15,10 @@ metadata = Base.metadata
 '''
 
 
-#from base import modelBase as Base
+# from base import modelBase as Base
 
 from src.api.base import modelBase
+
 Base = modelBase.Base
 
 
@@ -51,7 +53,7 @@ class CVAggregationStatistic(Base):
 
     def __repr__(self):
         return "<CVAggregationStatisticsType('%s', '%s', '%s', '%s')>" % (
-        self.Term, self.Name, self.Definition, self.Category)
+            self.Term, self.Name, self.Definition, self.Category)
 
 
 class CVAnnotationType(Base):
@@ -81,6 +83,7 @@ class CVCensorCode(Base):
     def __repr__(self):
         return "<CVActionType('%s', '%s', '%s', '%s')>" % (self.Term, self.Name, self.Definition, self.Category)
 
+
 class CVDataQualityType(Base):
     __tablename__ = 'cv_dataqualitytype'
     __table_args__ = {u'schema': 'odm2'}  # __table_args__ = {u'schema': Schema.getSchema()}
@@ -93,6 +96,7 @@ class CVDataQualityType(Base):
 
     def __repr__(self):
         return "<CVDataQualityType('%s', '%s', '%s', '%s')>" % (self.Term, self.Name, self.Definition, self.Category)
+
 
 class CVDataSetType(Base):
     __tablename__ = 'cv_datasettypecv'
@@ -163,6 +167,7 @@ class CVEquipmentType(Base):
     def __repr__(self):
         return "<CV('%s', '%s', '%s', '%s')>" % (self.Term, self.Name, self.Definition, self.Category)
 
+
 class CVMediumType(Base):
     __tablename__ = 'cv_medium'
     __table_args__ = {u'schema': 'odm2'}
@@ -172,8 +177,10 @@ class CVMediumType(Base):
     Definition = Column('definition', String(1000))
     Category = Column('category', String(255))
     SourceVocabularyUri = Column('sourcevocabularyuri', String(255))
+
     def __repr__(self):
-        return "<CVMedium('%s', '%s', '%s', '%s')>" %(self.Term, self.name, self.Definition, self.Category)
+        return "<CVMedium('%s', '%s', '%s', '%s')>" % (self.Term, self.name, self.Definition, self.Category)
+
 
 class CVMethodType(Base):
     __tablename__ = 'cv_methodtype'
@@ -257,7 +264,6 @@ class CVRelationshipType(Base):
 
     def __repr__(self):
         return "<CV('%s', '%s', '%s', '%s')>" % (self.Term, self.Name, self.Definition, self.Category)
-
 
 
 class CVSamplingFeatureGeoType(Base):
@@ -412,6 +418,7 @@ class CVVariableType(Base):
 
     def __repr__(self):
         return "<CV('%s', '%s', '%s', '%s')>" % (self.Term, self.Name, self.Definition, self.Category)
+
 
 class CVReferenceMaterialMedium(Base):
     __tablename__ = 'cv_referencematerialmedium'
@@ -639,7 +646,7 @@ class TaxonomicClassifiers(Base):
     TaxonomicClassifierDescription = Column('taxonomicclassifierdescription',
                                             String(500))
     ParentTaxonomicClassifierID = Column('parenttaxonomicclassifierid',
-                                            ForeignKey('odm2.taxonomicclassifiers.taxonomicclassifierid'))
+                                         ForeignKey('odm2.taxonomicclassifiers.taxonomicclassifierid'))
 
     parent = relationship(u'TaxonomicClassifiers', remote_side=[TaxonomicClassifierID])
 
@@ -656,7 +663,7 @@ class Units(Base):
 
     def __repr__(self):
         return "<Units('%s', '%s', '%s', '%s')>" % (
-        self.UnitsID, self.UnitsTypeCV, self.UnitsAbbreviation, self.UnitsName)
+            self.UnitsID, self.UnitsTypeCV, self.UnitsAbbreviation, self.UnitsName)
 
 
 class Variables(Base):
@@ -867,7 +874,7 @@ class SpatialOffsets(Base):
     SpatialOffsetID = Column('spatialoffsetid', Integer, primary_key=True, nullable=False)
     SpatialOffsetTypeCV = Column('spatialoffsettypecv', ForeignKey(CVSpatialOffsetType.Name), nullable=False,
                                  index=True)
-    Offset1Value = Column('offset1value', Float(53),  nullable=False)
+    Offset1Value = Column('offset1value', Float(53), nullable=False)
     Offset1UnitID = Column('offset1unitid', Integer, ForeignKey(Units.UnitsID), nullable=False)
     Offset2Value = Column('offset2value', Float(53))
     Offset2UnitID = Column('offset2unitid', Integer, ForeignKey(Units.UnitsID))
@@ -981,7 +988,7 @@ class Photos(Base):
 # ################################################################################
 class Models(Base):
     __tablename__ = 'models'
-    __table_args__ = {u'schema': 'odm2'}  #__table_args__ ={u'schema': Schema.getSchema()}
+    __table_args__ = {u'schema': 'odm2'}  # __table_args__ ={u'schema': Schema.getSchema()}
 
     ModelID = Column('modelid', Integer, primary_key=True, nullable=False)
     ModelCode = Column('modelcode', String(255), nullable=False)
@@ -1040,7 +1047,7 @@ class Citations(Base):
 
     def __repr__(self):
         return "<Citations('%s', '%s', '%s', '%s', '%s')>" % (
-        self.CitationID, self.Title, self.Publisher, self.PublicationYear, self.CitationLink)
+            self.CitationID, self.Title, self.Publisher, self.PublicationYear, self.CitationLink)
 
 
 # ################################################################################
@@ -1163,7 +1170,8 @@ class ReferenceMaterials(Base):
     __table_args__ = {u'schema': 'odm2'}  # __table_args__ = {u'schema': Schema.getSchema()}
 
     ReferenceMaterialID = Column('referencematerialid', Integer, primary_key=True, nullable=False)
-    ReferenceMaterialMediumCV = Column('referencematerialmediumcv', ForeignKey('CVReferenceMaterialMedium.Name'), nullable=False, index=True)
+    ReferenceMaterialMediumCV = Column('referencematerialmediumcv', ForeignKey('CVReferenceMaterialMedium.Name'),
+                                       nullable=False, index=True)
     ReferenceMaterialOrganizationID = Column('referencematerialoranizationid',
                                              ForeignKey(Organizations.OrganizationID), nullable=False)
     ReferenceMaterialCode = Column('referencematerialcode', String(50), nullable=False)
@@ -1363,7 +1371,7 @@ class MethodExternalIdentifiers(Base):
     ExternalIdentifierSystemID = Column('externalidentifiersystemid',
                                         ForeignKey(ExternalIdentifierSystems.ExternalIdentifierSystemID),
                                         nullable=False)
-    
+
     MethodExternalIdentifier = Column('methodexternalidentifier', String(255), nullable=False)
     MethodExternalIdentifierURI = Column('methodexternalidentifieruri', String(255))
 
@@ -1821,11 +1829,12 @@ class MeasurementResults(Base):
     YLocationUnitsObj = relationship(Units, primaryjoin='MeasurementResults.YLocationUnitsID == Units.UnitsID')
     ZLocationUnitsObj = relationship(Units, primaryjoin='MeasurementResults.ZLocationUnitsID == Units.UnitsID')
     ResultObj = relationship(Results, primaryjoin='MeasurementResults.ResultID == Results.ResultID')
+
     def __repr__(self):
         return "<MeasResults('%s', '%s', '%s', '%s', '%s', '%s', '%s',  '%s')>" % \
                (self.ResultID, self.XLocation, self.YLocation, self.XLocation,
                 self.ResultObj, self.XLocationUnitsObj, self.SpatialReferenceObj,
-                 self.AggregationStatisticCV)
+                self.AggregationStatisticCV)
 
 
 class CategoricalResultValues(Base):
@@ -1855,8 +1864,6 @@ class MeasurementResultValues(Base):
 
     def __repr__(self):
         return "<MeasValues('%s', '%s', '%s')>" % (self.DataValue, self.ValueDateTime, self.ResultID)
-
-
 
 
 class PointCoverageResultValues(Base):
@@ -1983,7 +1990,8 @@ class TimeSeriesResultValues(Base):
                 self.TimeAggregationIntervalUnitsID]
 
     def __repr__(self):
-        return "<TimeSeriesResultValues('%s', '%s', '%s')>" % (self.DataValue, self.ValueDateTime, self.TimeAggregationInterval)
+        return "<TimeSeriesResultValues('%s', '%s', '%s')>" % (
+        self.DataValue, self.ValueDateTime, self.TimeAggregationInterval)
 
 
 class TrajectoryResultValues(Base):
@@ -2047,9 +2055,11 @@ class TransectResultValues(Base):
 import inspect
 import sys
 
+
 def change_schema(schema):
-    #get a list of all of the classes in the module
-    clsmembers = inspect.getmembers(sys.modules[__name__], lambda member: inspect.isclass(member) and member.__module__ == __name__)
+    # get a list of all of the classes in the module
+    clsmembers = inspect.getmembers(sys.modules[__name__],
+                                    lambda member: inspect.isclass(member) and member.__module__ == __name__)
 
     for name, Tbl in clsmembers:
         Tbl.__table__.schema = schema

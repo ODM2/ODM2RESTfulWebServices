@@ -1,11 +1,10 @@
-import timeit
 import logging
+
+from sqlalchemy import bindparam
+
 from odmtools.common.logger import LoggerTool
 from odmtools.odmservices import SeriesService
 from odmtools.odmdata import DataValue
-from sqlalchemy import update, bindparam
-from odmtools.common.taskServer import TaskServerMP
-from multiprocessing import cpu_count, freeze_support
 
 tool = LoggerTool()
 logger = tool.setupLogger(__name__, __name__ + '.log', 'w', logging.DEBUG)
@@ -25,9 +24,9 @@ class MemoryDatabase(object):
         self.mem_service = SeriesService("sqlite:///:memory:")
         # TODO clean up closing of program
         # if taskserver is None:
-        #numproc = cpu_count()
-        #self.taskserver = TaskServerMP(numproc=numproc)
-        #else:
+        # numproc = cpu_count()
+        # self.taskserver = TaskServerMP(numproc=numproc)
+        # else:
 
         self.taskserver = taskserver
 
@@ -36,7 +35,6 @@ class MemoryDatabase(object):
 
     def set_series_service(self, service):
         self.series_service = service
-
 
     ##############
     # DB Queries
@@ -88,19 +86,18 @@ class MemoryDatabase(object):
     def rollback(self):
         self.mem_service._edit_session.rollback()
         # self.mem_service._session_factory.engine.connect().connection.rollback()
-        #self.updateDF()
+        # self.updateDF()
 
     def update(self, updates):
 
         stmt = (DataValue.__table__.update().
                 where(DataValue.id == bindparam('id')).
                 values(DataValue=bindparam('value'))
-        )
+                )
 
         self.mem_service._edit_session.execute(stmt, updates)
 
         # self.updateDF()
-
 
     def updateValue(self, ids, operator, value):
         # query = DataValue.data_value+value
@@ -114,31 +111,29 @@ class MemoryDatabase(object):
             query = value
 
 
-        #break into chunks to get around sqlites restriction. allowing user to send in only 999 arguments at once
-        chunks=self.chunking(ids)
+        # break into chunks to get around sqlites restriction. allowing user to send in only 999 arguments at once
+        chunks = self.chunking(ids)
         for c in chunks:
-            q=self.mem_service._edit_session.query(DataValue).filter(DataValue.id.in_(c))
+            q = self.mem_service._edit_session.query(DataValue).filter(DataValue.id.in_(c))
             q.update({DataValue.data_value: query}, False)
 
-        #self.updateDF()
+            # self.updateDF()
 
     def chunking(self, data):
-        return [data[x:x+998] for x in xrange(0, len(data), 998)]
-        
-    #break into chunks to get around sqlites restriction. allowing user to send in only 999 arguments at once
+        return [data[x:x + 998] for x in xrange(0, len(data), 998)]
+
+    # break into chunks to get around sqlites restriction. allowing user to send in only 999 arguments at once
     def updateFlag(self, ids, value):
-        chunks=self.chunking(ids)
+        chunks = self.chunking(ids)
         for c in chunks:
-            self.mem_service._edit_session.query(DataValue).filter(DataValue.id.in_(c))\
+            self.mem_service._edit_session.query(DataValue).filter(DataValue.id.in_(c)) \
                 .update({DataValue.qualifier_id: value}, False)
 
-
     def delete(self, ids):
-        chunks=self.chunking(ids)
+        chunks = self.chunking(ids)
         for c in chunks:
             self.mem_service.delete_dvs(c)
-        #self.updateDF()
-
+            # self.updateDF()
 
     def addPoints(self, points):
         """
@@ -160,15 +155,12 @@ class MemoryDatabase(object):
                     "QualityControlLevelID": point[14]}
             self.mem_service._edit_session.execute(stmt, vals)
 
-
     def stopEdit(self):
         self.editLoaded = False
         self.df = None
 
-
     def setConnection(self, service):
         self.mem_service = service
-
 
     # TODO multiprocess this function
     def updateDF(self):
@@ -200,10 +192,10 @@ class MemoryDatabase(object):
             # results = self.taskserver.getCompletedTasks()
             # self.conn = results["InitEditValues"]
             else:
-            '''  #TODO: Thread this call
-            if len(self.df)>0:
+            '''  # TODO: Thread this call
+            if len(self.df) > 0:
                 self.df.to_sql(name="DataValues", if_exists='replace', con=self.mem_service._session_factory.engine,
-                               index=False)#,flavor='sqlite', chunksize=10000)
+                               index=False)  # ,flavor='sqlite', chunksize=10000)
                 logger.debug("done loading database")
             else:
                 logger.debug("no data in series")
@@ -230,4 +222,3 @@ class MemoryDatabase(object):
         if qcl is not None:
             logger.debug(qcl)
             query.update({DataValue.quality_control_level_id: qcl})
-

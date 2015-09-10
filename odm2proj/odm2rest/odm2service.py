@@ -17,11 +17,11 @@ class Service:
         # self.user = 'cinergi'
         # self.password = 'cinergi'
         # postgresql
-        self.engine = 'postgresql'
-        self.address = 'sis-devel.cloudapp.net'
-        self.db = 'marchantariats'
-        self.user = 'postgres'
-        self.password = 'cinergi'
+        self.engine = 'db_type'
+        self.address = 'localhost'
+        self.db = 'db name'
+        self.user = 'user'
+        self.password = 'pass'
 
         self.items = []
         self.accept = ''

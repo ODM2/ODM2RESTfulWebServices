@@ -1,12 +1,11 @@
-import logging
 import os
 import sys
-
 import urllib
 
-from sqlalchemy.exc import SQLAlchemyError#OperationalError, DBAPIError
+from sqlalchemy.exc import SQLAlchemyError  # OperationalError, DBAPIError
 
-#from odmtools.common.logger import LoggerTool
+
+# from odmtools.common.logger import LoggerTool
 from series_service import SeriesService
 from cv_service import CVService
 from edit_service import EditService
@@ -16,8 +15,8 @@ from odmtools.lib.Appdirs.appdirs import user_config_dir
 from odmtools.odmdata.session_factory import SessionFactory
 
 
-#tool = LoggerTool()
-#logger = tool.setupLogger(__name__, __name__ + '.log', 'w', logging.DEBUG)
+# tool = LoggerTool()
+# logger = tool.setupLogger(__name__, __name__ + '.log', 'w', logging.DEBUG)
 
 
 class ServiceManager():
@@ -35,7 +34,7 @@ class ServiceManager():
                 break
             else:
                 line = line.split()
-                #logger.debug(line)
+                # logger.debug(line)
 
                 if len(line) >= 5:
                     line_dict = {}
@@ -66,7 +65,8 @@ class ServiceManager():
                 if self.testEngine(conn_string):
                     return self.get_current_conn_dict()
             except Exception as e:
-                logger.fatal("The previous database for some reason isn't accessible, please enter a new connection %s" % e.message)
+                logger.fatal(
+                    "The previous database for some reason isn't accessible, please enter a new connection %s" % e.message)
                 return None
         return None
 
@@ -92,7 +92,6 @@ class ServiceManager():
             logger.error("Unable to save connection due to invalid connection to database")
             return False
 
-
     @classmethod
     def testEngine(self, connection_string):
         s = SessionFactory(connection_string, echo=False)
@@ -101,7 +100,7 @@ class ServiceManager():
         elif 'mysql' in connection_string:
             s.my_test_Session().execute('Select "VariableCode" From Variables Limit 1')
         elif 'postgresql' in connection_string:
-            #s.psql_test_Session().execute('Select "VariableCode" From "ODM2"."Variables" Limit 1')
+            # s.psql_test_Session().execute('Select "VariableCode" From "ODM2"."Variables" Limit 1')
             s.psql_test_Session().execute('Select "VariableCode" From "Variables" Limit 1')
         return True
 
@@ -130,7 +129,7 @@ class ServiceManager():
         if isinstance(conn_string, dict):
             conn_string = self._build_connection_string(conn_string)
         service = SeriesService(conn_string)
-        #if not self.version:
+        # if not self.version:
         try:
             self.version = service.get_db_version()
         except Exception as e:
@@ -152,12 +151,12 @@ class ServiceManager():
         return CVService(conn_string, self.debug)
 
     def get_edit_service(self, series_id, connection):
-        
-        return EditService(series_id, connection=connection,  debug=self.debug)
+
+        return EditService(series_id, connection=connection, debug=self.debug)
 
     def get_record_service(self, script, series_id, connection):
         return EditTools(self, script, self.get_edit_service(series_id, connection),
-                             self._build_connection_string(self.is_valid_connection()))
+                         self._build_connection_string(self.is_valid_connection()))
 
     def get_export_service(self):
         return ExportService(self.get_series_service())
@@ -167,7 +166,7 @@ class ServiceManager():
     ## ###################
 
     def _get_file(self, mode):
-        #fn = util.resource_path('connection.config')
+        # fn = util.resource_path('connection.config')
         fn = os.path.join(user_config_dir("ODMTools", "UCHIC"), 'connection.config')
 
         config_file = None
@@ -182,7 +181,6 @@ class ServiceManager():
         except:
             open(fn, 'w').close()
             config_file = open(fn, mode)
-            
 
         return config_file
 
@@ -190,9 +188,10 @@ class ServiceManager():
         driver = ""
         if conn_dict['engine'] == 'mssql' and sys.platform != 'win32':
             driver = "pyodbc"
-            quoted = urllib.quote_plus('DRIVER={FreeTDS};DSN=%s;UID=%s;PWD=%s;' % (conn_dict['address'], conn_dict['user'], conn_dict['password']))
+            quoted = urllib.quote_plus('DRIVER={FreeTDS};DSN=%s;UID=%s;PWD=%s;' % (
+            conn_dict['address'], conn_dict['user'], conn_dict['password']))
             conn_string = 'mssql+pyodbc:///?odbc_connect={}'.format(quoted)
-        
+
         else:
             if conn_dict['engine'] == 'mssql':
                 driver = "pyodbc"
@@ -213,4 +212,3 @@ class ServiceManager():
         for conn in self._conn_dicts:
             f.write("%s %s %s %s %s\n" % (conn['engine'], conn['user'], conn['password'], conn['address'], conn['db']))
         f.close()
-

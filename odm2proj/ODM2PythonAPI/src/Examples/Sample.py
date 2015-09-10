@@ -2,12 +2,12 @@ __author__ = 'stephanie'
 import sys
 import os
 
-
 import matplotlib.pyplot as plt
 from matplotlib import dates
 
 
-#this will be removed when we can installthe api
+
+# this will be removed when we can installthe api
 this_file = os.path.realpath(__file__)
 directory = os.path.dirname(os.path.dirname(this_file))
 print directory
@@ -19,13 +19,13 @@ from src.api.ODM2.services.readService import *
 # ----------------------------------------
 
 
-#connect to database
-#createconnection (dbtype, servername, dbname, username, password)
+# connect to database
+# createconnection (dbtype, servername, dbname, username, password)
 session_factory = dbconnection.createConnection('mysql', 'localhost', 'odm2', 'ODM', 'odm')
 
 
 
-#_session = session_factory.getSession()
+# _session = session_factory.getSession()
 
 read = ReadODM2(session_factory)
 

@@ -12,8 +12,8 @@ from ...ODM2.models import Actions, ActionBy, Organizations, Affiliations, Peopl
     SamplingFeatures, Results, Variables, Methods, TimeSeriesResults, \
     TimeSeriesResultValues, Sites, FeatureActions, ProcessingLevels
 
-
 action_table = Actions()
+
 
 # ###################################################################################
 #                           Monitoring Site Locations
@@ -28,7 +28,7 @@ class SpatialReference(Base):
     srs_id = Column('srsid', String)
     srs_name = Column('srsname', String)
     is_geographic = None
-    #is_geographic = Column('IsGeographic', Boolean)
+    # is_geographic = Column('IsGeographic', Boolean)
     notes = Column('description', String)
 
     def __repr__(self):
@@ -38,6 +38,8 @@ class SpatialReference(Base):
 sf_table = SamplingFeatures().__table__
 site_table = Sites().__table__
 site_join = site_table.join(sf_table, site_table.c.samplingfeatureid == sf_table.c.samplingfeatureid)
+
+
 class Site(Base):
     __tablename__ = u'sites'
 
@@ -48,13 +50,13 @@ class Site(Base):
     name = site_join.c.odm2_samplingfeatures_samplingfeaturename
     latitude = site_join.c.odm2_sites_latitude
     longitude = site_join.c.odm2_sites_longitude
-    lat_long_datum_id = site_join.c.odm2_sites_spatialreferenceid # ._clone().foreign_keys = ForeignKey("SpatialReference.id")#, Integer, ForeignKey("SpatialReference.id"))#column_property(site_table.c.LatLonDatumID, ForeignKey('SpatialReference.id'))
+    lat_long_datum_id = site_join.c.odm2_sites_spatialreferenceid  # ._clone().foreign_keys = ForeignKey("SpatialReference.id")#, Integer, ForeignKey("SpatialReference.id"))#column_property(site_table.c.LatLonDatumID, ForeignKey('SpatialReference.id'))
     elevation_m = site_join.c.odm2_samplingfeatures_elevation_m
     vertical_datum_id = site_join.c.odm2_samplingfeatures_elevationdatumcv
 
     local_x = None
     local_y = None
-    local_projection_id = None#Column('LocalProjectionID', Integer, ForeignKey('SpatialReferences.SpatialReferenceID'))
+    local_projection_id = None  # Column('LocalProjectionID', Integer, ForeignKey('SpatialReferences.SpatialReferenceID'))
     pos_accuracy_m = None
     state = None
     county = None
@@ -65,13 +67,14 @@ class Site(Base):
     # relationships
     # TODO @sreeder, Please take a look at this line as it throws: sqlalchemy.exc.InvalidRequestError: Class <class 'ODM2.LikeODM1.model.Site2'> does not have a mapped column named 'lat_long_datum_id'
     # :)
-    #spatial_ref = relationship(SpatialReference, primaryjoin=("SpatialReference.id==Site2.lat_long_datum_id"))
-    #spatial_ref = relationship(SpatialReference)
-    #spatial_ref = relationship(SpatialReference, primaryjoin="Site.lat_long_datum_id == SpatialReference.id")
+    # spatial_ref = relationship(SpatialReference, primaryjoin=("SpatialReference.id==Site2.lat_long_datum_id"))
+    # spatial_ref = relationship(SpatialReference)
+    # spatial_ref = relationship(SpatialReference, primaryjoin="Site.lat_long_datum_id == SpatialReference.id")
 
 
     def __repr__(self):
         return "<Site('%s', '%s', '%s')>" % (self.code, self.name, self.elevation_m)
+
 
 # ###################################################################################
 #                            Units
@@ -89,6 +92,7 @@ class Unit(Base):
     def __repr__(self):
         return "<Unit('%s', '%s', '%s', '%s')>" % (self.id, self.name, self.type, self.abbreviation)
 
+
 # ###################################################################################
 #                            Variables
 # ###################################################################################
@@ -105,30 +109,30 @@ result_aliased_table = select([
     result_table.c.variableid,
     result_table.c.sampledmediumcv,
 
-
 ]).alias("ODM2_Aliased")
 
 ts_join = result_aliased_table.join(ts_table, result_aliased_table.c.RID == ts_table.c.resultid)
 variable_join = ts_join.join(variables_table, variables_table.c.variableid == ts_join.c.ODM2_Aliased_RID)
 
+
 class Variable(Base):
     __table__ = variable_join
     __tablename__ = u'variables'
 
-    id = variable_join.c.odm2_variables_variableid                                            # Column('VariableID', Integer, primary_key=True)
-    code = variable_join.c.odm2_variables_variablecode                                        # Column('VariableCode', String, nullable=False)
-    name = variable_join.c.odm2_variables_variablenamecv                                      # Column('VariableNameCV', String, nullable=False)
-    speciation = variable_join.c.odm2_variables_speciationcv                                  # Column('SpeciationCV', String, nullable=False)
-    no_data_value = variable_join.c.odm2_variables_nodatavalue                                # Column('NoDataValue', Float, nullable=False)
+    id = variable_join.c.odm2_variables_variableid  # Column('VariableID', Integer, primary_key=True)
+    code = variable_join.c.odm2_variables_variablecode  # Column('VariableCode', String, nullable=False)
+    name = variable_join.c.odm2_variables_variablenamecv  # Column('VariableNameCV', String, nullable=False)
+    speciation = variable_join.c.odm2_variables_speciationcv  # Column('SpeciationCV', String, nullable=False)
+    no_data_value = variable_join.c.odm2_variables_nodatavalue  # Column('NoDataValue', Float, nullable=False)
 
-    variable_unit_id = variable_join.c.ODM2_Aliased_unitsid                                   # Column('VariableUnitsID', Integer, ForeignKey('Units.UnitsID'), nullable=False)
-    sample_medium = variable_join.c.ODM2_Aliased_sampledmediumcv                            # Column('ODM2_Results_UnitsID', String, nullable=False)
-    value_type = variable_join.c.odm2_variables_variabletypecv                                # Column('ValueType', String, nullable=False)
-    is_regular = None                                                                   # Column('IsRegular', Boolean, nullable=False)
-    time_support = variable_join.c.odm2_timeseriesresults_intendedtimespacing                 # Column('TimeSupport', Float, nullable=False)
-    time_unit_id = variable_join.c.odm2_timeseriesresults_intendedtimespacingunitsid          # Column('TimeUnitsID', Integer, ForeignKey('Units.UnitsID'), nullable=False)
-    data_type = variable_join.c.odm2_timeseriesresults_aggregationstatisticcv                 # Column('DataType', String, nullable=False)
-    general_category = None                                                             # Column('GeneralCategory', String, nullable=False)
+    variable_unit_id = variable_join.c.ODM2_Aliased_unitsid  # Column('VariableUnitsID', Integer, ForeignKey('Units.UnitsID'), nullable=False)
+    sample_medium = variable_join.c.ODM2_Aliased_sampledmediumcv  # Column('ODM2_Results_UnitsID', String, nullable=False)
+    value_type = variable_join.c.odm2_variables_variabletypecv  # Column('ValueType', String, nullable=False)
+    is_regular = None  # Column('IsRegular', Boolean, nullable=False)
+    time_support = variable_join.c.odm2_timeseriesresults_intendedtimespacing  # Column('TimeSupport', Float, nullable=False)
+    time_unit_id = variable_join.c.odm2_timeseriesresults_intendedtimespacingunitsid  # Column('TimeUnitsID', Integer, ForeignKey('Units.UnitsID'), nullable=False)
+    data_type = variable_join.c.odm2_timeseriesresults_aggregationstatisticcv  # Column('DataType', String, nullable=False)
+    general_category = None  # Column('GeneralCategory', String, nullable=False)
 
     """
     # relationships
@@ -136,10 +140,11 @@ class Variable(Base):
     "Unit.id==Variable.variable_unit_id"))  # <-- Uses class attribute names, not table column names
     time_unit = relationship(Unit, primaryjoin=("Unit.id==Variable.time_unit_id"))
     """
+
     def __repr__(self):
         return "<Variable('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s')>" % \
                (self.id, self.code, self.name, self.speciation, self.no_data_value, self.variable_unit_id,
-               self.sample_medium, self.value_type, self.time_support, self.time_unit_id, self.data_type)
+                self.sample_medium, self.value_type, self.time_support, self.time_unit_id, self.data_type)
 
 
 # ###################################################################################
@@ -157,18 +162,21 @@ result_aliased_table = select([
     people_table.c.personlastname,
 ]).alias("ODM2_Aliased")
 
-affiliation_join = result_aliased_table.join(affiliation_table, affiliation_table.c.affiliationid == result_aliased_table.c.PID)
-source_join = affiliation_join.join(organization_table, affiliation_join.c.odm2_affiliations_organizationid == organization_table.c.organizationid)
+affiliation_join = result_aliased_table.join(affiliation_table,
+                                             affiliation_table.c.affiliationid == result_aliased_table.c.PID)
+source_join = affiliation_join.join(organization_table,
+                                    affiliation_join.c.odm2_affiliations_organizationid == organization_table.c.organizationid)
+
 
 class Source(Base):
     __table__ = source_join
     __tablename__ = u'datasources'
     __table_args__ = {u'schema': u'odm2'}
 
-    id = source_join.c.odm2_affiliations_affiliationid                      # Column('OrganizationID', Integer, primary_key=True)
-    organization = source_join.c.odm2_affiliations_organizationid           # Column('OrganizationName', String, nullable=False)
+    id = source_join.c.odm2_affiliations_affiliationid  # Column('OrganizationID', Integer, primary_key=True)
+    organization = source_join.c.odm2_affiliations_organizationid  # Column('OrganizationName', String, nullable=False)
     description = source_join.c.odm2_organizations_organizationdescription  # Column('OrganizationDescription', String, nullable=False)
-    link = source_join.c.odm2_organizations_organizationlink                # Column('OrganizationLink', String)
+    link = source_join.c.odm2_organizations_organizationlink  # Column('OrganizationLink', String)
 
     first_name = source_join.c.ODM2_Aliased_personfirstname
     middle_name = source_join.c.ODM2_Aliased_personmiddlename
@@ -177,22 +185,23 @@ class Source(Base):
     # contact_name = column_property(first_name + " " + middle_name + " " + last_name)
     contact_name = column_property(first_name + " " + last_name)
 
-    phone = source_join.c.odm2_affiliations_primaryphone                    # Column('Phone', String, nullable=False)
-    email = source_join.c.odm2_affiliations_primaryemail                    # Column('Email', String, nullable=False)
-    address = source_join.c.odm2_affiliations_primaryaddress                # Column('Address', String, nullable=False)
-    city = "Unknown"                                                   # Column('City', String, nullable=False)
-    state = "Unknown"                                                  # Column('State', String, nullable=False)
-    zip_code = "Unknown"                                               # Column('ZipCode', String, nullable=False)
+    phone = source_join.c.odm2_affiliations_primaryphone  # Column('Phone', String, nullable=False)
+    email = source_join.c.odm2_affiliations_primaryemail  # Column('Email', String, nullable=False)
+    address = source_join.c.odm2_affiliations_primaryaddress  # Column('Address', String, nullable=False)
+    city = "Unknown"  # Column('City', String, nullable=False)
+    state = "Unknown"  # Column('State', String, nullable=False)
+    zip_code = "Unknown"  # Column('ZipCode', String, nullable=False)
     citation = "Not specified"
-    #iso_metadata_id = Column('MetadataID', Integer, ForeignKey('ODM2.ISOMetadata.Metadataid'), nullable=False)
+    # iso_metadata_id = Column('MetadataID', Integer, ForeignKey('ODM2.ISOMetadata.Metadataid'), nullable=False)
 
     # relationships
-    #iso_metadata = relationship(ISOMetadata)
+    # iso_metadata = relationship(ISOMetadata)
 
     def __repr__(self):
         return "<Source('%s', '%s', '%s', '%s', '%s', '%s', '%s')>" % \
                (self.id, self.contact_name, self.first_name, self.last_name,
                 self.phone, self.organization, self.description)
+
 
 class ISOMetadata(Base):
     __tablename__ = 'isometadata'
@@ -207,6 +216,7 @@ class ISOMetadata(Base):
 
     def __repr__(self):
         return "<ISOMetadata('%s', '%s', '%s')>" % (self.id, self.topic_category, self.title)
+
 
 # ###################################################################################
 #                            Data Collection Methods
@@ -227,28 +237,28 @@ class LabMethod(Base):
     def __repr__(self):
         return "<LabMethod('%s', '%s', '%s', '%s')>" % (self.id, self.name, self.organization, self.method_name)
 
+
 class Method(Base):
     # __table__ = method_tabl
     __tablename__ = 'methods'
     __table_args__ = {u'schema': u'odm2'}
 
-    id=Column('methodid', Integer, primary_key=True)
-    description= Column('methoddescription', String, nullable=False)
-    link=Column('methodlink', String)
+    id = Column('methodid', Integer, primary_key=True)
+    description = Column('methoddescription', String, nullable=False)
+    link = Column('methodlink', String)
 
     def __repr__(self):
         return "<Method('%s', '%s', '%s')>" % (self.id, self.description, self.link)
-
 
 
 # ###################################################################################
 #                            ODMVersion
 # ###################################################################################
 class ODMVersion:
-    #__tablename__ = 'ODMVersion'
+    # __tablename__ = 'ODMVersion'
 
-    #version_number = Column('VersionNumber', String, primary_key=True)
-    #version_number = column_property('2.0')
+    # version_number = Column('VersionNumber', String, primary_key=True)
+    # version_number = column_property('2.0')
     @property
     def version_number(self):
         return "2.0"
@@ -266,6 +276,8 @@ class CensorCodeCV(Base):
 
     def __repr__(self):
         return "<CensorCodeCV('%s', '%s')>" % (self.term, self.definition)
+
+
 '''
 class DataTypeCV(Base):
     __tablename__ = 'cvterms'
@@ -285,6 +297,8 @@ class GeneralCategoryCV(Base):
     def __repr__(self):
         return "<GeneralCategoryCV('%s', '%s')>" % (self.term, self.definition)
 '''
+
+
 class SampleMediumCV(Base):
     __tablename__ = 'cv_sampledmedium'
     __table_args__ = {u'schema': 'odm2'}
@@ -294,6 +308,8 @@ class SampleMediumCV(Base):
 
     def __repr__(self):
         return "<SampleMedium('%s', '%s')>" % (self.term, self.definition)
+
+
 '''
 class SampleTypeCV(Base):
     __tablename__ = 'cvterms'
@@ -304,6 +320,8 @@ class SampleTypeCV(Base):
     def __repr__(self):
         return "<SampleTypeCV('%s', '%s')>" % (self.term, self.definition)
 '''
+
+
 class SiteTypeCV(Base):
     __tablename__ = 'cv_sitetype'
     __table_args__ = {u'schema': 'odm2'}
@@ -314,6 +332,7 @@ class SiteTypeCV(Base):
     def __repr__(self):
         return "<SiteTypeCV('%s', '%s')>" % (self.term, self.definition)
 
+
 class SpeciationCV(Base):
     __tablename__ = 'cv_speciation'
     __table_args__ = {u'schema': 'odm2'}
@@ -323,6 +342,8 @@ class SpeciationCV(Base):
 
     def __repr__(self):
         return "<SpeciationCV('%s', '%s')>" % (self.term, self.definition)
+
+
 '''
 class TopicCategoryCV(Base):
     __tablename__ = 'cvterms'
@@ -342,6 +363,8 @@ class ValueTypeCV(Base):
     def __repr__(self):
         return "<ValueTypeCV('%s', '%s')>" % (self.term, self.definition)
 '''
+
+
 class VariableNameCV(Base):
     __tablename__ = 'cv_variablename'
     __table_args__ = {u'schema': 'odm2'}
@@ -351,6 +374,7 @@ class VariableNameCV(Base):
 
     def __repr__(self):
         return "<VariableNameCV('%s', '%s')>" % (self.term, self.definition)
+
 
 class VerticalDatumCV(Base):
     __tablename__ = 'cv_elevationdatum'
@@ -362,6 +386,7 @@ class VerticalDatumCV(Base):
     def __repr__(self):
         return "<VerticalDatumCV('%s', '%s')>" % (self.term, self.definition)
 
+
 class Sample(Base):
     __tablename__ = 'samples'
     __table_args__ = {u'schema': u'odm2'}
@@ -372,10 +397,11 @@ class Sample(Base):
     lab_method_id = Column('labmethodid', Integer, ForeignKey(LabMethod.id), nullable=False)
 
     # relationships
-    #lab_method = relationship(LabMethod)
+    # lab_method = relationship(LabMethod)
 
     def __repr__(self):
         return "<Sample('%s', '%s', '%s', '%s')>" % (self.id, self.type, self.lab_sample_code, self.lab_method_id)
+
 
 class Qualifier(Base):
     __tablename__ = u'annotations'
@@ -388,9 +414,9 @@ class Qualifier(Base):
     def __repr__(self):
         return "<Qualifier('%s', '%s', '%s')>" % (self.id, self.code, self.description)
 
-#TODO Table no longer exists
+
+# TODO Table no longer exists
 class OffsetType(Base):
-    
     __tablename__ = u'timeseriesresults'
     __table_args__ = {u'schema': 'ODM2'}
 
@@ -434,7 +460,6 @@ result_aliased_table = select([
     result_table.c.processinglevelid,
     result_table.c.valuecount,
 
-
 ]).alias("ODM2_RESULT_Aliased")
 
 action_aliased_table = select([
@@ -451,7 +476,8 @@ action_by_aliased_table = select([
 
 joined_table = timeseriesresultvalues_table.join(result_aliased_table, timeseriesresultvalues_table.c.resultid ==
                                                  result_aliased_table.c.RID)
-joined_table = joined_table.join(feature_action_table, feature_action_table.c.featureactionid == result_aliased_table.c.FAID)
+joined_table = joined_table.join(feature_action_table,
+                                 feature_action_table.c.featureactionid == result_aliased_table.c.FAID)
 joined_table = joined_table.join(action_aliased_table, feature_action_table.c.actionid == action_aliased_table.c.AID)
 joined_table = joined_table.join(action_by_aliased_table, action_aliased_table.c.AID == action_by_aliased_table.c.ABID)
 
@@ -502,6 +528,7 @@ class DataValue(Base):
     def __repr__(self):
         return "<DataValue(%s)>" % ', '.join([str(x) for x in self.list_repr()])
 
+
 '''
 /anaconda/lib/python2.7/site-packages/sqlalchemy/ext/declarative/base.py:353: SAWarning: On class 'DataValue', Column object 'samplingfeatureid' named directly multiple times, only one will be used: sample_id, site_id
   (self.classname, name, (", ".join(sorted(keys))))
@@ -531,8 +558,12 @@ joined_table = joined_table.join(source_join, joined_table.c.odm2_actionby_affil
 joined_table = joined_table.join(processing_levels_table, joined_table.c.ODM2_RESULT_Aliased_processinglevelid == processing_levels_table.c.processinglevelid)
 
 '''
+
+
 class Series:
     pass
+
+
 '''
 
 class Series(Base):
@@ -597,14 +628,14 @@ class Series(Base):
         return self.__table__.columns.keys()
 '''
 
-
-
 import inspect
 import sys
 
+
 def change_schema(schema):
     # get a list of all of the classes in the module
-    clsmembers = inspect.getmembers(sys.modules[__name__], lambda member: inspect.isclass(member) and member.__module__ == __name__)
+    clsmembers = inspect.getmembers(sys.modules[__name__],
+                                    lambda member: inspect.isclass(member) and member.__module__ == __name__)
 
     for name, Tbl in clsmembers:
         Tbl.__table__.schema = schema

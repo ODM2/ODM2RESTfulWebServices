@@ -43,4 +43,4 @@ from deleteService import DeleteODM2
 from readService import ReadODM2
 from updateService import UpdateODM2
 
-__all__= ['CreateODM2', 'DeleteODM2', 'ReadODM2', 'UpdateODM2' ]
+__all__ = ['CreateODM2', 'DeleteODM2', 'ReadODM2', 'UpdateODM2']

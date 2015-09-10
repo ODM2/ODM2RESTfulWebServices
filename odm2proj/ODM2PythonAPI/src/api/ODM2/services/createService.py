@@ -1,5 +1,5 @@
 from src.api.ODM2.models import *
-#from src.api.ODM2.LikeODM1.model import Site
+# from src.api.ODM2.LikeODM1.model import Site
 
 __author__ = 'sreeder'
 
@@ -7,27 +7,28 @@ from .. import serviceBase
 import datetime as dt
 import uuid
 
-class CreateODM2( serviceBase):
+
+class CreateODM2(serviceBase):
     '''
     def __init__(self, session):
         self._session = session
     '''
-# ################################################################################
-# Annotations
-# ################################################################################
+    # ################################################################################
+    # Annotations
+    # ################################################################################
 
 
 
-# ################################################################################
-# CV
-# ################################################################################
+    # ################################################################################
+    # CV
+    # ################################################################################
 
 
 
 
-# ################################################################################
-# Core
-# ################################################################################
+    # ################################################################################
+    # Core
+    # ################################################################################
 
     def createVariable(self, code, name, vType, nodv, speciation=None, definition=None):
         """
@@ -147,7 +148,6 @@ class CreateODM2( serviceBase):
         self._session.commit()
 
         return sf
-
 
     def createUnit(self, type, abbrev, name):
         """Create Unit table
@@ -327,7 +327,6 @@ class CreateODM2( serviceBase):
 
         return featureaction
 
-
     def createResult(self, featureactionid, variableid, unitid, processinglevelid, valuecount, sampledmedium,
                      resulttypecv,
                      taxonomicclass=None, resultdatetime=None, resultdatetimeutcoffset=None,
@@ -353,52 +352,51 @@ class CreateODM2( serviceBase):
 
         return result
 
-
-# ################################################################################
-# Data Quality
-# ################################################################################
-
-
-
-# ################################################################################
-# Equipment
-# ################################################################################
+    # ################################################################################
+    # Data Quality
+    # ################################################################################
 
 
 
-
-# ################################################################################
-# ExtensionProperties
-# ################################################################################
+    # ################################################################################
+    # Equipment
+    # ################################################################################
 
 
 
 
-
-# ################################################################################
-# External Identifiers
-# ################################################################################
-
-
-
-
-# ################################################################################
-# Lab Analyses
-# ################################################################################
+    # ################################################################################
+    # ExtensionProperties
+    # ################################################################################
 
 
 
 
-# ################################################################################
-# Provenance
-# ################################################################################
+
+    # ################################################################################
+    # External Identifiers
+    # ################################################################################
 
 
 
 
-# ################################################################################
-# Results
-# ################################################################################
+    # ################################################################################
+    # Lab Analyses
+    # ################################################################################
+
+
+
+
+    # ################################################################################
+    # Provenance
+    # ################################################################################
+
+
+
+
+    # ################################################################################
+    # Results
+    # ################################################################################
 
 
 
@@ -409,7 +407,7 @@ class CreateODM2( serviceBase):
         tsr = TimeSeriesResults()
 
         tsr.ResultID = result.ResultID
-        #tsr.ResultUUID = result.ResultUUID
+        # tsr.ResultUUID = result.ResultUUID
 
 
         tsr.XLocation = xloc
@@ -424,7 +422,7 @@ class CreateODM2( serviceBase):
         tsr.AggregationStatisticCV = aggregationstatistic
 
 
-        #tsr.ResultID = result.ResultID
+        # tsr.ResultID = result.ResultID
         # tsr.ResultUUID = result.ResultUUID
         # tsr.FeatureActionID = result.FeatureActionID
         # tsr.VariableID = result.VariableID
@@ -438,6 +436,7 @@ class CreateODM2( serviceBase):
         self._session.commit()
 
         return tsr
+
     '''
     def createTimeSeriesResultValues(self, resultid, datavalues, datetimes, datetimeoffsets, censorcodecv,
                                      qualitycodecv,
@@ -465,7 +464,8 @@ class CreateODM2( serviceBase):
 
     def createTimeSeriesResultValues(self, datavalues):
         try:
-            datavalues.to_sql(name="timeseriesresultvalues", if_exists='append', con=self._session_factory.engine, index=False)
+            datavalues.to_sql(name="timeseriesresultvalues", if_exists='append', con=self._session_factory.engine,
+                              index=False)
             self._session.commit()
             return datavalues
         except Exception, e:
@@ -473,10 +473,9 @@ class CreateODM2( serviceBase):
             return None
 
 
-# ################################################################################
-# Sampling Features
-# ################################################################################
-
+        # ################################################################################
+        # Sampling Features
+        # ################################################################################
 
     def createSite(self, vType, latitude, longitude):
         """Create Site table
@@ -500,7 +499,6 @@ class CreateODM2( serviceBase):
 
         return s
 
-
     def createSpatialReference(self, srsCode, srsName, srsDescription=None):
         spatialreference = SpatialReferences()
         spatialreference.SRSCode = srsCode
@@ -512,10 +510,9 @@ class CreateODM2( serviceBase):
 
         return spatialreference
 
-
-# ################################################################################
-# Sensors
-# ################################################################################
+    # ################################################################################
+    # Sensors
+    # ################################################################################
 
     def createDeploymentAction(self, actionId, cvType, desc, configActionId, calibActionId, spatialOffSet,
                                deploymentSchematicLink, **kwargs):
@@ -547,10 +544,9 @@ class CreateODM2( serviceBase):
         da.ActionID = (kwargs['actionId'] if kwargs['actionId'] else None)
         da.ActionID = (kwargs['actionId'] if kwargs['actionId'] else None)
 
-
-# ################################################################################
-# Simulation
-# ################################################################################
+    # ################################################################################
+    # Simulation
+    # ################################################################################
 
 
     def createModel(self, code, name, description=None):
@@ -564,7 +560,6 @@ class CreateODM2( serviceBase):
 
         return model
 
-
     def createRelatedModel(self, modelid, relatedModelID, relationshipType):
         related = RelatedModels()
         related.ModelID = modelid
@@ -575,7 +570,6 @@ class CreateODM2( serviceBase):
         self._session.commit()
 
         return related
-
 
     def createSimulation(self, actionid, modelID, simulationName, simulationDescription, simulationStartDateTime,
                          simulationStartOffset,
@@ -598,4 +592,3 @@ class CreateODM2( serviceBase):
         self._session.commit()
 
         return sim
-

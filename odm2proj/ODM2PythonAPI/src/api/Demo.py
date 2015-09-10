@@ -1,8 +1,7 @@
-
 import pprint
 
-#import matplotlib.pyplot as plt
-#from matplotlib import dates
+# import matplotlib.pyplot as plt
+# from matplotlib import dates
 
 
 from src.api.ODMconnection import dbconnection
@@ -27,8 +26,8 @@ session_factory = dbconnection.createConnection('mysql', 'localhost', 'odm2', 'O
 _session = session_factory.getSession()
 
 read = ReadODM2(session_factory)
-#read = readResults(_session)
-#read = readSamplingFeatures(_session)
+# read = readResults(_session)
+# read = readSamplingFeatures(_session)
 
 pp = pprint.PrettyPrinter(indent=8)
 
@@ -118,7 +117,7 @@ try:
         "SampledMedium: " + tsResult.ResultObj.SampledMediumCV + "\n" +
         # Get the variable information from the TimeSeriesResult's Variable object
         "Variable: " + tsResult.ResultObj.VariableObj.VariableCode + ": " + tsResult.ResultObj.VariableObj.VariableNameCV + "\n"
-                                                                                                        "AggregationStatistic: " + tsResult.AggregationStatisticCV + "\n" +
+                                                                                                                            "AggregationStatistic: " + tsResult.AggregationStatisticCV + "\n" +
         "Elevation_m: " + str(sf.Elevation_m) + "\n" +
         # Get the site information by drilling down
         "SamplingFeature: " + tsResult.ResultObj.FeatureActionObj.SamplingFeatureObj.SamplingFeatureCode + " - " +

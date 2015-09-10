@@ -78,7 +78,6 @@ class TestMult:
     def teardown_method(self, method):
         print "teardown_method      method:%s" % method.__name__
 
-
     def test_numbers_5_6(self):
         print 'test_numbers_5_6  <================== actual test code'
         assert multiply(5, 6) == 30
