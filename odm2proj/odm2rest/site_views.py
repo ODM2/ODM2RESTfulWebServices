@@ -1,49 +1,41 @@
-import sys
-
-sys.path.append('ODM2PythonAPI')
-
-# from rest_framework import viewsets
 
 from django.http import HttpResponse
 from rest_framework.renderers import JSONRenderer
-
-# Create your views here.
-
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-
 from collections import OrderedDict
-
 import csv
 
-from odm2rest.odm2service import Service
+from odm2service import Service
 import pyaml
 from negotiation import IgnoreClientContentNegotiation
 from dict2xml import dict2xml as xmlify
 
+from shapely import wkb,wkt
+import binascii
 
 class SiteViewSet(APIView):
     """
     All ODM2 sites Retrieval
     """
 
-    # queryset = Snippet.objects.all()
-    # serializer_class = SnippetModelSerializer
+    #queryset = Snippet.objects.all()
+    #serializer_class = SnippetModelSerializer
 
-    # queryset = Snippet.objects.all()
+    #queryset = Snippet.objects.all()
     ##serializer_class = DummySerializer
     content_negotiation_class = IgnoreClientContentNegotiation
     ##renderer_classes = (XMLRenderer, JSONRenderer, CSVRenderer, YAMLRenderer, BrowsableAPIRenderer,)
-    # renderer_classes = (CSVRenderer, )
-    # parser_classes = (YAMLParser, XMLParser,)
+    #renderer_classes = (CSVRenderer, )
+    #parser_classes = (YAMLParser, XMLParser,)
 
     def get(self, request, format=None):
         """
         ---
         parameters:
             - name: format    
-              description: The format type is "yaml", "json", "xml" or "csv". The default type is "yaml".
+              description: The format type is "yaml", "json", "xml" or "csv". The default type is "json".
               required: false
               type: string
               paramType: query
@@ -55,9 +47,9 @@ class SiteViewSet(APIView):
               message: Not authenticated
         """
 
-        format = request.query_params.get('format', 'yaml')
-        # accept = request.accepted_renderer.media_type
+        #accept = request.accepted_renderer.media_type
         mr = MultipleRepresentations()
+        format = request.query_params.get('format', mr.default_format)
         readConn = mr.readService()
         items = readConn.getAllSites()
 
@@ -66,7 +58,6 @@ class SiteViewSet(APIView):
                             status=status.HTTP_400_BAD_REQUEST)
 
         return mr.content_format(items, format)
-
 
 class SiteSamplingFeatureCodeViewSet(APIView):
     """
@@ -79,7 +70,7 @@ class SiteSamplingFeatureCodeViewSet(APIView):
         ---
         parameters:
             - name: format    
-              description: The format type is "yaml", "json", "xml" or "csv". The default type is "yaml".
+              description: The format type is "yaml", "json", "xml" or "csv". The default type is "json".
               required: false
               type: string
               paramType: query
@@ -91,13 +82,13 @@ class SiteSamplingFeatureCodeViewSet(APIView):
               message: Not authenticated
         """
 
-        # samplingfeatureCode = request.query_params.get('SamplingFeatureCode', None)
+        #samplingfeatureCode = request.QUERY_PARAMS.get('SamplingFeatureCode', None)
         if samplingfeatureCode is None:
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
-        format = request.query_params.get('format', 'yaml')
-        # accept = request.accepted_renderer.media_type
+        #accept = request.accepted_renderer.media_type
         mr = MultipleRepresentations()
+        format = request.query_params.get('format', mr.default_format)
         readConn = mr.readService()
         items = readConn.getSiteBySFCode(samplingfeatureCode)
 
@@ -106,7 +97,6 @@ class SiteSamplingFeatureCodeViewSet(APIView):
                             status=status.HTTP_400_BAD_REQUEST)
 
         return mr.content_format(items, format)
-
 
 class SiteTypeViewSet(APIView):
     """
@@ -119,7 +109,7 @@ class SiteTypeViewSet(APIView):
         ---
         parameters:
             - name: format    
-              description: The format type is "yaml", "json", "xml" or "csv". The default type is "yaml".
+              description: The format type is "yaml", "json", "xml" or "csv". The default type is "json".
               required: false
               type: string
               paramType: query
@@ -131,13 +121,13 @@ class SiteTypeViewSet(APIView):
               message: Not authenticated
         """
 
-        # samplingfeatureCode = request.query_params.get('SamplingFeatureCode', None)
+        #samplingfeatureCode = request.QUERY_PARAMS.get('SamplingFeatureCode', None)
         if siteType is None:
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
-        format = request.query_params.get('format', 'yaml')
-        # accept = request.accepted_renderer.media_type
+        #accept = request.accepted_renderer.media_type
         mr = MultipleRepresentations()
+        format = request.query_params.get('format', mr.default_format)
         readConn = mr.readService()
         items = readConn.getSitesBySiteType(siteType)
 
@@ -149,6 +139,16 @@ class SiteTypeViewSet(APIView):
 
 
 class MultipleRepresentations(Service):
+
+    def getWKTFromWKB(self,value):
+        if value:
+            binary = binascii.unhexlify(str(value))
+            point = wkb.loads(binary)
+            point = '{0}'.format(wkt.dumps(point))
+            return point
+        else:
+            return None
+
     def json_format(self):
 
         allsites = OrderedDict()
@@ -156,6 +156,7 @@ class MultipleRepresentations(Service):
         features = []
         for site in self.items:
             sf_obj = site.SamplingFeatureObj
+            sr_obj = site.SpatialReferenceObj
 
             feature = OrderedDict()
             feature['type'] = "Feature"
@@ -169,9 +170,10 @@ class MultipleRepresentations(Service):
 
             feature['geometry'] = geometry
 
+            one_site = OrderedDict()
+            one_site['SiteTypeCV'] = site.SiteTypeCV
             queryset = OrderedDict()
-            queryset['SiteTypeCV'] = site.SiteTypeCV
-            queryset['SamplingFeatureID'] = sf_obj.SamplingFeatureID
+            queryset['SamplingFeatureUUID'] = sf_obj.SamplingFeatureUUID
             queryset['SamplingFeatureTypeCV'] = sf_obj.SamplingFeatureTypeCV
             queryset['SamplingFeatureCode'] = sf_obj.SamplingFeatureCode
             queryset['SamplingFeatureName'] = sf_obj.SamplingFeatureName
@@ -179,8 +181,18 @@ class MultipleRepresentations(Service):
             queryset['SamplingFeatureGeotypeCV'] = sf_obj.SamplingFeatureGeotypeCV
             queryset['Elevation_m'] = sf_obj.Elevation_m
             queryset['ElevationDatumCV'] = sf_obj.ElevationDatumCV
+            queryset['FeatureGeometry'] = self.getWKTFromWKB(sf_obj.FeatureGeometry)
+            one_site['SamplingFeature'] = queryset
 
-            feature['properties'] = queryset
+            sr = OrderedDict()
+            sr['SRSCode'] = sr_obj.SRSCode
+            sr['SRSName'] = sr_obj.SRSName
+            sr['SRSDescription'] = sr_obj.SRSDescription
+            sr['SRSLink'] = sr_obj.SRSLink
+            one_site['SpatialReference'] = sr
+
+
+            feature['properties'] = one_site
             features.append(feature)
 
         allsites['features'] = features
@@ -193,18 +205,13 @@ class MultipleRepresentations(Service):
         response = HttpResponse(content_type='text/csv')
         response['Content-Disposition'] = 'attachment; filename="sites.csv"'
 
-        # fields=SamplingFeatureDescription[type="string"],SamplingFeatureGeotypeCV[type="string"],LatLonDatumID,SamplingFeatureName[type="string"],ElevationDatumCV[type="string"],elevation[unit="m"],SamplingFeatureTypeCV[type="string"],Longitude[unit="degrees"],SamplingFeatureCode[type="string"],Latitude[unit="degrees"],SamplingFeatureID,SiteTypeCV[type="string"]
+        #fields=SamplingFeatureDescription[type="string"],SamplingFeatureGeotypeCV[type="string"],LatLonDatumID,SamplingFeatureName[type="string"],ElevationDatumCV[type="string"],elevation[unit="m"],SamplingFeatureTypeCV[type="string"],Longitude[unit="degrees"],SamplingFeatureCode[type="string"],Latitude[unit="degrees"],SamplingFeatureID,SiteTypeCV[type="string"]
 
-        site_csv_header = ["#fields=SamplingFeatureTypeCV[type='string']", "SamplingFeatureCode[type='string']",
-                           "SamplingFeatureName[type='string']", "SamplingFeatureDescription[type='string']",
-                           "SamplingFeatureGeoTypeCV[type='string']", "FeatureGeometry[type='string']",
-                           "Elevation[unit='m']", "ElevationDatumCV[type='string']", "SiteTypeCV[type='string']",
-                           "Latitude[unit='degrees']", "Longitude[unit='degrees']", "SpatialReferenceID",
-                           "SRSCode[type='string']", "SRSDescription[type='string']", "SRSName[type='string']"]
+        site_csv_header = ["#fields=SamplingFeatureTypeCV[type='string']","SamplingFeatureCode[type='string']","SamplingFeatureName[type='string']","SamplingFeatureDescription[type='string']","SamplingFeatureGeoTypeCV[type='string']","FeatureGeometry[type='string']","Elevation[unit='m']","ElevationDatumCV[type='string']","SiteTypeCV[type='string']","Latitude[unit='degrees']","Longitude[unit='degrees']","SpatialReferenceID","SRSCode[type='string']","SRSDescription[type='string']","SRSName[type='string']"]
 
         writer = csv.writer(response)
         writer.writerow(site_csv_header)
-
+            
         for site in self.items:
             row = []
             sf_obj = site.SamplingFeatureObj
@@ -216,7 +223,7 @@ class MultipleRepresentations(Service):
             row.append(sf_name.encode("utf-8"))
             row.append(sf_obj.SamplingFeatureDescription)
             row.append(sf_obj.SamplingFeatureGeotypeCV)
-            row.append(sf_obj.FeatureGeometry)
+            row.append(self.getWKTFromWKB(sf_obj.FeatureGeometry))
             row.append(sf_obj.Elevation_m)
             row.append(sf_obj.ElevationDatumCV)
             row.append(site.SiteTypeCV)
@@ -226,13 +233,13 @@ class MultipleRepresentations(Service):
             row.append(sr_obj.SRSCode)
             row.append(sr_obj.SRSDescription)
             row.append(sr_obj.SRSName)
-
+            
             writer.writerow(row)
-            # writer.writerow([s.encode("utf-8") for s in row])
-
+            #writer.writerow([s.encode("utf-8") for s in row])
+            
         self._session.close()
         return response
-
+        
     def yaml_format(self):
 
         response = HttpResponse(content_type='application/yaml')
@@ -246,6 +253,7 @@ class MultipleRepresentations(Service):
         srs = []
 
         for site in self.items:
+
             sf_obj = site.SamplingFeatureObj
             sr_obj = site.SpatialReferenceObj
 
@@ -273,7 +281,7 @@ class MultipleRepresentations(Service):
             sf['SamplingFeatureName'] = sf_obj.SamplingFeatureName
             sf['SamplingFeatureDescription'] = sf_obj.SamplingFeatureDescription
             sf['SamplingFeatureGeotypeCV'] = sf_obj.SamplingFeatureGeotypeCV
-            sf['FeatureGeometry'] = sf_obj.FeatureGeometry
+            sf['FeatureGeometry'] = self.getWKTFromWKB(sf_obj.FeatureGeometry)
             sf['Elevation_m'] = sf_obj.Elevation_m
             sf['ElevationDatumCV'] = sf_obj.ElevationDatumCV
             sfs.append(sf)
@@ -283,7 +291,7 @@ class MultipleRepresentations(Service):
         allsites["SpatialReferences"] = srs
         allsites["SamplingFeatures"] = sfs
 
-        response.write(pyaml.dump(allsites, vspacing=[1, 0]))
+        response.write(pyaml.dump(allsites,vspacing=[1, 0]))
 
         self._session.close()
         return response
@@ -298,6 +306,7 @@ class MultipleRepresentations(Service):
 
         sts = []
         for site in self.items:
+
             sf_obj = site.SamplingFeatureObj
             sr_obj = site.SpatialReferenceObj
 
@@ -318,7 +327,7 @@ class MultipleRepresentations(Service):
             sf['SamplingFeatureName'] = sf_obj.SamplingFeatureName
             sf['SamplingFeatureDescription'] = sf_obj.SamplingFeatureDescription
             sf['SamplingFeatureGeotypeCV'] = sf_obj.SamplingFeatureGeotypeCV
-            sf['FeatureGeometry'] = sf_obj.FeatureGeometry
+            sf['FeatureGeometry'] = self.getWKTFromWKB(sf_obj.FeatureGeometry)
             sf['Elevation_m'] = sf_obj.Elevation_m
             sf['ElevationDatumCV'] = sf_obj.ElevationDatumCV
             st['SamplingFeature'] = sf
@@ -329,12 +338,10 @@ class MultipleRepresentations(Service):
         self._session.close()
         return response
 
-
 class JSONResponse(HttpResponse):
     """
     An HttpResponse that renders its content into JSON.
     """
-
     def __init__(self, data, **kwargs):
         content = JSONRenderer().render(data)
         kwargs['content_type'] = 'application/json'

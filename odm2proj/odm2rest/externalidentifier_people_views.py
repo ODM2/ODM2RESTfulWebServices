@@ -1,42 +1,32 @@
-import sys
-
-sys.path.append('ODM2PythonAPI')
-
-# from rest_framework import viewsets
 
 from django.http import HttpResponse
 from rest_framework.renderers import JSONRenderer
-
-# Create your views here.
-
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-
 from collections import OrderedDict
 
 import csv
 import pyaml
 
-from odm2rest.odm2service import Service
+from odm2service import Service
 from negotiation import IgnoreClientContentNegotiation
 from dict2xml import dict2xml as xmlify
-
 
 class ExternalIdentifierPeopleViewSet(APIView):
     """
     All ODM2 ExternalIdentifiers For People Retrieval
     """
     content_negotiation_class = IgnoreClientContentNegotiation
-    # renderer_classes = (JSONRenderer, YAMLRenderer)
-    # serializer_class = VariableSerializer
+    #renderer_classes = (JSONRenderer, YAMLRenderer)
+    #serializer_class = VariableSerializer
 
     def get(self, request, format=None):
         """
         ---
         parameters:
             - name: format    
-              description: The format type is "yaml", "json", "xml" or "csv". The default type is "yaml".
+              description: The format type is "yaml", "json", "xml" or "csv". The default type is "json".
               required: false
               type: string
               paramType: query
@@ -48,9 +38,9 @@ class ExternalIdentifierPeopleViewSet(APIView):
               message: Not authenticated
         """
 
-        format = request.query_params.get('format', 'yaml')
-        # accept = request.accepted_renderer.media_type
+        #accept = request.accepted_renderer.media_type
         mr = MultipleRepresentations()
+        format = request.query_params.get('format', mr.default_format)
         readConn = mr.readService()
         items = readConn.getExternalIdentifiersForPeople()
         if items == None or len(items) == 0:
@@ -59,8 +49,8 @@ class ExternalIdentifierPeopleViewSet(APIView):
 
         return mr.content_format(items, format)
 
-
 class MultipleRepresentations(Service):
+
     def json_format(self):
 
         return self.sqlalchemy_object_to_dict()
@@ -70,23 +60,11 @@ class MultipleRepresentations(Service):
         response = HttpResponse(content_type='text/csv')
         response['Content-Disposition'] = 'attachment; filename="personexternalidentifiersystem.csv"'
 
-        item_csv_header = ["#fields=PersonExternalIdentifier[type='string']",
-                           "PersonExternalIdentifierURI[type='string']", "ExternalIdentifierSystemID",
-                           "ExternalIdentifierSystemName[type='string']",
-                           "ExternalIdentifierSystemDescription[type='string']",
-                           "ExternalIdentifierSystemURL[type='string']", "IdentifierSystemOrganization.OrganizationID",
-                           "IdentifierSystemOrganization.OrganizationTypeCV[type='string']",
-                           "IdentifierSystemOrganization.OrganizationCode[type='string']",
-                           "IdentifierSystemOrganization.OrganizationName[type='string']",
-                           "IdentifierSystemOrganization.OrganizationDescription[type='string']",
-                           "IdentifierSystemOrganization.OrganizationLink[type='string']",
-                           "IdentifierSystemOrganization.ParentOrganizationID", "PersonID",
-                           "PersonFirstName[type='string']", "PersonMiddleName[type='string']",
-                           "PersonLastName[type='string']"]
+        item_csv_header = ["#fields=PersonExternalIdentifier[type='string']","PersonExternalIdentifierURI[type='string']","ExternalIdentifierSystemID","ExternalIdentifierSystemName[type='string']","ExternalIdentifierSystemDescription[type='string']","ExternalIdentifierSystemURL[type='string']","IdentifierSystemOrganization.OrganizationID","IdentifierSystemOrganization.OrganizationTypeCV[type='string']","IdentifierSystemOrganization.OrganizationCode[type='string']","IdentifierSystemOrganization.OrganizationName[type='string']","IdentifierSystemOrganization.OrganizationDescription[type='string']","IdentifierSystemOrganization.OrganizationLink[type='string']","IdentifierSystemOrganization.ParentOrganizationID","PersonID","PersonFirstName[type='string']","PersonMiddleName[type='string']","PersonLastName[type='string']"]
 
         writer = csv.writer(response)
         writer.writerow(item_csv_header)
-
+            
         for item in self.items:
             row = []
 
@@ -131,6 +109,7 @@ class MultipleRepresentations(Service):
         cs = []
 
         for item in self.items:
+
             cei = OrderedDict()
             cei['Person'] = "*PersonID%03d" % item.PersonID
             cei['ExternalIdentifierSystem'] = "*ExternalIdentifierSystemID%03d" % item.ExternalIdentifierSystemID
@@ -140,13 +119,11 @@ class MultipleRepresentations(Service):
 
             eis_obj = item.ExternalIdentifierSystemObj
             queryset = OrderedDict()
-            queryset[
-                'ExternalIdentifierSystem'] = "&ExternalIdentifierSystemID%03d" % eis_obj.ExternalIdentifierSystemID
+            queryset['ExternalIdentifierSystem'] = "&ExternalIdentifierSystemID%03d" % eis_obj.ExternalIdentifierSystemID
             queryset['ExternalIdentifierSystemName'] = eis_obj.ExternalIdentifierSystemName
             queryset['ExternalIdentifierSystemDescription'] = eis_obj.ExternalIdentifierSystemDescription
             queryset['ExternalIdentifierSystemURL'] = eis_obj.ExternalIdentifierSystemURL
-            queryset[
-                'IdentifierSystemOrganization'] = "*IdentifierSystemOrganizationID%03d" % eis_obj.IdentifierSystemOrganizationID
+            queryset['IdentifierSystemOrganization'] = "*IdentifierSystemOrganizationID%03d" % eis_obj.IdentifierSystemOrganizationID 
             eis.append(queryset)
             eis = [i for n, i in enumerate(eis) if i not in eis[n + 1:]]
 
@@ -194,6 +171,7 @@ class MultipleRepresentations(Service):
 
         allitems = []
         for item in self.items:
+
             cei = OrderedDict()
             cei['PersonExternalIdentifier'] = item.PersonExternalIdentifier
             cei['PersonExternalIdentifierURI'] = item.PersonExternalIdentifierURI
@@ -231,13 +209,12 @@ class MultipleRepresentations(Service):
         self._session.close()
         return allitems
 
-
 class JSONResponse(HttpResponse):
     """
     An HttpResponse that renders its content into JSON.
     """
-
     def __init__(self, data, **kwargs):
         content = JSONRenderer().render(data)
         kwargs['content_type'] = 'application/json'
         super(JSONResponse, self).__init__(content, **kwargs)
+

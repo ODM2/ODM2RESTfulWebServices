@@ -5,6 +5,7 @@ A Python RESTful web service inteface for accessing data in an ODM2 database via
 
 ##  Base Requirements ##
 
+* [ODM2API](https://github.com/ODM2/ODM2PythonAPI)
 * [Python-2.7.6](https://www.python.org/download/releases/2.7.6/)
 * [Django-1.8.3](https://www.djangoproject.com/download/)
 * [djangorestframework-3.1.3](http://www.django-rest-framework.org/topics/release-notes/)

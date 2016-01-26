@@ -1,37 +1,17 @@
-import sys
-
-sys.path.append('ODM2PythonAPI')
-
-from odm2rest.serializers import DummySerializer
-from odm2rest.serializers import Odm2JsonSerializer
 
 from django.http import HttpResponse
-from rest_framework.renderers import JSONRenderer
-from rest_framework.parsers import JSONParser
-
-from django.http import Http404
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+import csv
 
-from rest_framework import viewsets
-from collections import OrderedDict
-
-from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-import csv, cStringIO
-
-from odm2rest.odm2service import Service
-from rest_framework_csv.renderers import CSVRenderer
-from rest_framework_xml.renderers import XMLRenderer
-from rest_framework_yaml.renderers import YAMLRenderer
-from rest_framework.renderers import BrowsableAPIRenderer
-
-import yaml, pyaml
-from sets import Set
+from odm2service import Service
 from negotiation import IgnoreClientContentNegotiation
-from odm2rest.ODM2ALLServices import odm2Service as ODM2Read
+from ODM2ALLServices import odm2Service as ODM2Read
 from dict2xml import dict2xml as xmlify
 
+from shapely import wkb,wkt
+import binascii
 
 class ValuesViewSet(APIView):
     """
@@ -39,19 +19,19 @@ class ValuesViewSet(APIView):
 
     """
 
-    # serializer_class = DummySerializer
+    #serializer_class = DummySerializer
     paginate_by = 10
     paginate_by_param = 'page_size'
     max_paginate_by = 100
     content_negotiation_class = IgnoreClientContentNegotiation
-    # renderer_classes = (XMLRenderer, JSONRenderer, CSVRenderer, YAMLRenderer, BrowsableAPIRenderer,)
+    #renderer_classes = (XMLRenderer, JSONRenderer, CSVRenderer, YAMLRenderer, BrowsableAPIRenderer,)
 
     def get(self, request, format=None, resultUUID=None):
         """
         ---
         parameters:
             - name: format    
-              description: The format type is "yaml", "json", "xml" or "csv". The default type is "yaml".
+              description: The format type is "yaml", "json", "xml" or "csv". The default type is "json".
               required: false
               type: string
               paramType: query
@@ -76,15 +56,15 @@ class ValuesViewSet(APIView):
         if resultUUID is None:
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
-        format = request.query_params.get('format', 'yaml')
-        # accept = request.accepted_renderer.media_type
-        page = request.query_params.get('page', '0')
-        page_size = request.query_params.get('page_size', '100')
+        #accept = request.accepted_renderer.media_type
+        page = request.QUERY_PARAMS.get('page','0')
+        page_size = request.QUERY_PARAMS.get('page_size','100')
 
         page = int(page)
         page_size = int(page_size)
 
         mr = MultipleRepresentations()
+        format = request.query_params.get('format', mr.default_format)
         readConn = mr.readService()
 
         ts = readConn.getResultByUUID(resultUUID)
@@ -101,12 +81,12 @@ class ValuesViewSet(APIView):
             else:
                 items = readConn.getTimeSeriesResultValuesByResultID(ts.ResultID)
         elif mr.resulttypecv_to_id[ts.ResultTypeCV] == 'M':
-            # count = readConn.getCountForMeasurementResultValuesByResultID(ts.ResultID)
-            # if count > 10:
+            #count = readConn.getCountForMeasurementResultValuesByResultID(ts.ResultID)            
+            #if count > 10:
             #    items = readConn.getMeasurementResultValuesByResultIDByPage(ts.ResultID, page, page_size)            
-            # else:
-            items = readConn.getMeasurementResultValuesByResultID(ts.ResultID)
-            # items = getattr(readConn,id_to_method['m'])(ts.ResultID)
+            #else:
+            items = readConn.getMeasurementResultValuesByResultID(ts.ResultID)            
+            #items = getattr(readConn,id_to_method['m'])(ts.ResultID)            
 
         if items == None or len(items) == 0:
             return Response('time series data is not available.',
@@ -116,6 +96,16 @@ class ValuesViewSet(APIView):
 
 
 class MultipleRepresentations(Service):
+
+    def getWKTFromWKB(self,value):
+        if value:
+            binary = binascii.unhexlify(str(value))
+            point = wkb.loads(binary)
+            point = '{0}'.format(wkt.dumps(point))
+            return point
+        else:
+            return None
+
     def json_format(self):
 
         if self.resulttypecv_to_id[self.resulttypecv] == 'TSC':
@@ -147,12 +137,14 @@ class MultipleRepresentations(Service):
     def json_timeseriesdata(self):
 
         result, results = self.sqlalchemy_timeseries_object_to_dict()
-        final_result = {'Result': result, 'DataRecords': results}
+        #final_result = {'Result':result,'DataRecords':results}
+        final_result = {'Values':result}
         return final_result
 
     def json_measurementdata(self):
 
-        return self.sqlalchemy_measurement_object_to_dict()
+        result = self.sqlalchemy_measurement_object_to_dict()
+        return {'Values': result}
 
     def csv_timeseriesdata(self):
 
@@ -160,60 +152,21 @@ class MultipleRepresentations(Service):
         response['Content-Disposition'] = 'attachment; filename="values.csv"'
 
         item_csv_header = []
-        item_csv_header.extend(
-            ["#fields=Result.ResultID", "Result.ResultUUID[type='string']", "Result.ResultTypeCV[type='string']",
-             "Result.ResultDateTime[type='date' format='yyyy-MM-dd HH:MM:SS']", "Result.ResultDateTimeUTCOffset",
-             "Result.StatusCV[type='string']", "Result.SampledMediumCV[type='string']", "Result.ValueCount"])
-        item_csv_header.extend(["SamplingFeature.SamplingFeatureUUID[type='string']",
-                                "SamplingFeature.SamplingFeatureTypeCV[type='string']",
-                                "SamplingFeature.SamplingFeatureCode[type='string']",
-                                "SamplingFeature.SamplingFeatureName[type='string']",
-                                "SamplingFeature.SamplingFeatureDescription[type='string']",
-                                "SamplingFeature.SamplingFeatureGeotypeCV[type='string']",
-                                "SamplingFeature.Elevation_m[unit='m']",
-                                "SamplingFeature.ElevationDatumCV[type='string']",
-                                "SamplingFeature.FeatureGeometry[type='string']"])
-        item_csv_header.extend(
-            ["Action.ActionTypeCV[type='string']", "Action.ActionTypeCV[type='date' format='yyyy-MM-dd HH:MM:SS']",
-             "Action.BeginDateTimeUTCOffset", "Action.EndDateTime[type='date' format='yyyy-MM-dd HH:MM:SS']",
-             "Action.EndDateTimeUTCOffset", "Method.MethodTypeCV[type='string']", "Method.MethodCode[type='string']",
-             "Method.MethodName[type='string']"])
-        item_csv_header.extend(["Variable.VariableTypeCV[type='string']", "Variable.VariableCode[type='string']",
-                                "Variable.VariableNameCV[type='string']", "Variable.NoDataValue"])
-        item_csv_header.extend(["Unit.UnitsTypeCV[type='string']", "Unit.UnitsAbbreviation[type='string']",
-                                "Unit.UnitsName[type='string']", "ProcessingLevel.ProcessingLevelCode[type='string']",
-                                "ProcessingLevel.Definition[type='string']",
-                                "ProcessingLevel.Explanation[type='string']"])
-        item_csv_header.extend(
-            ["TimeSeriesResult.XLocation", "TimeSeriesResult.XLocationUnitsID", "TimeSeriesResult.YLocation",
-             "TimeSeriesResult.YLocationUnitsID", "TimeSeriesResult.ZLocation", "TimeSeriesResult.ZLocationUnitsID",
-             "TimeSeriesResult.CensorCodeCV[type='string']", "TimeSeriesResult.QualityCodeCV[type='string']",
-             "TimeSeriesResult.AggregationStatisticCV[type='string']", "TimeSeriesResult.TimeAggregationInterval",
-             "TimeSeriesResult.TimeUnit.UnitsTypeCV[type='string']"])
-        item_csv_header.extend(["TimeSeriesResult.TimeUnit.UnitsAbbreviation[type='string']",
-                                "TimeSeriesResult.TimeUnit.UnitsName[type='string']",
-                                "TimeSeriesResultValues.ValueDateTime[type='date' format='yyyy-MM-dd HH:MM:SS']",
-                                "TimeSeriesResultValues.ValueDateTimeUTCOffset", "TimeSeriesResultValues.DataValue"])
+        item_csv_header.extend(["#fields=Result.ResultID","Result.ResultUUID[type='string']","Result.ResultTypeCV[type='string']", "Result.ResultDateTime[type='date' format='yyyy-MM-dd HH:MM:SS']","Result.ResultDateTimeUTCOffset","Result.StatusCV[type='string']","Result.SampledMediumCV[type='string']","Result.ValueCount"])
+        item_csv_header.extend(["SamplingFeature.SamplingFeatureUUID[type='string']","SamplingFeature.SamplingFeatureTypeCV[type='string']","SamplingFeature.SamplingFeatureCode[type='string']","SamplingFeature.SamplingFeatureName[type='string']","SamplingFeature.SamplingFeatureDescription[type='string']","SamplingFeature.SamplingFeatureGeotypeCV[type='string']","SamplingFeature.Elevation_m[unit='m']","SamplingFeature.ElevationDatumCV[type='string']","SamplingFeature.FeatureGeometry[type='string']"])
+        item_csv_header.extend(["Action.ActionTypeCV[type='string']","Action.ActionTypeCV[type='date' format='yyyy-MM-dd HH:MM:SS']","Action.BeginDateTimeUTCOffset","Action.EndDateTime[type='date' format='yyyy-MM-dd HH:MM:SS']","Action.EndDateTimeUTCOffset","Method.MethodTypeCV[type='string']","Method.MethodCode[type='string']","Method.MethodName[type='string']"])
+        item_csv_header.extend(["Variable.VariableTypeCV[type='string']","Variable.VariableCode[type='string']","Variable.VariableNameCV[type='string']","Variable.NoDataValue"])
+        item_csv_header.extend(["Unit.UnitsTypeCV[type='string']","Unit.UnitsAbbreviation[type='string']","Unit.UnitsName[type='string']","ProcessingLevel.ProcessingLevelCode[type='string']","ProcessingLevel.Definition[type='string']","ProcessingLevel.Explanation[type='string']"])
+        item_csv_header.extend(["TimeSeriesResult.XLocation","TimeSeriesResult.XLocationUnitsID","TimeSeriesResult.YLocation","TimeSeriesResult.YLocationUnitsID","TimeSeriesResult.ZLocation","TimeSeriesResult.ZLocationUnitsID","TimeSeriesResult.CensorCodeCV[type='string']","TimeSeriesResult.QualityCodeCV[type='string']","TimeSeriesResult.AggregationStatisticCV[type='string']","TimeSeriesResult.TimeAggregationInterval","TimeSeriesResult.TimeUnit.UnitsTypeCV[type='string']"])
+        item_csv_header.extend(["TimeSeriesResult.TimeUnit.UnitsAbbreviation[type='string']","TimeSeriesResult.TimeUnit.UnitsName[type='string']","TimeSeriesResultValues.ValueDateTime[type='date' format='yyyy-MM-dd HH:MM:SS']","TimeSeriesResultValues.ValueDateTimeUTCOffset","TimeSeriesResultValues.DataValue"])
 
-        item_csv_header.extend(
-            ["Site.SiteTypeCV[type='string']", "Site.Latitude[unit='degrees']", "Site.Longitude[unit='degrees']",
-             "Site.SpatialReference.SRSCode[type='string']", "Site.SpatialReference.SRSName[type='string']"])
-        item_csv_header.extend(
-            ["RelatedFeature.RelationshipTypeCV[type='string']", "RelatedFeature.SamplingFeatureUUID[type='string']",
-             "RelatedFeature.SamplingFeatureTypeCV[type='string']", "RelatedFeature.SamplingFeatureCode[type='string']",
-             "RelatedFeature.SamplingFeatureName[type='string']",
-             "RelatedFeature.SamplingFeatureDescription[type='string']",
-             "RelatedFeature.SamplingFeatureGeotypeCV[type='string']", "RelatedFeature.Elevation_m[unit='m']",
-             "RelatedFeature.ElevationDatumCV[type='string']", "RelatedFeature.FeatureGeometry[type='string']",
-             "RelatedFeature.Site.SiteTypeCV[type='string']", "RelatedFeature.Site.Latitude[unit='degrees']",
-             "RelatedFeature.Site.Longitude[unit='degrees']",
-             "RelatedFeature.Site.SpatialReference.SRSCode[type='string']",
-             "RelatedFeature.Site.SpatialReference.SRSName[type='string']"])
+        item_csv_header.extend(["Site.SiteTypeCV[type='string']","Site.Latitude[unit='degrees']","Site.Longitude[unit='degrees']","Site.SpatialReference.SRSCode[type='string']","Site.SpatialReference.SRSName[type='string']"])
+        item_csv_header.extend(["RelatedFeature.RelationshipTypeCV[type='string']","RelatedFeature.SamplingFeatureUUID[type='string']","RelatedFeature.SamplingFeatureTypeCV[type='string']","RelatedFeature.SamplingFeatureCode[type='string']","RelatedFeature.SamplingFeatureName[type='string']","RelatedFeature.SamplingFeatureDescription[type='string']","RelatedFeature.SamplingFeatureGeotypeCV[type='string']","RelatedFeature.Elevation_m[unit='m']","RelatedFeature.ElevationDatumCV[type='string']","RelatedFeature.FeatureGeometry[type='string']","RelatedFeature.Site.SiteTypeCV[type='string']","RelatedFeature.Site.Latitude[unit='degrees']","RelatedFeature.Site.Longitude[unit='degrees']","RelatedFeature.Site.SpatialReference.SRSCode[type='string']","RelatedFeature.Site.SpatialReference.SRSName[type='string']"])
 
         writer = csv.writer(response)
         writer.writerow(item_csv_header)
         conn = ODM2Read(self._session)
-
+            
         for value in self.items:
             row = []
 
@@ -245,7 +198,7 @@ class MultipleRepresentations(Service):
             row.append(sf_obj.SamplingFeatureGeotypeCV)
             row.append(str(sf_obj.Elevation_m))
             row.append(sf_obj.ElevationDatumCV)
-            row.append(sf_obj.FeatureGeometry)
+            row.append(self.getWKTFromWKB(sf_obj.FeatureGeometry))
 
             row.append(a_obj.ActionTypeCV)
             row.append(a_obj.BeginDateTime)
@@ -337,7 +290,7 @@ class MultipleRepresentations(Service):
                     row1.append(rf_obj.SamplingFeatureGeotypeCV)
                     row1.append(str(rf_obj.Elevation_m))
                     row1.append(rf_obj.ElevationDatumCV)
-                    row1.append(rf_obj.FeatureGeometry)
+                    row1.append(self.getWKTFromWKB(rf_obj.FeatureGeometry))
 
                     rsite = conn.getSiteBySFId(rf_obj.SamplingFeatureID)
                     if rsite != None:
@@ -357,13 +310,13 @@ class MultipleRepresentations(Service):
                 for i in range(15):
                     row1.append(None)
                 rf_list.append(row1)
-
+            
             for i in rf_list:
                 row.extend(i)
                 writer.writerow(row)
 
         self._session.close()
-        return response
+        return response        
 
     def csv_measurementdata(self):
 
@@ -371,59 +324,19 @@ class MultipleRepresentations(Service):
         response['Content-Disposition'] = 'attachment; filename="values.csv"'
 
         item_csv_header = []
-        item_csv_header.extend(
-            ["#fields=Result.ResultID", "Result.ResultUUID[type='string']", "Result.ResultTypeCV[type='string']",
-             "Result.ResultDateTime[type='date' format='yyyy-MM-dd HH:MM:SS']", "Result.ResultDateTimeUTCOffset",
-             "Result.StatusCV[type='string']", "Result.SampledMediumCV[type='string']", "Result.ValueCount"])
-        item_csv_header.extend(["SamplingFeature.SamplingFeatureUUID[type='string']",
-                                "SamplingFeature.SamplingFeatureTypeCV[type='string']",
-                                "SamplingFeature.SamplingFeatureCode[type='string']",
-                                "SamplingFeature.SamplingFeatureName[type='string']",
-                                "SamplingFeature.SamplingFeatureDescription[type='string']",
-                                "SamplingFeature.SamplingFeatureGeotypeCV[type='string']",
-                                "SamplingFeature.Elevation_m[unit='m']",
-                                "SamplingFeature.ElevationDatumCV[type='string']",
-                                "SamplingFeature.FeatureGeometry[type='string']"])
-        item_csv_header.extend(
-            ["Action.ActionTypeCV[type='string']", "Action.ActionTypeCV[type='date' format='yyyy-MM-dd HH:MM:SS']",
-             "Action.BeginDateTimeUTCOffset", "Action.EndDateTime[type='date' format='yyyy-MM-dd HH:MM:SS']",
-             "Action.EndDateTimeUTCOffset", "Method.MethodTypeCV[type='string']", "Method.MethodCode[type='string']",
-             "Method.MethodName[type='string']"])
-        item_csv_header.extend(["Variable.VariableTypeCV[type='string']", "Variable.VariableCode[type='string']",
-                                "Variable.VariableNameCV[type='string']", "Variable.NoDataValue"])
-        item_csv_header.extend(["Unit.UnitsTypeCV[type='string']", "Unit.UnitsAbbreviation[type='string']",
-                                "Unit.UnitsName[type='string']", "ProcessingLevel.ProcessingLevelCode[type='string']",
-                                "ProcessingLevel.Definition[type='string']",
-                                "ProcessingLevel.Explanation[type='string']"])
-        item_csv_header.extend(
-            ["MeasurementResult.XLocation", "MeasurementResult.XLocationUnitsID", "MeasurementResult.YLocation",
-             "MeasurementResult.YLocationUnitsID", "MeasurementResult.ZLocation", "MeasurementResult.ZLocationUnitsID",
-             "MeasurementResult.CensorCodeCV[type='string']", "MeasurementResult.QualityCodeCV[type='string']",
-             "MeasurementResult.AggregationStatisticCV[type='string']", "MeasurementResult.TimeAggregationInterval",
-             "MeasurementResult.TimeUnit.UnitsTypeCV[type='string']",
-             "MeasurementResult.TimeUnit.UnitsAbbreviation[type='string']",
-             "MeasurementResult.TimeUnit.UnitsName[type='string']",
-             "MeasurementResultValues.ValueDateTime[type='date' format='yyyy-MM-dd HH:MM:SS']",
-             "MeasurementResultValues.ValueDateTimeUTCOffset", "MeasurementResultValues.DataValue"])
-        item_csv_header.extend(
-            ["Site.SiteTypeCV[type='string']", "Site.Latitude[unit='degrees']", "Site.Longitude[unit='degrees']",
-             "Site.SpatialReference.SRSCode[type='string']", "Site.SpatialReference.SRSName[type='string']"])
-        item_csv_header.extend(
-            ["RelatedFeature.RelationshipTypeCV[type='string']", "RelatedFeature.SamplingFeatureUUID[type='string']",
-             "RelatedFeature.SamplingFeatureTypeCV[type='string']", "RelatedFeature.SamplingFeatureCode[type='string']",
-             "RelatedFeature.SamplingFeatureName[type='string']",
-             "RelatedFeature.SamplingFeatureDescription[type='string']",
-             "RelatedFeature.SamplingFeatureGeotypeCV[type='string']", "RelatedFeature.Elevation_m[unit='m']",
-             "RelatedFeature.ElevationDatumCV[type='string']", "RelatedFeature.FeatureGeometry[type='string']",
-             "RelatedFeature.Site.SiteTypeCV[type='string']", "RelatedFeature.Site.Latitude[unit='degrees']",
-             "RelatedFeature.Site.Longitude[unit='degrees']",
-             "RelatedFeature.Site.SpatialReference.SRSCode[type='string']",
-             "RelatedFeature.Site.SpatialReference.SRSName[type='string']"])
+        item_csv_header.extend(["#fields=Result.ResultID","Result.ResultUUID[type='string']","Result.ResultTypeCV[type='string']", "Result.ResultDateTime[type='date' format='yyyy-MM-dd HH:MM:SS']","Result.ResultDateTimeUTCOffset","Result.StatusCV[type='string']","Result.SampledMediumCV[type='string']","Result.ValueCount"])
+        item_csv_header.extend(["SamplingFeature.SamplingFeatureUUID[type='string']","SamplingFeature.SamplingFeatureTypeCV[type='string']","SamplingFeature.SamplingFeatureCode[type='string']","SamplingFeature.SamplingFeatureName[type='string']","SamplingFeature.SamplingFeatureDescription[type='string']","SamplingFeature.SamplingFeatureGeotypeCV[type='string']","SamplingFeature.Elevation_m[unit='m']","SamplingFeature.ElevationDatumCV[type='string']","SamplingFeature.FeatureGeometry[type='string']"])
+        item_csv_header.extend(["Action.ActionTypeCV[type='string']","Action.ActionTypeCV[type='date' format='yyyy-MM-dd HH:MM:SS']","Action.BeginDateTimeUTCOffset","Action.EndDateTime[type='date' format='yyyy-MM-dd HH:MM:SS']","Action.EndDateTimeUTCOffset","Method.MethodTypeCV[type='string']","Method.MethodCode[type='string']","Method.MethodName[type='string']"])
+        item_csv_header.extend(["Variable.VariableTypeCV[type='string']","Variable.VariableCode[type='string']","Variable.VariableNameCV[type='string']","Variable.NoDataValue"])
+        item_csv_header.extend(["Unit.UnitsTypeCV[type='string']","Unit.UnitsAbbreviation[type='string']","Unit.UnitsName[type='string']","ProcessingLevel.ProcessingLevelCode[type='string']","ProcessingLevel.Definition[type='string']","ProcessingLevel.Explanation[type='string']"])
+        item_csv_header.extend(["MeasurementResult.XLocation","MeasurementResult.XLocationUnitsID","MeasurementResult.YLocation","MeasurementResult.YLocationUnitsID","MeasurementResult.ZLocation","MeasurementResult.ZLocationUnitsID","MeasurementResult.CensorCodeCV[type='string']","MeasurementResult.QualityCodeCV[type='string']","MeasurementResult.AggregationStatisticCV[type='string']","MeasurementResult.TimeAggregationInterval","MeasurementResult.TimeUnit.UnitsTypeCV[type='string']","MeasurementResult.TimeUnit.UnitsAbbreviation[type='string']","MeasurementResult.TimeUnit.UnitsName[type='string']","MeasurementResultValues.ValueDateTime[type='date' format='yyyy-MM-dd HH:MM:SS']","MeasurementResultValues.ValueDateTimeUTCOffset","MeasurementResultValues.DataValue"])
+        item_csv_header.extend(["Site.SiteTypeCV[type='string']","Site.Latitude[unit='degrees']","Site.Longitude[unit='degrees']","Site.SpatialReference.SRSCode[type='string']","Site.SpatialReference.SRSName[type='string']"])
+        item_csv_header.extend(["RelatedFeature.RelationshipTypeCV[type='string']","RelatedFeature.SamplingFeatureUUID[type='string']","RelatedFeature.SamplingFeatureTypeCV[type='string']","RelatedFeature.SamplingFeatureCode[type='string']","RelatedFeature.SamplingFeatureName[type='string']","RelatedFeature.SamplingFeatureDescription[type='string']","RelatedFeature.SamplingFeatureGeotypeCV[type='string']","RelatedFeature.Elevation_m[unit='m']","RelatedFeature.ElevationDatumCV[type='string']","RelatedFeature.FeatureGeometry[type='string']","RelatedFeature.Site.SiteTypeCV[type='string']","RelatedFeature.Site.Latitude[unit='degrees']","RelatedFeature.Site.Longitude[unit='degrees']","RelatedFeature.Site.SpatialReference.SRSCode[type='string']","RelatedFeature.Site.SpatialReference.SRSName[type='string']"])
 
         writer = csv.writer(response)
         writer.writerow(item_csv_header)
         conn = ODM2Read(self._session)
-
+            
         for value in self.items:
             row = []
 
@@ -455,7 +368,7 @@ class MultipleRepresentations(Service):
             row.append(sf_obj.SamplingFeatureGeotypeCV)
             row.append(str(sf_obj.Elevation_m))
             row.append(sf_obj.ElevationDatumCV)
-            row.append(sf_obj.FeatureGeometry)
+            row.append(self.getWKTFromWKB(sf_obj.FeatureGeometry))
 
             row.append(a_obj.ActionTypeCV)
             row.append(a_obj.BeginDateTime)
@@ -547,7 +460,7 @@ class MultipleRepresentations(Service):
                     row1.append(rf_obj.SamplingFeatureGeotypeCV)
                     row1.append(str(rf_obj.Elevation_m))
                     row1.append(rf_obj.ElevationDatumCV)
-                    row1.append(rf_obj.FeatureGeometry)
+                    row1.append(self.getWKTFromWKB(rf_obj.FeatureGeometry))
 
                     rsite = conn.getSiteBySFId(rf_obj.SamplingFeatureID)
                     if rsite != None:
@@ -567,13 +480,14 @@ class MultipleRepresentations(Service):
                 for i in range(15):
                     row1.append(None)
                 rf_list.append(row1)
-
+            
             for i in rf_list:
                 row.extend(i)
                 writer.writerow(row)
 
         self._session.close()
         return response
+        
 
     def yaml_timeseriesdata(self):
 
@@ -582,7 +496,7 @@ class MultipleRepresentations(Service):
 
         response.write("---\n")
 
-        tsrv_data = ''
+        tsrv_data = '' 
         flag = True
 
         for value in self.items:
@@ -610,7 +524,7 @@ class MultipleRepresentations(Service):
                 r += u'   ValueCount: %d\n' % r_obj.ValueCount
 
                 r += u'   FeatureAction: \n'
-                # r += u'       FeatureActionID: %d\n' % value.TimeSeriesResultObj.ResultObj.FeatureActionObj.FeatureActionID
+                #r += u'       FeatureActionID: %d\n' % value.TimeSeriesResultObj.ResultObj.FeatureActionObj.FeatureActionID
                 r += u'       SamplingFeature:\n'
                 r += u'           SamplingFeatureID: %d\n' % sf_obj.SamplingFeatureID
                 r += u'           SamplingFeatureCode: %s\n' % sf_obj.SamplingFeatureCode
@@ -619,7 +533,7 @@ class MultipleRepresentations(Service):
                 r += u'           SamplingFeatureGeotypeCV: "%s"\n' % sf_obj.SamplingFeatureGeotypeCV
                 r += u'           Elevation_m: %s\n' % str(sf_obj.Elevation_m)
                 r += u'           ElevationDatumCV: "%s"\n' % sf_obj.ElevationDatumCV
-                r += u'           FeatureGeometry: "%s"\n' % sf_obj.FeatureGeometry
+                r += u'           FeatureGeometry: "%s"\n' % self.getWKTFromWKB(sf_obj.FeatureGeometry)
 
                 r += u'       Action:\n'
                 r += u'           ActionID: %d\n' % a_obj.ActionID
@@ -655,7 +569,7 @@ class MultipleRepresentations(Service):
                     for x in rfeature:
                         rf_obj = x.RelatedFeatureObj
                         r += u'     - RelationshipTypeCV: %s\n' % x.RelationshipTypeCV
-                        # r += u'       SamplingFeatureID: %d\n' % rf_obj.SamplingFeatureID
+                        #r += u'       SamplingFeatureID: %d\n' % rf_obj.SamplingFeatureID
                         r += u'       SamplingFeatureUUID: %s\n' % rf_obj.SamplingFeatureUUID
                         r += u'       SamplingFeatureTypeCV: %s\n' % rf_obj.SamplingFeatureTypeCV
                         r += u'       SamplingFeatureCode: %s\n' % rf_obj.SamplingFeatureCode
@@ -664,7 +578,7 @@ class MultipleRepresentations(Service):
                         r += u'       SamplingFeatureGeotypeCV: "%s"\n' % rf_obj.SamplingFeatureGeotypeCV
                         r += u'       Elevation_m: %s\n' % str(rf_obj.Elevation_m)
                         r += u'       ElevationDatumCV: "%s"\n' % rf_obj.ElevationDatumCV
-                        r += u'       FeatureGeometry: "%s"\n' % rf_obj.FeatureGeometry
+                        r += u'       FeatureGeometry: "%s"\n' % self.getWKTFromWKB(rf_obj.FeatureGeometry)
 
                         rsite = conn.getSiteBySFId(rf_obj.SamplingFeatureID)
                         if rsite != None:
@@ -674,7 +588,7 @@ class MultipleRepresentations(Service):
                             r += u'           Longitude: %f\n' % rsite.Longitude
                             sr_obj = rsite.SpatialReferenceObj
                             r += u'           SpatialReference:\n'
-                            # r += u'               SRSID: %d\n' % sr_obj.SpatialReferenceID
+                            #r += u'               SRSID: %d\n' % sr_obj.SpatialReferenceID
                             r += u'               SRSCode: "%s"\n' % sr_obj.SRSCode
                             r += u'               SRSName: %s\n' % sr_obj.SRSName
 
@@ -750,7 +664,7 @@ class MultipleRepresentations(Service):
                 tsrv += u'  ColumnDefinitions:\n'
                 tsrv += u'    - {ColumnNumber: 1, Label: ValueDateTime, ODM2Field: ValueDateTime}\n'
                 tsrv += u'    - {ColumnNumber: 2, Label: ValueDateTimeUTCOffset, ODM2Field: ValueDateTimeUTCOffset}\n'
-                tsrv += u'    - {ColumnNumber: 3, Label: AirTemp_Avg, Result: *TimeSeriesResultID%03d, ' % value.ResultID
+                tsrv += u'    - {ColumnNumber: 3, Label: AirTemp_Avg, Result: *TimeSeriesResultID%03d, ' % value.ResultID 
                 tsrv += u'ODM2Field: DataValue, CensorCodeCV: %s, ' % value.CensorCodeCV
                 tsrv += u'TimeAggregationInterval: %s, ' % str(value.TimeAggregationInterval)
                 tsrv += u'TimeAggregationIntervalUnitsID: {'
@@ -764,8 +678,7 @@ class MultipleRepresentations(Service):
 
                 flag = False
 
-            tsrv_data += u'- ["%s",%s,%f]\n' % (
-            str(value.ValueDateTime), str(value.ValueDateTimeUTCOffset), value.DataValue)
+            tsrv_data += u'- ["%s",%s,%f]\n' % (str(value.ValueDateTime),str(value.ValueDateTimeUTCOffset),value.DataValue) 
 
         tsrv += tsrv_data
 
@@ -774,7 +687,7 @@ class MultipleRepresentations(Service):
         response.write(tsr)
         response.write('\n')
         response.write(tsrv)
-        # response.write(pyaml.dump(allvalues,vspacing=[1, 0]))
+        #response.write(pyaml.dump(allvalues,vspacing=[1, 0]))
 
         self._session.close()
         return response
@@ -815,7 +728,7 @@ class MultipleRepresentations(Service):
             r += u'           SamplingFeatureGeotypeCV: "%s"\n' % sf_obj.SamplingFeatureGeotypeCV
             r += u'           Elevation_m: %s\n' % str(sf_obj.Elevation_m)
             r += u'           ElevationDatumCV: "%s"\n' % sf_obj.ElevationDatumCV
-            r += u'           FeatureGeometry: "%s"\n' % sf_obj.FeatureGeometry
+            r += u'           FeatureGeometry: "%s"\n' % self.getWKTFromWKB(sf_obj.FeatureGeometry)
 
             r += u'       Action:\n'
             r += u'           ActionID: %d\n' % a_obj.ActionID
@@ -827,7 +740,7 @@ class MultipleRepresentations(Service):
             r += u'               MethodID: %d\n' % m_obj.MethodID
             r += u'               MethodCode: %s\n' % m_obj.MethodCode
             r += u'               MethodName: %s\n' % m_obj.MethodName
-            aid = a_obj.ActionID
+            aid = a_obj.ActionID 
             raction = conn.getRelatedActionsByActionID(aid)
             if raction != None and len(raction) > 0:
                 r += u'   RelatedActions:\n'
@@ -852,7 +765,7 @@ class MultipleRepresentations(Service):
                 for x in rfeature:
                     rf_obj = x.RelatedFeatureObj
                     r += u'     - RelationshipTypeCV: %s\n' % x.RelationshipTypeCV
-                    # r += u'       SamplingFeatureID: %d\n' % rf_obj.SamplingFeatureID
+                    #r += u'       SamplingFeatureID: %d\n' % rf_obj.SamplingFeatureID
                     r += u'       SamplingFeatureUUID: %s\n' % rf_obj.SamplingFeatureUUID
                     r += u'       SamplingFeatureTypeCV: %s\n' % rf_obj.SamplingFeatureTypeCV
                     r += u'       SamplingFeatureCode: %s\n' % rf_obj.SamplingFeatureCode
@@ -861,7 +774,7 @@ class MultipleRepresentations(Service):
                     r += u'       SamplingFeatureGeotypeCV: "%s"\n' % rf_obj.SamplingFeatureGeotypeCV
                     r += u'       Elevation_m: %s\n' % str(rf_obj.Elevation_m)
                     r += u'       ElevationDatumCV: "%s"\n' % rf_obj.ElevationDatumCV
-                    r += u'       FeatureGeometry: "%s"\n' % rf_obj.FeatureGeometry
+                    r += u'       FeatureGeometry: "%s"\n' % self.getWKTFromWKB(rf_obj.FeatureGeometry)
 
                     rsite = conn.getSiteBySFId(rf_obj.SamplingFeatureID)
                     if rsite != None:
@@ -871,7 +784,7 @@ class MultipleRepresentations(Service):
                         r += u'           Longitude: %f\n' % rsite.Longitude
                         sr_obj = rsite.SpatialReferenceObj
                         r += u'           SpatialReference:\n'
-                        # r += u'               SRSID: %d\n' % sr_obj.SpatialReferenceID
+                        #r += u'               SRSID: %d\n' % sr_obj.SpatialReferenceID
                         r += u'               SRSCode: "%s"\n' % sr_obj.SRSCode
                         r += u'               SRSName: %s\n' % sr_obj.SRSName
 
@@ -901,7 +814,7 @@ class MultipleRepresentations(Service):
             r += u'       ProcessingLevelID: %d\n' % p_obj.ProcessingLevelID
             r += u'       ProcessingLevelCode: "%s"\n' % p_obj.ProcessingLevelCode
 
-            tsr = u'MeasurementResult: &MeasurementResultID%03d\n' % ms_obj.ResultID
+            tsr  = u'MeasurementResult: &MeasurementResultID%03d\n' % ms_obj.ResultID
             tsr += u'    ResultID: *ResultID%03d\n' % ms_obj.ResultID
             if ms_obj.XLocation != None:
                 tsr += u'    XLocation: %f\n' % ms_obj.XLocation
@@ -931,7 +844,7 @@ class MultipleRepresentations(Service):
                 tsr += u'    SpatialReferenceID: *SRSID%03d\n' % ms_obj.SpatialReferenceID
             else:
                 tsr += u'    SpatialReferenceID: NULL\n'
-
+            
             tsr += u'    CensorCodeCV: %s\n' % ms_obj.CensorCodeCV
             tsr += u'    QualityCodeCV: %s\n' % ms_obj.QualityCodeCV
             tsr += u'    AggregationStatisticCV: %s\n' % ms_obj.AggregationStatisticCV
@@ -951,7 +864,7 @@ class MultipleRepresentations(Service):
         response.write(r)
         response.write('\n')
         response.write(tsr)
-        # response.write(pyaml.dump(allvalues,vspacing=[1, 0]))
+        #response.write(pyaml.dump(allvalues,vspacing=[1, 0]))
 
         self._session.close()
         return response
@@ -962,7 +875,8 @@ class MultipleRepresentations(Service):
         response['Content-Disposition'] = 'attachment; filename="values.xml"'
         response.write("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n")
         result, results = self.sqlalchemy_timeseries_object_to_dict()
-        response.write(xmlify({'Result': result, 'DataRecords': {'Data': results}}, wrap="Results", indent="  "))
+        #response.write(xmlify({'Result':result,'DataRecords':{'Data':results}}, wrap="Results", indent="  "))
+        response.write(xmlify(result, wrap="Values", indent="  "))
 
         return response
 
@@ -973,11 +887,171 @@ class MultipleRepresentations(Service):
         response.write("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n")
 
         results = self.sqlalchemy_measurement_object_to_dict()
-        response.write(xmlify({'Result': results}, wrap="Results", indent="  "))
+        response.write(xmlify(results, wrap="Values", indent="  "))
 
         return response
 
+
     def sqlalchemy_timeseries_object_to_dict(self):
+
+        flag = True
+        result = {}
+        results = []
+
+        for value in self.items:
+
+            if flag:
+                conn = ODM2Read(self._session)
+                t_obj = value.TimeSeriesResultObj
+                r_obj = t_obj.ResultObj
+                tu_obj = value.TimeUnitObj
+
+                result['ResultUUID'] = r_obj.ResultUUID
+                result['ResultTypeCV'] = r_obj.ResultTypeCV
+
+                mresult = {}
+                if t_obj.XLocation != None:
+                    mresult['XLocation'] = t_obj.XLocation
+                else:
+                    mresult['XLocation'] = None
+                if t_obj.XLocationUnitsID != None:
+                    mresult['XLocationUnitsID'] = t_obj.XLocationUnitsID
+                else:
+                    mresult['XLocationUnitsID'] = None
+                if t_obj.YLocation != None:
+                    mresult['YLocation'] = t_obj.YLocation
+                else:
+                    mresult['YLocation'] = None
+                if t_obj.YLocationUnitsID != None:
+                    mresult['YLocationUnitsID'] = t_obj.YLocationUnitsID
+                else:
+                    mresult['YLocationUnitsID'] = None
+                if t_obj.ZLocation != None:
+                    mresult['ZLocation'] = t_obj.ZLocation
+                else:
+                    mresult['ZLocation'] = None
+                if t_obj.ZLocationUnitsID != None:
+                    mresult['ZLocationUnitsID'] = t_obj.ZLocationUnitsID
+                else:
+                    mresult['ZLocationUnitsID'] = None
+
+                if t_obj.SpatialReferenceID != None:
+                    ts_obj = t_obj.SpatialReferenceObj
+                    msr = {}
+                    msr['SRSCode'] = ts_obj.SRSCode
+                    msr['SRSName'] = ts_obj.SRSName
+                    mresult['SpatialReference'] = msr
+                else:
+                    mresult['SpatialReference'] = None
+            
+                if t_obj.IntendedTimeSpacing != None:
+                    mresult['IntendedTimeSpacing'] = t_obj.IntendedTimeSpacing
+                else:
+                    mresult['IntendedTimeSpacing'] = None
+                if t_obj.IntendedTimeSpacingUnitsID != None:
+                    mresult['IntendedTimeSpacingUnitsID'] = t_obj.IntendedTimeSpacingUnitsID
+                else:
+                    mresult['IntendedTimeSpacingUnitsID'] = None
+
+                mresult['CensorCodeCV'] = value.CensorCodeCV
+                mresult['QualityCodeCV'] = value.QualityCodeCV
+                mresult['AggregationStatisticCV'] = t_obj.AggregationStatisticCV
+                mresult['TimeAggregationInterval'] = value.TimeAggregationInterval
+
+                tunit = {}
+                tunit['UnitsTypeCV'] = tu_obj.UnitsTypeCV
+                tunit['UnitsAbbreviation'] = tu_obj.UnitsAbbreviation
+                tunit['UnitsName'] = tu_obj.UnitsName
+                mresult['TimeAggregationIntervalUnit'] = tunit
+                #result['TimeSeriesResult'] = mresult
+                result['Result'] = mresult
+                flag = False
+
+            mvalue = {}
+            mvalue['ValueDateTime'] = str(value.ValueDateTime)
+            mvalue['ValueDateTimeUTCOffset'] = value.ValueDateTimeUTCOffset
+            mvalue['DataValue'] = value.DataValue
+            results.append(mvalue)
+            
+        mresult['ResultValues'] = results
+        self._session.close()
+        return result,results
+
+    def sqlalchemy_measurement_object_to_dict(self):
+
+        #results = []
+        conn = ODM2Read(self._session)
+        result = {}
+
+        for value in self.items:
+
+            ms_obj = value.MeasurementResultObj
+            r_obj = ms_obj.ResultObj
+            mst_obj = ms_obj.TimeUnitObj
+
+            #result = {}
+            result['ResultUUID'] = r_obj.ResultUUID
+            result['ResultTypeCV'] = r_obj.ResultTypeCV
+
+            mresult = {}
+            if ms_obj.XLocation != None:
+                mresult['XLocation'] = ms_obj.XLocation
+            else:
+                mresult['XLocation'] = None
+            if ms_obj.XLocationUnitsID != None:
+                mresult['XLocationUnitsID'] = ms_obj.XLocationUnitsID
+            else:
+                mresult['XLocationUnitsID'] = None
+            if ms_obj.YLocation != None:
+                mresult['YLocation'] = ms_obj.YLocation
+            else:
+                mresult['YLocation'] = None
+            if ms_obj.YLocationUnitsID != None:
+                mresult['YLocationUnitsID'] = ms_obj.YLocationUnitsID
+            else:
+                mresult['YLocationUnitsID'] = None
+            if ms_obj.ZLocation != None:
+                mresult['ZLocation'] = ms_obj.ZLocation
+            else:
+                mresult['ZLocation'] = None
+            if ms_obj.ZLocationUnitsID != None:
+                mresult['ZLocationUnitsID'] = ms_obj.ZLocationUnitsID
+            else:
+                mresult['ZLocationUnitsID'] = None
+
+            if ms_obj.SpatialReferenceID != None:
+                mss_obj = ms_obj.SpatialReferenceObj
+                msr = {}
+                msr['SRSCode'] = mss_obj.SRSCode
+                msr['SRSName'] = mss_obj.SRSName
+                mresult['SpatialReference'] = msr
+            else:
+                mresult['SpatialReference'] = None
+            
+            mresult['CensorCodeCV'] = ms_obj.CensorCodeCV
+            mresult['QualityCodeCV'] = ms_obj.QualityCodeCV
+            mresult['AggregationStatisticCV'] = ms_obj.AggregationStatisticCV
+            mresult['TimeAggregationInterval'] = ms_obj.TimeAggregationInterval
+
+            tunit = {}
+            tunit['UnitsTypeCV'] = mst_obj.UnitsTypeCV
+            tunit['UnitsAbbreviation'] = mst_obj.UnitsAbbreviation
+            tunit['UnitsName'] = mst_obj.UnitsName
+            mresult['TimeAggregationIntervalUnit'] = tunit
+
+            mvalue = {}
+            mvalue['ValueDateTime'] = str(value.ValueDateTime)
+            mvalue['ValueDateTimeUTCOffset'] = value.ValueDateTimeUTCOffset
+            mvalue['DataValue'] = value.DataValue
+            mresult['ResultValues'] = mvalue
+            result['Result'] = mresult
+
+            #results.append(result)
+
+        self._session.close()
+        return result
+
+    def sqlalchemy_timeseries_object_to_dict_org(self):
 
         flag = True
         result = {}
@@ -1025,7 +1099,7 @@ class MultipleRepresentations(Service):
                 method['MethodName'] = m_obj.MethodName
                 action['Method'] = method
 
-                aid = a_obj.ActionID
+                aid = a_obj.ActionID 
                 raction = conn.getRelatedActionsByActionID(aid)
                 if raction != None and len(raction) > 0:
                     arrayrelaction = []
@@ -1046,9 +1120,8 @@ class MultipleRepresentations(Service):
                         relaction['Method'] = relmethod
                         arrayrelaction.append(relaction)
 
-                        # result['RelatedActions'] = {'RelatedAction':arrayrelaction}
-                        result['FeatureAction'] = {'SamplingFeature': samplingfeature, 'Action': action,
-                                                   'RelatedActions': {'RelatedAction': arrayrelaction}}
+                        #result['RelatedActions'] = {'RelatedAction':arrayrelaction}
+                        result['FeatureAction'] = {'SamplingFeature': samplingfeature, 'Action': action, 'RelatedActions': {'RelatedAction':arrayrelaction}}
                 else:
                     result['FeatureAction'] = {'SamplingFeature': samplingfeature, 'Action': action}
 
@@ -1072,13 +1145,13 @@ class MultipleRepresentations(Service):
                 varone['VariableNameCV'] = v_obj.VariableNameCV
                 varone['NoDataValue'] = v_obj.NoDataValue
                 result['Variable'] = varone
-
+            
                 unit = {}
                 unit['UnitsTypeCV'] = u_obj.UnitsTypeCV
                 unit['UnitsAbbreviation'] = u_obj.UnitsAbbreviation
                 unit['UnitsName'] = u_obj.UnitsName
                 result['Unit'] = unit
-
+           
                 pl = {}
                 pl['ProcessingLevelCode'] = p_obj.ProcessingLevelCode
                 pl['Definition'] = p_obj.Definition
@@ -1119,7 +1192,7 @@ class MultipleRepresentations(Service):
                     mresult['SpatialReference'] = msr
                 else:
                     mresult['SpatialReference'] = ''
-
+            
                 if t_obj.IntendedTimeSpacing != None:
                     mresult['IntendedTimeSpacing'] = t_obj.IntendedTimeSpacing
                 else:
@@ -1149,9 +1222,9 @@ class MultipleRepresentations(Service):
             results.append(mvalue)
 
         self._session.close()
-        return result, results
+        return result,results
 
-    def sqlalchemy_measurement_object_to_dict(self):
+    def sqlalchemy_measurement_object_to_dict_org(self):
 
         results = []
         conn = ODM2Read(self._session)
@@ -1186,7 +1259,7 @@ class MultipleRepresentations(Service):
             samplingfeature['SamplingFeatureGeotypeCV'] = sf_obj.SamplingFeatureGeotypeCV
             samplingfeature['Elevation_m'] = str(sf_obj.Elevation_m)
             samplingfeature['ElevationDatumCV'] = sf_obj.ElevationDatumCV
-            samplingfeature['FeatureGeometry'] = sf_obj.FeatureGeometry
+            samplingfeature['FeatureGeometry'] = self.getWKTFromWKB(sf_obj.FeatureGeometry)
 
             action = {}
             action['ActionTypeCV'] = a_obj.ActionTypeCV
@@ -1201,7 +1274,7 @@ class MultipleRepresentations(Service):
             method['MethodName'] = m_obj.MethodName
             action['Method'] = method
 
-            aid = a_obj.ActionID
+            aid = a_obj.ActionID 
             raction = conn.getRelatedActionsByActionID(aid)
             if raction != None and len(raction) > 0:
                 arrayrelaction = []
@@ -1222,9 +1295,8 @@ class MultipleRepresentations(Service):
                     relaction['Method'] = relmethod
                     arrayrelaction.append(relaction)
 
-                # result['RelatedActions'] = {'RelatedAction':arrayrelaction}
-                result['FeatureAction'] = {'SamplingFeature': samplingfeature, 'Action': action,
-                                           'RelatedActions': {'RelatedAction': arrayrelaction}}
+                #result['RelatedActions'] = {'RelatedAction':arrayrelaction}
+                result['FeatureAction'] = {'SamplingFeature': samplingfeature, 'Action': action, 'RelatedActions': {'RelatedAction':arrayrelaction}}
             else:
                 result['FeatureAction'] = {'SamplingFeature': samplingfeature, 'Action': action}
 
@@ -1244,7 +1316,7 @@ class MultipleRepresentations(Service):
                     rf['SamplingFeatureGeotypeCV'] = rf_obj.SamplingFeatureGeotypeCV
                     rf['Elevation_m'] = str(rf_obj.Elevation_m)
                     rf['ElevationDatumCV'] = rf_obj.ElevationDatumCV
-                    rf['FeatureGeometry'] = rf_obj.FeatureGeometry
+                    rf['FeatureGeometry'] = self.getWKTFromWKB(rf_obj.FeatureGeometry)
 
                     rsite = conn.getSiteBySFId(rf_obj.SamplingFeatureID)
                     if rsite != None:
@@ -1281,13 +1353,13 @@ class MultipleRepresentations(Service):
             varone['VariableNameCV'] = v_obj.VariableNameCV
             varone['NoDataValue'] = v_obj.NoDataValue
             result['Variable'] = varone
-
+            
             unit = {}
             unit['UnitsTypeCV'] = u_obj.UnitsTypeCV
             unit['UnitsAbbreviation'] = u_obj.UnitsAbbreviation
             unit['UnitsName'] = u_obj.UnitsName
             result['Unit'] = unit
-
+            
             pl = {}
             pl['ProcessingLevelCode'] = p_obj.ProcessingLevelCode
             pl['Definition'] = p_obj.Definition
@@ -1328,7 +1400,7 @@ class MultipleRepresentations(Service):
                 mresult['SpatialReference'] = msr
             else:
                 mresult['SpatialReference'] = ''
-
+            
             mresult['CensorCodeCV'] = ms_obj.CensorCodeCV
             mresult['QualityCodeCV'] = ms_obj.QualityCodeCV
             mresult['AggregationStatisticCV'] = ms_obj.AggregationStatisticCV

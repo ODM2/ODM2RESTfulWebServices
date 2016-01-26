@@ -1,35 +1,33 @@
-import sys
 
-sys.path.append('ODM2PythonAPI')
-
-from src.api.ODMconnection import dbconnection
-from odm2rest.ODM2ALLServices import odm2Service as ODM2Read
+from odm2api.ODMconnection import dbconnection
+from ODM2ALLServices import odm2Service as ODM2Read
 from rest_framework.response import Response
 from rest_framework import status
 
-
 class Service:
+
     def __init__(self):
-        # mysql
-        # self.engine = 'mysql'
-        # self.address = 'localhost'
-        # self.db = 'ODM2'
-        # self.user = 'cinergi'
-        # self.password = 'cinergi'
-        # postgresql
-        self.engine = 'db_type'
+        #mysql
+        #self.engine = 'mysql'
+        #self.address = 'localhost'
+        #self.db = 'ODM2'
+        #self.user = 'cinergi'
+        #self.password = 'cinergi'
+        #postgresql
+        self.engine = 'postgresql'
         self.address = 'localhost'
-        self.db = 'db name'
-        self.user = 'user'
-        self.password = 'pass'
+        self.db = 'marchantariats'
+        self.user = 'postgres'
+        self.password = 'cinergi'
 
         self.items = []
         self.accept = ''
 
-        self.resulttypecv_to_id = {'Time series coverage': 'TSC', 'Measurement': 'M'}
+        self.resulttypecv_to_id = {'Time series coverage':'TSC', 'Measurement':'M' }
 
         self.resulttypecv = ''
         self._session = None
+        self.default_format = 'json'
 
         self.__json_format()
         self.__csv_format()
@@ -48,28 +46,28 @@ class Service:
 
     def content_format(self, data, mediaType):
 
-        if isinstance(data, list):
+        if isinstance(data,list):
             self.items = data
         else:
             self.items.append(data)
 
         self.accept = mediaType
 
-        # if format == 'json' or accept == 'application/json':
+        #if format == 'json' or accept == 'application/json':
         if self.accept == 'application/json' or self.accept == 'json':
             return Response(self.json_format())
-        # elif format == 'csv' or accept == 'text/csv':
+        #elif format == 'csv' or accept == 'text/csv':
         elif self.accept == 'text/csv' or self.accept == 'csv':
             return self.csv_format()
 
-        # elif format == 'yaml' or accept == 'application/yaml':
+        #elif format == 'yaml' or accept == 'application/yaml':
         elif self.accept == 'application/yaml' or self.accept == 'yaml':
             return self.yaml_format()
         elif self.accept == 'text/xml' or self.accept == 'xml':
             return self.xml_format()
         else:
-            # return Response(self.json_format())
-            # return Response(self.yaml_format())
+            #return Response(self.json_format())
+            #return Response(self.yaml_format())
             return Response('format, %s is not existed.' % self.accept,
                             status=status.HTTP_400_BAD_REQUEST)
 

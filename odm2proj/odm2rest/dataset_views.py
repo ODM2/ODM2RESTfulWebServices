@@ -1,28 +1,17 @@
-import sys
-
-sys.path.append('ODM2PythonAPI')
-
-# from rest_framework import viewsets
 
 from django.http import HttpResponse
 from rest_framework.renderers import JSONRenderer
-
-# Create your views here.
-
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-
 from collections import OrderedDict
-
 import csv
 import pyaml
 
-from odm2rest.odm2service import Service
+from odm2service import Service
 from negotiation import IgnoreClientContentNegotiation
-
 from dict2xml import dict2xml as xmlify
-
+from ODM2ALLServices import odm2Service as ODM2Read
 
 class DatasetViewSet(APIView):
     """
@@ -35,7 +24,7 @@ class DatasetViewSet(APIView):
         ---
         parameters:
             - name: format    
-              description: The format type is "yaml", "json", "xml" or "csv". The default type is "yaml".
+              description: The format type is "yaml", "json", "xml" or "csv". The default type is "json".
               required: false
               type: string
               paramType: query
@@ -47,9 +36,9 @@ class DatasetViewSet(APIView):
               message: Not authenticated
         """
 
-        format = request.query_params.get('format', 'yaml')
-        # accept = request.accepted_renderer.media_type
+        #accept = request.accepted_renderer.media_type
         mr = MultipleRepresentations()
+        format = request.query_params.get('format', mr.default_format)
         readConn = mr.readService()
         items = readConn.getDataSets()
         if items == None or len(items) == 0:
@@ -57,7 +46,6 @@ class DatasetViewSet(APIView):
                             status=status.HTTP_400_BAD_REQUEST)
 
         return mr.content_format(items, format)
-
 
 class MultipleRepresentations(Service):
     def json_format(self):
@@ -69,21 +57,19 @@ class MultipleRepresentations(Service):
         response = HttpResponse(content_type='text/csv')
         response['Content-Disposition'] = 'attachment; filename="datasets.csv"'
 
-        item_csv_header = ["#fields=DataSetID", "DataSetUUID[type='string']", "DataSetTypeCV[type='string']",
-                           "DataSetCode[type='string']", "DataSetTitle[type='string']",
-                           "DataSetAbstract[type='string']"]
+        item_csv_header = ["#fields=DataSetID","DataSetUUID[type='string']","DataSetTypeCV[type='string']","DataSetCode[type='string']","DataSetTitle[type='string']","DataSetAbstract[type='string']"]
 
         writer = csv.writer(response)
         writer.writerow(item_csv_header)
-
+            
         for item in self.items:
             row = []
-            row.append(item.DatasetID)
-            row.append(item.DatasetUUID)
-            row.append(item.DatasetTypeCV)
-            row.append(item.DatasetCode)
-            row.append(item.DatasetTitle)
-            row.append(item.DatasetAbstract)
+            row.append(item.DataSetID)
+            row.append(item.DataSetUUID)
+            row.append(item.DataSetTypeCV)
+            row.append(item.DataSetCode)
+            row.append(item.DataSetTitle)
+            row.append(item.DataSetAbstract)
 
             writer.writerow(row)
 
@@ -99,7 +85,7 @@ class MultipleRepresentations(Service):
         allitems = {}
         records = self.sqlalchemy_object_to_dict()
         allitems["DataSets"] = records
-        response.write(pyaml.dump(allitems, vspacing=[0, 0]))
+        response.write(pyaml.dump(allitems,vspacing=[0, 0]))
         return response
 
     def xml_format(self):
@@ -109,20 +95,35 @@ class MultipleRepresentations(Service):
 
         response.write("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n")
         records = self.sqlalchemy_object_to_dict()
-        response.write(xmlify({'Dataset': records}, wrap="Datasets", indent="  "))
+        response.write(xmlify({'DataSet': records}, wrap="DataSets", indent="  "))
         return response
 
     def sqlalchemy_object_to_dict(self):
 
-        records = []
+        records = []            
+        conn = ODM2Read(self._session)
+
         for item in self.items:
+
             queryset = OrderedDict()
-            queryset["DatasetID"] = item.DatasetID
-            queryset["DatasetUUID"] = str(item.DatasetUUID)
-            queryset["DatasetTypeCV"] = item.DatasetTypeCV
-            queryset["DatasetCode"] = item.DatasetCode
-            queryset["DatasetTitle"] = item.DatasetTitle
-            queryset["DatasetAbstract"] = item.DatasetAbstract
+            #queryset["DataSetID"] = item.DataSetID
+            queryset["DataSetUUID"] = str(item.DataSetUUID)
+            queryset["DataSetTypeCV"] = item.DataSetTypeCV
+            queryset["DataSetCode"] = item.DataSetCode
+            queryset["DataSetTitle"] = item.DataSetTitle
+            queryset["DataSetAbstract"] = item.DataSetAbstract
+
+            dsresult = conn.getDataSetResultsByDatasetID(item.DataSetID)
+            if dsresult != None and len(dsresult) > 0:
+                dsrs = []
+                for x in dsresult:
+                    ds_obj = x.ResultObj
+                    result = {}
+                    result['ResultUUID'] = ds_obj.ResultUUID
+                    result['ResultTypeCV'] = ds_obj.ResultTypeCV
+                    dsrs.append(result)
+                queryset['Results'] = dsrs
+
             records.append(queryset)
 
         self._session.close()
@@ -133,8 +134,8 @@ class JSONResponse(HttpResponse):
     """
     An HttpResponse that renders its content into JSON.
     """
-
     def __init__(self, data, **kwargs):
         content = JSONRenderer().render(data)
         kwargs['content_type'] = 'application/json'
         super(JSONResponse, self).__init__(content, **kwargs)
+

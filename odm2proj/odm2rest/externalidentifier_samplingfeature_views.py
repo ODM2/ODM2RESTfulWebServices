@@ -1,42 +1,35 @@
-import sys
-
-sys.path.append('ODM2PythonAPI')
-
-# from rest_framework import viewsets
 
 from django.http import HttpResponse
 from rest_framework.renderers import JSONRenderer
-
-# Create your views here.
-
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-
 from collections import OrderedDict
 
 import csv
 import pyaml
 
-from odm2rest.odm2service import Service
+from odm2service import Service
 from negotiation import IgnoreClientContentNegotiation
 from dict2xml import dict2xml as xmlify
 
+from shapely import wkb,wkt
+import binascii
 
 class ExternalIdentifierSamplingFeatureViewSet(APIView):
     """
     All ODM2 ExternalIdentifiers For Citation Retrieval
     """
     content_negotiation_class = IgnoreClientContentNegotiation
-    # renderer_classes = (JSONRenderer, YAMLRenderer)
-    # serializer_class = VariableSerializer
+    #renderer_classes = (JSONRenderer, YAMLRenderer)
+    #serializer_class = VariableSerializer
 
     def get(self, request, format=None):
         """
         ---
         parameters:
             - name: format    
-              description: The format type is "yaml", "json", "xml" or "csv". The default type is "yaml".
+              description: The format type is "yaml", "json", "xml" or "csv". The default type is "json".
               required: false
               type: string
               paramType: query
@@ -48,9 +41,9 @@ class ExternalIdentifierSamplingFeatureViewSet(APIView):
               message: Not authenticated
         """
 
-        format = request.query_params.get('format', 'yaml')
-        # accept = request.accepted_renderer.media_type
+        #accept = request.accepted_renderer.media_type
         mr = MultipleRepresentations()
+        format = request.query_params.get('format', mr.default_format)
         readConn = mr.readService()
         items = readConn.getExternalIdentifiersForSamplingFeature()
         if items == None or len(items) == 0:
@@ -59,8 +52,17 @@ class ExternalIdentifierSamplingFeatureViewSet(APIView):
 
         return mr.content_format(items, format)
 
-
 class MultipleRepresentations(Service):
+
+    def getWKTFromWKB(self,value):
+        if value:
+            binary = binascii.unhexlify(str(value))
+            point = wkb.loads(binary)
+            point = '{0}'.format(wkt.dumps(point))
+            return point
+        else:
+            return None
+
     def json_format(self):
 
         return self.sqlalchemy_object_to_dict()
@@ -70,25 +72,11 @@ class MultipleRepresentations(Service):
         response = HttpResponse(content_type='text/csv')
         response['Content-Disposition'] = 'attachment; filename="samplingfeatureexternalidentifiersystem.csv"'
 
-        item_csv_header = ["#fields=SamplingFeatureExternalIdentifier[type='string']",
-                           "SamplingFeatureExternalIdentifierURI[type='string']", "ExternalIdentifierSystemID",
-                           "ExternalIdentifierSystemName[type='string']",
-                           "ExternalIdentifierSystemDescription[type='string']",
-                           "ExternalIdentifierSystemURL[type='string']", "IdentifierSystemOrganization.OrganizationID",
-                           "IdentifierSystemOrganization.OrganizationTypeCV[type='string']",
-                           "IdentifierSystemOrganization.OrganizationCode[type='string']",
-                           "IdentifierSystemOrganization.OrganizationName[type='string']",
-                           "IdentifierSystemOrganization.OrganizationDescription[type='string']",
-                           "IdentifierSystemOrganization.OrganizationLink[type='string']",
-                           "IdentifierSystemOrganization.ParentOrganizationID", "SamplingFeatureID",
-                           "SamplingFeatureUUID[type='string']", "SamplingFeatureTypeCV[type='string']",
-                           "SamplingFeatureCode[type='string']", "SamplingFeatureName[type='string']",
-                           "SamplingFeatureDescription[type='string']", "SamplingFeatureGeotypeCV[type='string']",
-                           "Elevation_m", "ElevationDatumCV[type='string']", "FeatureGeometry[type='string']"]
+        item_csv_header = ["#fields=SamplingFeatureExternalIdentifier[type='string']","SamplingFeatureExternalIdentifierURI[type='string']","ExternalIdentifierSystemID","ExternalIdentifierSystemName[type='string']","ExternalIdentifierSystemDescription[type='string']","ExternalIdentifierSystemURL[type='string']","IdentifierSystemOrganization.OrganizationID","IdentifierSystemOrganization.OrganizationTypeCV[type='string']","IdentifierSystemOrganization.OrganizationCode[type='string']","IdentifierSystemOrganization.OrganizationName[type='string']","IdentifierSystemOrganization.OrganizationDescription[type='string']","IdentifierSystemOrganization.OrganizationLink[type='string']","IdentifierSystemOrganization.ParentOrganizationID","SamplingFeatureID","SamplingFeatureUUID[type='string']","SamplingFeatureTypeCV[type='string']","SamplingFeatureCode[type='string']","SamplingFeatureName[type='string']","SamplingFeatureDescription[type='string']","SamplingFeatureGeotypeCV[type='string']","Elevation_m","ElevationDatumCV[type='string']","FeatureGeometry[type='string']"]
 
         writer = csv.writer(response)
         writer.writerow(item_csv_header)
-
+            
         for item in self.items:
             row = []
 
@@ -117,7 +105,7 @@ class MultipleRepresentations(Service):
             row.append(c_obj.SamplingFeatureGeotypeCV)
             row.append(c_obj.Elevation_m)
             row.append(c_obj.ElevationDatumCV)
-            row.append(c_obj.FeatureGeometry)
+            row.append(self.getWKTFromWKB(c_obj.FeatureGeometry))
 
             writer.writerow(row)
 
@@ -139,6 +127,7 @@ class MultipleRepresentations(Service):
         cs = []
 
         for item in self.items:
+
             cei = OrderedDict()
             cei['SamplingFeature'] = "*SamplingFeatureID%03d" % item.SamplingFeatureID
             cei['ExternalIdentifierSystem'] = "*ExternalIdentifierSystemID%03d" % item.ExternalIdentifierSystemID
@@ -148,13 +137,11 @@ class MultipleRepresentations(Service):
 
             eis_obj = item.ExternalIdentifierSystemObj
             queryset = OrderedDict()
-            queryset[
-                'ExternalIdentifierSystem'] = "&ExternalIdentifierSystemID%03d" % eis_obj.ExternalIdentifierSystemID
+            queryset['ExternalIdentifierSystem'] = "&ExternalIdentifierSystemID%03d" % eis_obj.ExternalIdentifierSystemID
             queryset['ExternalIdentifierSystemName'] = eis_obj.ExternalIdentifierSystemName
             queryset['ExternalIdentifierSystemDescription'] = eis_obj.ExternalIdentifierSystemDescription
             queryset['ExternalIdentifierSystemURL'] = eis_obj.ExternalIdentifierSystemURL
-            queryset[
-                'IdentifierSystemOrganization'] = "*IdentifierSystemOrganizationID%03d" % eis_obj.IdentifierSystemOrganizationID
+            queryset['IdentifierSystemOrganization'] = "*IdentifierSystemOrganizationID%03d" % eis_obj.IdentifierSystemOrganizationID 
             eis.append(queryset)
             eis = [i for n, i in enumerate(eis) if i not in eis[n + 1:]]
 
@@ -182,7 +169,7 @@ class MultipleRepresentations(Service):
             c['SamplingFeatureGeotypeCV'] = c_obj.SamplingFeatureGeotypeCV
             c['Elevation_m'] = c_obj.Elevation_m
             c['ElevationDatumCV'] = c_obj.ElevationDatumCV
-            c['FeatureGeometry'] = c_obj.FeatureGeometry
+            c['FeatureGeometry'] = self.getWKTFromWKB(c_obj.FeatureGeometry)
             cs.append(c)
             cs = [i for n, i in enumerate(cs) if i not in cs[n + 1:]]
 
@@ -202,15 +189,14 @@ class MultipleRepresentations(Service):
 
         response.write("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n")
         allitems = self.sqlalchemy_object_to_dict()
-        response.write(
-            xmlify({'SamplingFeatureExternalIdentifier': allitems}, wrap="SamplingFeatureExternalIdentifiers",
-                   indent="  "))
+        response.write(xmlify({'SamplingFeatureExternalIdentifier': allitems}, wrap="SamplingFeatureExternalIdentifiers", indent="  "))
         return response
 
     def sqlalchemy_object_to_dict(self):
 
         allitems = []
         for item in self.items:
+
             cei = OrderedDict()
             cei['SamplingFeatureExternalIdentifier'] = item.SamplingFeatureExternalIdentifier
             cei['SamplingFeatureExternalIdentifierURI'] = item.SamplingFeatureExternalIdentifierURI
@@ -244,7 +230,7 @@ class MultipleRepresentations(Service):
             c['SamplingFeatureGeotypeCV'] = c_obj.SamplingFeatureGeotypeCV
             c['Elevation_m'] = c_obj.Elevation_m
             c['ElevationDatumCV'] = c_obj.ElevationDatumCV
-            c['FeatureGeometry'] = c_obj.FeatureGeometry
+            c['FeatureGeometry'] = self.getWKTFromWKB(c_obj.FeatureGeometry)
 
             cei['ExternalIdentifierSystem'] = queryset
             cei['SamplingFeature'] = c
@@ -254,13 +240,12 @@ class MultipleRepresentations(Service):
         self._session.close()
         return allitems
 
-
 class JSONResponse(HttpResponse):
     """
     An HttpResponse that renders its content into JSON.
     """
-
     def __init__(self, data, **kwargs):
         content = JSONRenderer().render(data)
         kwargs['content_type'] = 'application/json'
         super(JSONResponse, self).__init__(content, **kwargs)
+

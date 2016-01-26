@@ -1,13 +1,8 @@
-import sys
-
-sys.path.append('ODM2PythonAPI')
 
 from rest_framework import serializers
-
 from sqlalchemy.ext.declarative import DeclarativeMeta
 import json
 from django.contrib.auth.models import User
-
 
 class UserSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:

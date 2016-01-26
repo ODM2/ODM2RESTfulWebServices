@@ -1,39 +1,18 @@
-import sys
-
-sys.path.append('ODM2PythonAPI')
-
-# from rest_framework import viewsets
-from odm2rest.serializers import DummySerializer
-from odm2rest.serializers import Odm2JsonSerializer
 
 from django.http import HttpResponse
-from django.views.decorators.csrf import csrf_exempt
 from rest_framework.renderers import JSONRenderer
-from rest_framework.parsers import JSONParser
-
-# Create your views here.
-
-from django.http import Http404
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 
-from rest_framework import viewsets
-import json
-from collections import OrderedDict
-
-import csv, cStringIO
-import yaml, pyaml
-
-from odm2rest.odm2service import Service
-from rest_framework_csv.renderers import CSVRenderer
-from rest_framework_xml.renderers import XMLRenderer
-from rest_framework_yaml.renderers import YAMLRenderer
-from rest_framework.renderers import BrowsableAPIRenderer
+import csv
+from odm2service import Service
 from negotiation import IgnoreClientContentNegotiation
-from odm2rest.ODM2ALLServices import odm2Service as ODM2Read
+from ODM2ALLServices import odm2Service as ODM2Read
 from dict2xml import dict2xml as xmlify
 
+from shapely import wkb,wkt
+import binascii
 
 class DatasetDetailViewSet(APIView):
     """
@@ -46,7 +25,7 @@ class DatasetDetailViewSet(APIView):
         ---
         parameters:
             - name: format    
-              description: The format type is "yaml", "json", "csv" or "xml". The default type is "yaml".
+              description: The format type is "yaml", "json", "csv" or "xml". The default type is "json".
               required: false
               type: string
               paramType: query
@@ -70,20 +49,20 @@ class DatasetDetailViewSet(APIView):
         if datasetUUID is None:
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
-        format = request.query_params.get('format', 'yaml')
-        # accept = request.accepted_renderer.media_type
-        page = request.query_params.get('page', '0')
-        page_size = request.query_params.get('page_size', '100')
+        #accept = request.accepted_renderer.media_type
+        page = request.QUERY_PARAMS.get('page','0')
+        page_size = request.QUERY_PARAMS.get('page_size','100')
 
         page = int(page)
         page_size = int(page_size)
 
         mr = MultipleRepresentations()
+        format = request.query_params.get('format', mr.default_format)
         readConn = mr.readService()
 
         count = readConn.getCountForDataSetResultsByUUID(datasetUUID)
         if count > 500:
-            items = readConn.getDataSetResultsByUUIDByPage(datasetUUID, page, page_size)
+            items = readConn.getDataSetResultsByUUIDByPage(datasetUUID,page,page_size)
         else:
             items = readConn.getDataSetResultsByUUID(datasetUUID)
 
@@ -93,8 +72,17 @@ class DatasetDetailViewSet(APIView):
 
         return mr.content_format(items, format)
 
-
 class MultipleRepresentations(Service):
+
+    def getWKTFromWKB(self,value):
+        if value:
+            binary = binascii.unhexlify(str(value))
+            point = wkb.loads(binary)
+            point = '{0}'.format(wkt.dumps(point))
+            return point
+        else:
+            return None
+
     def json_format(self):
 
         dataset, results = self.sqlalchemy_object_to_dict()
@@ -107,56 +95,21 @@ class MultipleRepresentations(Service):
         response['Content-Disposition'] = 'attachment; filename="datasets.csv"'
 
         item_csv_header = []
-        item_csv_header.extend(
-            ["#fields=DataSet.DataSetID", "DataSet.DataSetUUID[type='string']", "DataSet.DataSetTypeCV[type='string']",
-             "DataSet.DataSetCode[type='string']", "DataSet.DataSetTitle[type='string']",
-             "DataSet.DataSetAbstract[type='string']"])
-        item_csv_header.extend(["Result.ResultUUID[type='string']", "Result.ResultTypeCV[type='string']",
-                                "Result.ResultDateTime[type='date' format='yyyy-MM-dd HH:MM:SS']",
-                                "Result.ResultDateTimeUTCOffset", "Result.StatusCV[type='string']",
-                                "Result.SampledMediumCV[type='string']", "Result.ValueCount"])
-        item_csv_header.extend(["SamplingFeature.SamplingFeatureUUID[type='string']",
-                                "SamplingFeature.SamplingFeatureTypeCV[type='string']",
-                                "SamplingFeature.SamplingFeatureCode[type='string']",
-                                "SamplingFeature.SamplingFeatureName[type='string']",
-                                "SamplingFeature.SamplingFeatureDescription[type='string']",
-                                "SamplingFeature.SamplingFeatureGeotypeCV[type='string']",
-                                "SamplingFeature.Elevation_m[unit='m']",
-                                "SamplingFeature.ElevationDatumCV[type='string']",
-                                "SamplingFeature.FeatureGeometry[type='string']"])
-        item_csv_header.extend(
-            ["Action.ActionTypeCV[type='string']", "Action.ActionTypeCV[type='date' format='yyyy-MM-dd HH:MM:SS']",
-             "Action.BeginDateTimeUTCOffset", "Action.EndDateTime[type='date' format='yyyy-MM-dd HH:MM:SS']",
-             "Action.EndDateTimeUTCOffset", "Method.MethodTypeCV[type='string']", "Method.MethodCode[type='string']",
-             "Method.MethodName[type='string']"])
-        item_csv_header.extend(["Variable.VariableTypeCV[type='string']", "Variable.VariableCode[type='string']",
-                                "Variable.VariableNameCV[type='string']", "Variable.NoDataValue",
-                                "Unit.UnitsTypeCV[type='string']", "Unit.UnitsAbbreviation[type='string']",
-                                "Unit.UnitsName[type='string']", "ProcessingLevel.ProcessingLevelCode[type='string']",
-                                "ProcessingLevel.Definition[type='string']",
-                                "ProcessingLevel.Explanation[type='string']"])
-        item_csv_header.extend(
-            ["Site.SiteTypeCV[type='string']", "Site.Latitude[unit='degrees']", "Site.Longitude[unit='degrees']",
-             "Site.SpatialReference.SRSCode[type='string']", "Site.SpatialReference.SRSName[type='string']"])
-        item_csv_header.extend(
-            ["RelatedFeature.RelationshipTypeCV[type='string']", "RelatedFeature.SamplingFeatureUUID[type='string']",
-             "RelatedFeature.SamplingFeatureTypeCV[type='string']", "RelatedFeature.SamplingFeatureCode[type='string']",
-             "RelatedFeature.SamplingFeatureName[type='string']",
-             "RelatedFeature.SamplingFeatureDescription[type='string']",
-             "RelatedFeature.SamplingFeatureGeotypeCV[type='string']", "RelatedFeature.Elevation_m[unit='m']",
-             "RelatedFeature.ElevationDatumCV[type='string']", "RelatedFeature.FeatureGeometry[type='string']",
-             "RelatedFeature.Site.SiteTypeCV[type='string']", "RelatedFeature.Site.Latitude[unit='degrees']",
-             "RelatedFeature.Site.Longitude[unit='degrees']",
-             "RelatedFeature.Site.SpatialReference.SRSCode[type='string']",
-             "RelatedFeature.Site.SpatialReference.SRSName[type='string']"])
+        item_csv_header.extend(["#fields=DataSet.DataSetID","DataSet.DataSetUUID[type='string']","DataSet.DataSetTypeCV[type='string']","DataSet.DataSetCode[type='string']","DataSet.DataSetTitle[type='string']","DataSet.DataSetAbstract[type='string']"])
+        item_csv_header.extend(["Result.ResultUUID[type='string']","Result.ResultTypeCV[type='string']", "Result.ResultDateTime[type='date' format='yyyy-MM-dd HH:MM:SS']","Result.ResultDateTimeUTCOffset","Result.StatusCV[type='string']","Result.SampledMediumCV[type='string']","Result.ValueCount"])
+        item_csv_header.extend(["SamplingFeature.SamplingFeatureUUID[type='string']","SamplingFeature.SamplingFeatureTypeCV[type='string']","SamplingFeature.SamplingFeatureCode[type='string']","SamplingFeature.SamplingFeatureName[type='string']","SamplingFeature.SamplingFeatureDescription[type='string']","SamplingFeature.SamplingFeatureGeotypeCV[type='string']","SamplingFeature.Elevation_m[unit='m']","SamplingFeature.ElevationDatumCV[type='string']","SamplingFeature.FeatureGeometry[type='string']"])
+        item_csv_header.extend(["Action.ActionTypeCV[type='string']","Action.ActionTypeCV[type='date' format='yyyy-MM-dd HH:MM:SS']","Action.BeginDateTimeUTCOffset","Action.EndDateTime[type='date' format='yyyy-MM-dd HH:MM:SS']","Action.EndDateTimeUTCOffset","Method.MethodTypeCV[type='string']","Method.MethodCode[type='string']","Method.MethodName[type='string']"])
+        item_csv_header.extend(["Variable.VariableTypeCV[type='string']","Variable.VariableCode[type='string']","Variable.VariableNameCV[type='string']","Variable.NoDataValue","Unit.UnitsTypeCV[type='string']","Unit.UnitsAbbreviation[type='string']","Unit.UnitsName[type='string']","ProcessingLevel.ProcessingLevelCode[type='string']","ProcessingLevel.Definition[type='string']","ProcessingLevel.Explanation[type='string']"])
+        item_csv_header.extend(["Site.SiteTypeCV[type='string']","Site.Latitude[unit='degrees']","Site.Longitude[unit='degrees']","Site.SpatialReference.SRSCode[type='string']","Site.SpatialReference.SRSName[type='string']"])
+        item_csv_header.extend(["RelatedFeature.RelationshipTypeCV[type='string']","RelatedFeature.SamplingFeatureUUID[type='string']","RelatedFeature.SamplingFeatureTypeCV[type='string']","RelatedFeature.SamplingFeatureCode[type='string']","RelatedFeature.SamplingFeatureName[type='string']","RelatedFeature.SamplingFeatureDescription[type='string']","RelatedFeature.SamplingFeatureGeotypeCV[type='string']","RelatedFeature.Elevation_m[unit='m']","RelatedFeature.ElevationDatumCV[type='string']","RelatedFeature.FeatureGeometry[type='string']","RelatedFeature.Site.SiteTypeCV[type='string']","RelatedFeature.Site.Latitude[unit='degrees']","RelatedFeature.Site.Longitude[unit='degrees']","RelatedFeature.Site.SpatialReference.SRSCode[type='string']","RelatedFeature.Site.SpatialReference.SRSName[type='string']"])
 
         writer = csv.writer(response)
         writer.writerow(item_csv_header)
         conn = ODM2Read(self._session)
-
+            
         for value in self.items:
             row = []
-            d_obj = value.DatasetObj
+            d_obj = value.DataSetObj
             r_obj = value.ResultObj
             sf_obj = r_obj.FeatureActionObj.SamplingFeatureObj
             a_obj = r_obj.FeatureActionObj.ActionObj
@@ -165,12 +118,12 @@ class MultipleRepresentations(Service):
             u_obj = r_obj.UnitsObj
             p_obj = r_obj.ProcessingLevelObj
 
-            row.append(d_obj.DatasetID)
-            row.append(d_obj.DatasetUUID)
-            row.append(d_obj.DatasetTypeCV)
-            row.append(d_obj.DatasetCode)
-            row.append(d_obj.DatasetTitle)
-            row.append(d_obj.DatasetAbstract)
+            row.append(d_obj.DataSetID)
+            row.append(d_obj.DataSetUUID)
+            row.append(d_obj.DataSetTypeCV)
+            row.append(d_obj.DataSetCode)
+            row.append(d_obj.DataSetTitle)
+            row.append(d_obj.DataSetAbstract)
 
             row.append(r_obj.ResultUUID)
             row.append(r_obj.ResultTypeCV)
@@ -188,7 +141,7 @@ class MultipleRepresentations(Service):
             row.append(sf_obj.SamplingFeatureGeotypeCV)
             row.append(str(sf_obj.Elevation_m))
             row.append(sf_obj.ElevationDatumCV)
-            row.append(sf_obj.FeatureGeometry)
+            row.append(self.getWKTFromWKB(sf_obj.FeatureGeometry))
 
             row.append(a_obj.ActionTypeCV)
             row.append(a_obj.BeginDateTime)
@@ -208,7 +161,7 @@ class MultipleRepresentations(Service):
             row.append(u_obj.UnitsTypeCV)
             row.append(u_obj.UnitsAbbreviation)
             row.append(u_obj.UnitsName)
-
+                    
             row.append(p_obj.ProcessingLevelCode)
             row.append(p_obj.Definition)
             row.append(p_obj.Explanation)
@@ -241,7 +194,7 @@ class MultipleRepresentations(Service):
                     row1.append(rf_obj.SamplingFeatureGeotypeCV)
                     row1.append(str(rf_obj.Elevation_m))
                     row1.append(rf_obj.ElevationDatumCV)
-                    row1.append(rf_obj.FeatureGeometry)
+                    row1.append(self.getWKTFromWKB(rf_obj.FeatureGeometry))
 
                     rsite = conn.getSiteBySFId(rf_obj.SamplingFeatureID)
                     if rsite != None:
@@ -261,7 +214,7 @@ class MultipleRepresentations(Service):
                 for i in range(15):
                     row1.append(None)
                 rf_list.append(row1)
-
+            
             for i in rf_list:
                 row.extend(i)
                 writer.writerow(row)
@@ -275,20 +228,20 @@ class MultipleRepresentations(Service):
         response['Content-Disposition'] = 'attachment; filename="dataset.yaml"'
 
         response.write("---\n")
-        response.write("Dataset:\n")
+        response.write("DataSet:\n")
 
         flag = True
         conn = ODM2Read(self._session)
 
         for value in self.items:
             if flag:
-                d_obj = value.DatasetObj
-                q = u'    DatasetID: %d\n' % d_obj.DatasetID
-                q += u'    DatasetUUID: %s\n' % d_obj.DatasetUUID
-                q += u'    DatasetTypeCV: %s\n' % d_obj.DatasetTypeCV
-                q += u'    DatasetCode: %s\n' % d_obj.DatasetCode
-                q += u'    DatasetTitle: %s\n' % d_obj.DatasetTitle
-                q += u'    DatasetAbstract: %s\n' % d_obj.DatasetAbstract
+                d_obj = value.DataSetObj
+                q  = u'    DataSetID: %d\n' % d_obj.DataSetID
+                q += u'    DataSetUUID: %s\n' % d_obj.DataSetUUID
+                q += u'    DataSetTypeCV: %s\n' % d_obj.DataSetTypeCV
+                q += u'    DataSetCode: %s\n' % d_obj.DataSetCode
+                q += u'    DataSetTitle: %s\n' % d_obj.DataSetTitle
+                q += u'    DataSetAbstract: %s\n' % d_obj.DataSetAbstract
                 response.write(q)
                 response.write("\n")
                 response.write("Results:\n")
@@ -302,8 +255,8 @@ class MultipleRepresentations(Service):
             u_obj = r_obj.UnitsObj
             p_obj = r_obj.ProcessingLevelObj
 
-            # r  = u' - ResultID: %d\n' % value.ResultID
-            r = u' - ResultUUID: "%s"\n' % r_obj.ResultUUID
+            #r  = u' - ResultID: %d\n' % value.ResultID
+            r  = u' - ResultUUID: "%s"\n' % r_obj.ResultUUID
             r += u'   ResultTypeCV: \'%s\'\n' % r_obj.ResultTypeCV
             r += u'   ResultDateTime: "%s"\n' % str(r_obj.ResultDateTime)
             r += u'   ResultDateTimeUTCOffset: %s\n' % str(r_obj.ResultDateTimeUTCOffset)
@@ -312,9 +265,9 @@ class MultipleRepresentations(Service):
             r += u'   ValueCount: %d\n' % r_obj.ValueCount
 
             r += u'   FeatureAction: \n'
-            # r += u'       FeatureActionID: %d\n' % value.FeatureActionObj.FeatureActionID
+            #r += u'       FeatureActionID: %d\n' % value.FeatureActionObj.FeatureActionID
             r += u'       SamplingFeature:\n'
-            # r += u'           SamplingFeatureID: %d\n' % sf_obj.SamplingFeatureID
+            #r += u'           SamplingFeatureID: %d\n' % sf_obj.SamplingFeatureID
             r += u'           SamplingFeatureUUID: %s\n' % sf_obj.SamplingFeatureUUID
             r += u'           SamplingFeatureTypeCV: %s\n' % sf_obj.SamplingFeatureTypeCV
             r += u'           SamplingFeatureCode: %s\n' % sf_obj.SamplingFeatureCode
@@ -323,17 +276,17 @@ class MultipleRepresentations(Service):
             r += u'           SamplingFeatureGeotypeCV: "%s"\n' % sf_obj.SamplingFeatureGeotypeCV
             r += u'           Elevation_m: %s\n' % str(sf_obj.Elevation_m)
             r += u'           ElevationDatumCV: "%s"\n' % sf_obj.ElevationDatumCV
-            r += u'           FeatureGeometry: "%s"\n' % sf_obj.FeatureGeometry
+            r += u'           FeatureGeometry: "%s"\n' % self.getWKTFromWKB(sf_obj.FeatureGeometry)
 
             r += u'       Action:\n'
-            # r += u'           ActionID: %d\n' % a_obj.ActionID
+            #r += u'           ActionID: %d\n' % a_obj.ActionID
             r += u'           ActionTypeCV: "%s"\n' % a_obj.ActionTypeCV
             r += u'           BeginDateTime: "%s"\n' % str(a_obj.BeginDateTime)
             r += u'           BeginDateTimeUTCOffset: %s\n' % str(a_obj.BeginDateTimeUTCOffset)
             r += u'           EndDateTime: "%s"\n' % str(a_obj.EndDateTime)
             r += u'           EndDateTimeUTCOffset: %s\n' % str(a_obj.EndDateTimeUTCOffset)
             r += u'           Method:\n'
-            # r += u'               MethodID: %d\n' % m_obj.MethodID
+            #r += u'               MethodID: %d\n' % m_obj.MethodID
             r += u'               MethodTypeCV: %s\n' % m_obj.MethodTypeCV
             r += u'               MethodCode: %s\n' % m_obj.MethodCode
             r += u'               MethodName: %s\n' % m_obj.MethodName
@@ -362,7 +315,7 @@ class MultipleRepresentations(Service):
                 for x in rfeature:
                     rf_obj = x.RelatedFeatureObj
                     r += u'     - RelationshipTypeCV: %s\n' % x.RelationshipTypeCV
-                    # r += u'       SamplingFeatureID: %d\n' % rf_obj.SamplingFeatureID
+                    #r += u'       SamplingFeatureID: %d\n' % rf_obj.SamplingFeatureID
                     r += u'       SamplingFeatureUUID: %s\n' % rf_obj.SamplingFeatureUUID
                     r += u'       SamplingFeatureTypeCV: %s\n' % rf_obj.SamplingFeatureTypeCV
                     r += u'       SamplingFeatureCode: %s\n' % rf_obj.SamplingFeatureCode
@@ -371,7 +324,7 @@ class MultipleRepresentations(Service):
                     r += u'       SamplingFeatureGeotypeCV: "%s"\n' % rf_obj.SamplingFeatureGeotypeCV
                     r += u'       Elevation_m: %s\n' % str(rf_obj.Elevation_m)
                     r += u'       ElevationDatumCV: "%s"\n' % rf_obj.ElevationDatumCV
-                    r += u'       FeatureGeometry: "%s"\n' % rf_obj.FeatureGeometry
+                    r += u'       FeatureGeometry: "%s"\n' % self.getWKTFromWKB(rf_obj.FeatureGeometry)
 
                     rsite = conn.getSiteBySFId(rf_obj.SamplingFeatureID)
                     if rsite != None:
@@ -381,7 +334,7 @@ class MultipleRepresentations(Service):
                         r += u'           Longitude: %f\n' % rsite.Longitude
                         sr_obj = rsite.SpatialReferenceObj
                         r += u'           SpatialReference:\n'
-                        # r += u'               SRSID: %d\n' % sr_obj.SpatialReferenceID
+                        #r += u'               SRSID: %d\n' % sr_obj.SpatialReferenceID
                         r += u'               SRSCode: "%s"\n' % sr_obj.SRSCode
                         r += u'               SRSName: %s\n' % sr_obj.SRSName
 
@@ -393,25 +346,25 @@ class MultipleRepresentations(Service):
                 r += u'       Longitude: %f\n' % site.Longitude
                 sr_obj = site.SpatialReferenceObj
                 r += u'       SpatialReference:\n'
-                # r += u'           SRSID: %d\n' % sr_obj.SpatialReferenceID
+                #r += u'           SRSID: %d\n' % sr_obj.SpatialReferenceID
                 r += u'           SRSCode: "%s"\n' % sr_obj.SRSCode
                 r += u'           SRSName: %s\n' % sr_obj.SRSName
 
             r += u'   Variable:\n'
-            # r += u'       VariableID: %d\n' % v_obj.VariableID
+            #r += u'       VariableID: %d\n' % v_obj.VariableID
             r += u'       VariableTypeCV: %s\n' % v_obj.VariableTypeCV
             r += u'       VariableCode: %s\n' % v_obj.VariableCode
             r += u'       VariableNameCV: %s\n' % v_obj.VariableNameCV
             r += u'       NoDataValue: %d\n' % v_obj.NoDataValue
-
+            
             r += u'   Unit:\n'
-            # r += u'       UnitID: %d\n' % u_obj.UnitsID
+            #r += u'       UnitID: %d\n' % u_obj.UnitsID
             r += u'       UnitsTypeCV: %s\n' % u_obj.UnitsTypeCV
             r += u'       UnitsAbbreviation: %s\n' % u_obj.UnitsAbbreviation
             r += u'       UnitsName: %s\n' % u_obj.UnitsName
-
+            
             r += u'   ProcessingLevel:\n'
-            # r += u'       ProcessingLevelID: %d\n' % p_obj.ProcessingLevelID
+            #r += u'       ProcessingLevelID: %d\n' % p_obj.ProcessingLevelID
             r += u'       ProcessingLevelCode: "%s"\n' % p_obj.ProcessingLevelCode
             r += u'       Definition: "%s"\n' % p_obj.Definition
             r += u'       Explanation: "%s"\n' % p_obj.Explanation
@@ -431,26 +384,53 @@ class MultipleRepresentations(Service):
 
         dataset, results = self.sqlalchemy_object_to_dict()
 
-        dataset['Results'] = {'Result': results}
-        response.write(xmlify(dataset, wrap="Dataset", indent="  "))
+        dataset['Results'] = {'Result': results }
+        response.write(xmlify(dataset, wrap="DataSet", indent="  "))
         return response
 
     def sqlalchemy_object_to_dict(self):
 
-        flag = True
+        flag = True        
         dataset = {}
         results = []
         conn = ODM2Read(self._session)
 
         for value in self.items:
             if flag:
-                d_obj = value.DatasetObj
-                dataset['DatasetID'] = d_obj.DatasetID
-                dataset['DatasetUUID'] = d_obj.DatasetUUID
-                dataset['DatasetTypeCV'] = d_obj.DatasetTypeCV
-                dataset['DatasetCode'] = d_obj.DatasetCode
-                dataset['DatasetTitle'] = d_obj.DatasetTitle
-                dataset['DatasetAbstract'] = d_obj.DatasetAbstract
+                d_obj = value.DataSetObj
+                #dataset['DataSetID'] = d_obj.DataSetID
+                dataset['DataSetUUID'] = d_obj.DataSetUUID
+                dataset['DataSetTypeCV'] = d_obj.DataSetTypeCV
+                dataset['DataSetCode'] = d_obj.DataSetCode
+                dataset['DataSetTitle'] = d_obj.DataSetTitle
+                dataset['DataSetAbstract'] = d_obj.DataSetAbstract
+                flag = False
+
+            r_obj = value.ResultObj
+            result = {}
+            result['ResultUUID'] = r_obj.ResultUUID
+            result['ResultTypeCV'] = r_obj.ResultTypeCV
+            results.append(result)
+
+        self._session.close()
+        return dataset,results
+
+    def sqlalchemy_object_to_dict_org(self):
+
+        flag = True        
+        dataset = {}
+        results = []
+        conn = ODM2Read(self._session)
+
+        for value in self.items:
+            if flag:
+                d_obj = value.DataSetObj
+                dataset['DataSetID'] = d_obj.DataSetID
+                dataset['DataSetUUID'] = d_obj.DataSetUUID
+                dataset['DataSetTypeCV'] = d_obj.DataSetTypeCV
+                dataset['DataSetCode'] = d_obj.DataSetCode
+                dataset['DataSetTitle'] = d_obj.DataSetTitle
+                dataset['DataSetAbstract'] = d_obj.DataSetAbstract
                 flag = False
 
             r_obj = value.ResultObj
@@ -479,7 +459,7 @@ class MultipleRepresentations(Service):
             samplingfeature['SamplingFeatureGeotypeCV'] = sf_obj.SamplingFeatureGeotypeCV
             samplingfeature['Elevation_m'] = str(sf_obj.Elevation_m)
             samplingfeature['ElevationDatumCV'] = sf_obj.ElevationDatumCV
-            samplingfeature['FeatureGeometry'] = sf_obj.FeatureGeometry
+            samplingfeature['FeatureGeometry'] = self.getWKTFromWKB(sf_obj.FeatureGeometry)
 
             action = {}
             action['ActionTypeCV'] = a_obj.ActionTypeCV
@@ -529,7 +509,7 @@ class MultipleRepresentations(Service):
                     rf['SamplingFeatureGeotypeCV'] = rf_obj.SamplingFeatureGeotypeCV
                     rf['Elevation_m'] = str(rf_obj.Elevation_m)
                     rf['ElevationDatumCV'] = rf_obj.ElevationDatumCV
-                    rf['FeatureGeometry'] = rf_obj.FeatureGeometry
+                    rf['FeatureGeometry'] = self.getWKTFromWKB(rf_obj.FeatureGeometry)
 
                     rsite = conn.getSiteBySFId(rf_obj.SamplingFeatureID)
                     if rsite != None:
@@ -566,13 +546,13 @@ class MultipleRepresentations(Service):
             varone['VariableNameCV'] = v_obj.VariableNameCV
             varone['NoDataValue'] = v_obj.NoDataValue
             result['Variable'] = varone
-
+            
             unit = {}
             unit['UnitsTypeCV'] = u_obj.UnitsTypeCV
             unit['UnitsAbbreviation'] = u_obj.UnitsAbbreviation
             unit['UnitsName'] = u_obj.UnitsName
             result['Unit'] = unit
-
+            
             pl = {}
             pl['ProcessingLevelCode'] = p_obj.ProcessingLevelCode
             pl['Definition'] = p_obj.Definition
@@ -582,15 +562,14 @@ class MultipleRepresentations(Service):
             results.append(result)
 
         self._session.close()
-        return dataset, results
-
+        return dataset,results
 
 class JSONResponse(HttpResponse):
     """
     An HttpResponse that renders its content into JSON.
     """
-
     def __init__(self, data, **kwargs):
         content = JSONRenderer().render(data)
         kwargs['content_type'] = 'application/json'
         super(JSONResponse, self).__init__(content, **kwargs)
+
