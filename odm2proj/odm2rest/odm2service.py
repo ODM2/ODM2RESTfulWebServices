@@ -7,18 +7,11 @@ from rest_framework import status
 class Service:
 
     def __init__(self):
-        #mysql
-        #self.engine = 'mysql'
-        #self.address = 'localhost'
-        #self.db = 'ODM2'
-        #self.user = 'cinergi'
-        #self.password = 'cinergi'
-        #postgresql
-        self.engine = 'postgresql'
+        self.engine = 'db engine'
         self.address = 'localhost'
-        self.db = 'marchantariats'
-        self.user = 'postgres'
-        self.password = 'cinergi'
+        self.db = 'db name'
+        self.user = 'username'
+        self.password = 'password'
 
         self.items = []
         self.accept = ''
