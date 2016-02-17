@@ -11,9 +11,6 @@ from negotiation import IgnoreClientContentNegotiation
 from dict2xml import dict2xml as xmlify
 from ODM2ALLServices import odm2Service as ODM2Read
 
-from shapely import wkb,wkt
-import binascii
-
 class SamplingfeatureViewSet(APIView):
     """
     All ODM2 samplingfeatures Retrieval
@@ -146,15 +143,6 @@ class SFTypeViewSet(APIView):
 
 class MultipleRepresentations(Service):
 
-    def getWKTFromWKB(self,value):
-        if value:
-            binary = binascii.unhexlify(str(value))
-            point = wkb.loads(binary)
-            point = '{0}'.format(wkt.dumps(point))
-            return point
-        else:
-            return None
-
     def json_format(self):
 
         return self.sqlalchemy_object_to_dict()
@@ -186,7 +174,9 @@ class MultipleRepresentations(Service):
             row.append(value.SamplingFeatureGeotypeCV)
             row.append(str(value.Elevation_m))
             row.append(value.ElevationDatumCV)
-            fg = self.getWKTFromWKB(value.FeatureGeometry)
+            fg = None
+            if value.FeatureGeometry is not None:
+                fg = value.shape().wkt
             row.append(fg)
 
             sfid = value.SamplingFeatureID
@@ -230,7 +220,9 @@ class MultipleRepresentations(Service):
                     row1.append(rf_obj.SamplingFeatureGeotypeCV)
                     row1.append(str(rf_obj.Elevation_m))
                     row1.append(rf_obj.ElevationDatumCV)
-                    fg = self.getWKTFromWKB(rf_obj.FeatureGeometry)
+                    fg = None
+                    if rf_obj.FeatureGeometry is not None:
+                        fg = rf_obj.shape().wkt
                     row1.append(fg)
 
                     rsite = conn.getSiteBySFId(rf_obj.SamplingFeatureID)
@@ -280,7 +272,9 @@ class MultipleRepresentations(Service):
             r += u'   SamplingFeatureGeotypeCV: "%s"\n' % value.SamplingFeatureGeotypeCV
             r += u'   Elevation_m: %s\n' % str(value.Elevation_m)
             r += u'   ElevationDatumCV: "%s"\n' % value.ElevationDatumCV
-            fg = self.getWKTFromWKB(value.FeatureGeometry)
+            fg = None
+            if value.FeatureGeometry is not None:
+                fg = value.shape().wkt
             r += u'   FeatureGeometry: "%s"\n' % fg
 
             sfid = value.SamplingFeatureID
@@ -298,7 +292,9 @@ class MultipleRepresentations(Service):
                     r += u'       SamplingFeatureGeotypeCV: "%s"\n' % rf_obj.SamplingFeatureGeotypeCV
                     r += u'       Elevation_m: %s\n' % str(rf_obj.Elevation_m)
                     r += u'       ElevationDatumCV: "%s"\n' % rf_obj.ElevationDatumCV
-                    fg = self.getWKTFromWKB(rf_obj.FeatureGeometry)
+                    fg = None
+                    if rf_obj.FeatureGeometry is not None:
+                        fg = rf_obj.shape().wkt
                     r += u'       FeatureGeometry: "%s"\n' % fg
 
                     rsite = conn.getSiteBySFId(rf_obj.SamplingFeatureID)
@@ -369,7 +365,10 @@ class MultipleRepresentations(Service):
             samplingfeature['SamplingFeatureGeotypeCV'] = value.SamplingFeatureGeotypeCV
             samplingfeature['Elevation_m'] = value.Elevation_m
             samplingfeature['ElevationDatumCV'] = value.ElevationDatumCV
-            samplingfeature['FeatureGeometry'] = self.getWKTFromWKB(value.FeatureGeometry)
+            fg = None
+            if value.FeatureGeometry is not None:
+                fg = value.shape().wkt
+            samplingfeature['FeatureGeometry'] = fg
 
             sfid = value.SamplingFeatureID
             rfeature = conn.getRelatedFeaturesBySamplingFeatureID(sfid)
@@ -390,7 +389,10 @@ class MultipleRepresentations(Service):
                     rsf['SamplingFeatureGeotypeCV'] = rf_obj.SamplingFeatureGeotypeCV
                     rsf['Elevation_m'] = rf_obj.Elevation_m
                     rsf['ElevationDatumCV'] = rf_obj.ElevationDatumCV
-                    rsf['FeatureGeometry'] = self.getWKTFromWKB(rf_obj.FeatureGeometry)
+                    fg = None
+                    if rf_obj.FeatureGeometry is not None:
+                        fg = rf_obj.shape().wkt
+                    rsf['FeatureGeometry'] = fg
                     rf['SamplingFeature'] = rsf
 
                     if s_obj != None:

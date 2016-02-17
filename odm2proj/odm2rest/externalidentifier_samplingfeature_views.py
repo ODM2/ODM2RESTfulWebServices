@@ -13,9 +13,6 @@ from odm2service import Service
 from negotiation import IgnoreClientContentNegotiation
 from dict2xml import dict2xml as xmlify
 
-from shapely import wkb,wkt
-import binascii
-
 class ExternalIdentifierSamplingFeatureViewSet(APIView):
     """
     All ODM2 ExternalIdentifiers For Citation Retrieval
@@ -53,15 +50,6 @@ class ExternalIdentifierSamplingFeatureViewSet(APIView):
         return mr.content_format(items, format)
 
 class MultipleRepresentations(Service):
-
-    def getWKTFromWKB(self,value):
-        if value:
-            binary = binascii.unhexlify(str(value))
-            point = wkb.loads(binary)
-            point = '{0}'.format(wkt.dumps(point))
-            return point
-        else:
-            return None
 
     def json_format(self):
 
@@ -105,7 +93,10 @@ class MultipleRepresentations(Service):
             row.append(c_obj.SamplingFeatureGeotypeCV)
             row.append(c_obj.Elevation_m)
             row.append(c_obj.ElevationDatumCV)
-            row.append(self.getWKTFromWKB(c_obj.FeatureGeometry))
+            fg = None
+            if c_obj.FeatureGeometry is not None:
+                fg = c_obj.shape().wkt
+            row.append(fg)
 
             writer.writerow(row)
 
@@ -169,7 +160,10 @@ class MultipleRepresentations(Service):
             c['SamplingFeatureGeotypeCV'] = c_obj.SamplingFeatureGeotypeCV
             c['Elevation_m'] = c_obj.Elevation_m
             c['ElevationDatumCV'] = c_obj.ElevationDatumCV
-            c['FeatureGeometry'] = self.getWKTFromWKB(c_obj.FeatureGeometry)
+            fg = None
+            if c_obj.FeatureGeometry is not None:
+                fg = c_obj.shape().wkt
+            c['FeatureGeometry'] = fg
             cs.append(c)
             cs = [i for n, i in enumerate(cs) if i not in cs[n + 1:]]
 
@@ -230,8 +224,10 @@ class MultipleRepresentations(Service):
             c['SamplingFeatureGeotypeCV'] = c_obj.SamplingFeatureGeotypeCV
             c['Elevation_m'] = c_obj.Elevation_m
             c['ElevationDatumCV'] = c_obj.ElevationDatumCV
-            c['FeatureGeometry'] = self.getWKTFromWKB(c_obj.FeatureGeometry)
-
+            fg = None
+            if c_obj.FeatureGeometry is not None:
+                fg = c_obj.shape().wkt
+            c['FeatureGeometry'] = fg
             cei['ExternalIdentifierSystem'] = queryset
             cei['SamplingFeature'] = c
 

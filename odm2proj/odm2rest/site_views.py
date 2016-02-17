@@ -12,9 +12,6 @@ import pyaml
 from negotiation import IgnoreClientContentNegotiation
 from dict2xml import dict2xml as xmlify
 
-from shapely import wkb,wkt
-import binascii
-
 class SiteViewSet(APIView):
     """
     All ODM2 sites Retrieval
@@ -140,15 +137,6 @@ class SiteTypeViewSet(APIView):
 
 class MultipleRepresentations(Service):
 
-    def getWKTFromWKB(self,value):
-        if value:
-            binary = binascii.unhexlify(str(value))
-            point = wkb.loads(binary)
-            point = '{0}'.format(wkt.dumps(point))
-            return point
-        else:
-            return None
-
     def json_format(self):
 
         allsites = OrderedDict()
@@ -181,7 +169,10 @@ class MultipleRepresentations(Service):
             queryset['SamplingFeatureGeotypeCV'] = sf_obj.SamplingFeatureGeotypeCV
             queryset['Elevation_m'] = sf_obj.Elevation_m
             queryset['ElevationDatumCV'] = sf_obj.ElevationDatumCV
-            queryset['FeatureGeometry'] = self.getWKTFromWKB(sf_obj.FeatureGeometry)
+            fg = None
+            if sf_obj.FeatureGeometry is not None:
+                fg = sf_obj.shape().wkt
+            queryset['FeatureGeometry'] = fg
             one_site['SamplingFeature'] = queryset
 
             sr = OrderedDict()
@@ -223,7 +214,10 @@ class MultipleRepresentations(Service):
             row.append(sf_name.encode("utf-8"))
             row.append(sf_obj.SamplingFeatureDescription)
             row.append(sf_obj.SamplingFeatureGeotypeCV)
-            row.append(self.getWKTFromWKB(sf_obj.FeatureGeometry))
+            fg = None
+            if sf_obj.FeatureGeometry is not None:
+                fg = sf_obj.shape().wkt
+            row.append(fg)
             row.append(sf_obj.Elevation_m)
             row.append(sf_obj.ElevationDatumCV)
             row.append(site.SiteTypeCV)
@@ -281,7 +275,10 @@ class MultipleRepresentations(Service):
             sf['SamplingFeatureName'] = sf_obj.SamplingFeatureName
             sf['SamplingFeatureDescription'] = sf_obj.SamplingFeatureDescription
             sf['SamplingFeatureGeotypeCV'] = sf_obj.SamplingFeatureGeotypeCV
-            sf['FeatureGeometry'] = self.getWKTFromWKB(sf_obj.FeatureGeometry)
+            fg = None
+            if sf_obj.FeatureGeometry is not None:
+                fg = sf_obj.shape().wkt
+            sf['FeatureGeometry'] = fg
             sf['Elevation_m'] = sf_obj.Elevation_m
             sf['ElevationDatumCV'] = sf_obj.ElevationDatumCV
             sfs.append(sf)
@@ -327,7 +324,10 @@ class MultipleRepresentations(Service):
             sf['SamplingFeatureName'] = sf_obj.SamplingFeatureName
             sf['SamplingFeatureDescription'] = sf_obj.SamplingFeatureDescription
             sf['SamplingFeatureGeotypeCV'] = sf_obj.SamplingFeatureGeotypeCV
-            sf['FeatureGeometry'] = self.getWKTFromWKB(sf_obj.FeatureGeometry)
+            fg = None
+            if sf_obj.FeatureGeometry is not None:
+                fg = sf_obj.shape().wkt
+            sf['FeatureGeometry'] = fg
             sf['Elevation_m'] = sf_obj.Elevation_m
             sf['ElevationDatumCV'] = sf_obj.ElevationDatumCV
             st['SamplingFeature'] = sf
