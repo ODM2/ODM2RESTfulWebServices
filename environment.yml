@@ -1,0 +1,20 @@
+name: odm2restenv
+channels:
+- odm2
+- conda-forge
+dependencies:
+- python=2.7
+- odm2api
+- geoalchemy-odm2
+- django
+- djangorestframework
+- djangorestframework-gis
+- sqlalchemy
+- psycopg2
+- pyodbc
+- pyyaml
+- pip:
+  - django-rest-swagger
+  - djangorestframework-csv
+  - djangorestframework-xml
+  - djangorestframework-yaml
