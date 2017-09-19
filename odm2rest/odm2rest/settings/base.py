@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     # External apps
     'rest_framework',
+    'rest_framework_swagger',
     # Internal apps
     'api'
 ]
@@ -122,6 +123,33 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.11/howto/static-files/
 
 STATIC_URL = '/static/'
+
+
+# REST FRAMEWORK SETTINGS
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': ('rest_framework.permissions.AllowAny',),
+    # 'DEFAULT_PERMISSION_CLASSES': ('rest_framework.permissions.IsAdminUser',),
+    # 'VIEW_DESCRIPTION_FUNCTION': 'rest_framework_swagger.views.get_restructuredtext',
+    # 'DEFAULT_PARSER_CLASSES': (
+    #    'rest_framework.parsers.JSONParser',
+    #    'rest_framework.parsers.YAMLParser',
+    #    'rest_framework.parsers.XMLParser',
+    # ),
+    # 'DEFAULT_CONTENT_NEGOTIATION_CLASS': 'odm2rest.negotiation.IgnoreClientContentNegotiation',
+    # specifying the renderers
+    'DEFAULT_RENDERER_CLASSES': (
+        'rest_framework.renderers.JSONRenderer',
+        'rest_framework_csv.renderers.CSVRenderer',
+        'rest_framework_yaml.renderers.YAMLRenderer',
+        # 'rest_framework_xml.renderers.XMLRenderer',
+        'rest_framework.renderers.BrowsableAPIRenderer',
+    ),
+    # 'PAGINATE_BY': 10,                 # Default to 10
+    # 'PAGINATE_BY_PARAM': 'page_size',  # Allow client to override, using `?page_size=xxx`.
+    # 'MAX_PAGINATE_BY': 100             # Maximum limit allowed when using `?page_size=xxx`.
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 100,
+}
 
 # SQLAlchemy settings
 ODM2DATABASE = {

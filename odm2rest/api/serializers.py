@@ -15,7 +15,7 @@ from rest_framework.fields import (
 from rest_framework.serializers import Serializer
 
 
-class PersonSerializer(Serializer):
+class PeopleSerializer(Serializer):
     PersonFirstName = CharField()
     PersonMiddleName = CharField()
     PersonLastName = CharField()
@@ -32,7 +32,7 @@ class OrganizationSerializer(Serializer):
 
 
 class AffiliationsSerializer(Serializer):
-    Person = PersonSerializer()
+    Person = PeopleSerializer()
     Organization = OrganizationSerializer()
     IsPrimaryOrganizationContact = BooleanField()
     AffiliationStartDate = DateTimeField()

@@ -18,7 +18,7 @@ class Affiliations(object):
         self.PrimaryAddress = address
         self.PersonLink = web_link
 
-class Person(object):
+class People(object):
 
     def __init__(self, firstname, middlename, lastname):
         self.PersonFirstName = firstname
