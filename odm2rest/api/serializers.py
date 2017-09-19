@@ -14,6 +14,27 @@ from rest_framework.fields import (
 
 from rest_framework.serializers import Serializer
 
+# Reference for serialization mapping
+# Resource: https://github.com/dealertrack/djangorest-alchemy/blob/master/djangorest_alchemy/serializers.py
+# sqlalchemy: restframework
+# field_mapping = {
+#         String: CharField,
+#         INTEGER: IntegerField,
+#         SMALLINT: IntegerField,
+#         BIGINT: IntegerField,
+#         VARCHAR: CharField,
+#         CHAR: CharField,
+#         TIMESTAMP: DateTimeField,
+#         DATE: DateTimeField,
+#         Float: FloatField,
+#         BigInteger: IntegerField,
+#         Numeric: IntegerField,
+#         DateTime: DateTimeField,
+#         Boolean: BooleanField,
+#         CLOB: CharField,
+#         DECIMAL: DecimalField,
+# }
+
 
 class PeopleSerializer(Serializer):
     PersonFirstName = CharField()
