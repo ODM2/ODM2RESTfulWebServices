@@ -13,6 +13,7 @@ dependencies:
 - psycopg2
 - pyodbc
 - pyyaml
+- ipykernel
 - pip:
   - django-rest-swagger
   - djangorestframework-csv
