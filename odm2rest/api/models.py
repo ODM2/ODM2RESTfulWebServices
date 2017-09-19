@@ -27,11 +27,11 @@ class Person(object):
 
 class Organization(object):
 
-    def __init__(self, type, code, name, description, web_link, parent_org):
-        self.OrganizationTypeCV = type
+    def __init__(self, org_type, code, name, description, web_link, parent_id):
+        self.OrganizationTypeCV = org_type
         self.OrganizationCode = code
         self.OrganizationName = name
         self.OrganizationDescription = description
         self.OrganizationLink = web_link
 
-        self.ParentOrganizationID = parent_org
+        self.ParentOrganizationID = parent_id
