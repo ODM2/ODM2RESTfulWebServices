@@ -130,11 +130,11 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': ('rest_framework.permissions.AllowAny',),
     # 'DEFAULT_PERMISSION_CLASSES': ('rest_framework.permissions.IsAdminUser',),
     # 'VIEW_DESCRIPTION_FUNCTION': 'rest_framework_swagger.views.get_restructuredtext',
-    # 'DEFAULT_PARSER_CLASSES': (
-    #    'rest_framework.parsers.JSONParser',
-    #    'rest_framework.parsers.YAMLParser',
-    #    'rest_framework.parsers.XMLParser',
-    # ),
+    'DEFAULT_PARSER_CLASSES': (
+       'rest_framework.parsers.JSONParser',
+       'rest_framework_yaml.parsers.YAMLParser',
+       'rest_framework_csv.parsers.CSVParser',
+    ),
     # 'DEFAULT_CONTENT_NEGOTIATION_CLASS': 'odm2rest.negotiation.IgnoreClientContentNegotiation',
     # specifying the renderers
     'DEFAULT_RENDERER_CLASSES': (
@@ -149,6 +149,19 @@ REST_FRAMEWORK = {
     # 'MAX_PAGINATE_BY': 100             # Maximum limit allowed when using `?page_size=xxx`.
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 100,
+}
+
+SWAGGER_SETTINGS = {
+    'SECURITY_DEFINITIONS': {
+        'basic': {
+            'type': 'basic'
+        }
+    },
+    'USE_SESSION_AUTH': False,
+    'APIS_SORTER': 'alpha',
+    'JSON_EDITOR': True,
+    'SHOW_REQUEST_HEADERS': True,
+    'SUPPORTED_SUBMIT_METHODS': ['get']
 }
 
 # SQLAlchemy settings
