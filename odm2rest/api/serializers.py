@@ -52,7 +52,7 @@ class OrganizationSerializer(Serializer):
     ParentOrganizationID = IntegerField()
 
 
-class AffiliationsSerializer(Serializer):
+class AffiliationSerializer(Serializer):
     Person = PeopleSerializer()
     Organization = OrganizationSerializer()
     IsPrimaryOrganizationContact = BooleanField()
@@ -62,3 +62,55 @@ class AffiliationsSerializer(Serializer):
     PrimaryEmail = CharField()
     PrimaryAddress = CharField()
     PersonLink = CharField()
+
+
+class VariableSerializer(Serializer):
+    VariableNameCV = CharField()
+    VariableTypeCV = CharField()
+    NoDataValue = FloatField()
+    Speciation = CharField()
+    VariableDefinition = CharField()
+    VariableCode = CharField()
+
+
+class UnitSerializer(Serializer):
+    UnitsTypeCV = CharField()
+    UnitsAbbreviation = CharField()
+    UnitsName = CharField()
+    UnitsLink = CharField()
+
+
+class FeatureActionSerializer(Serializer):
+    SamplingFeature = CharField()
+    Action = CharField()
+
+
+class ProcessingLevelSerializer(Serializer):
+    ProcessingLevelCode = CharField()
+    Definition = CharField()
+    Explanation = CharField()
+
+
+class TaxonomicClassifierSerializer(Serializer):
+    TaxonomicClassifierTypeCV = CharField()
+    TaxonomicClassifierName = CharField()
+    TaxonomicClassifierCommonName = CharField()
+    TaxonomicClassifierDescription = CharField()
+    ParentTaxonomicClassifierID = IntegerField()
+
+
+class ResultSerializer(Serializer):
+    ResultUUID = CharField()
+    FeatureAction = FeatureActionSerializer()
+    ResultTypeCV = CharField()
+    Variable = VariableSerializer()
+    Unit = UnitSerializer()
+    TaxonomicClassifier = TaxonomicClassifierSerializer()
+    ResultDateTime = DateTimeField()
+    ResultDateTimeUTCOffset = IntegerField()
+    ValidDateTime = DateTimeField()
+    ValidDateTimeUTCOffset = IntegerField()
+    StatusCV = CharField()
+    SampledMediumCV = CharField()
+    ValueCount = IntegerField()
+    ProcessingLevel = ProcessingLevelSerializer()
