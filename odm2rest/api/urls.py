@@ -9,14 +9,15 @@ from rest_framework.urlpatterns import format_suffix_patterns
 from rest_framework_swagger.views import get_swagger_view
 
 from views import (
+    SwaggerSchemaView,
     AffiliationsViewSet,
     PeopleViewSet
 )
 
-schema_view = get_swagger_view(title='ODM2 REST API')
+#schema_view = get_swagger_view(title='ODM2 REST API', url='/docs')
 
 urlpatterns = [
-    url(r'^docs/$', schema_view),
+    url(r'^docs/$', SwaggerSchemaView.as_view()),
     url(r'^affiliations$', AffiliationsViewSet.as_view(), name='affiliations-list'),
     url(r'^people$', PeopleViewSet.as_view(), name='people-list')
 ]
