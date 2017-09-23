@@ -8,6 +8,8 @@ from django.core.management import settings
 from odm2api.ODMconnection import dbconnection
 from odm2api.ODM2.services.readService import ReadODM2
 
+from models import get_vals
+
 from models import (
     Affiliation,
     Organization,
@@ -17,7 +19,8 @@ from models import (
     Unit,
     FeatureAction,
     ProcessingLevel,
-    TaxonomicClassifier
+    TaxonomicClassifier,
+    SamplingFeatures
 )
 
 SESSION_FACTORY = dbconnection.createConnection(**settings.ODM2DATABASE)
@@ -40,32 +43,18 @@ def get_affiliations(**kwargs):
     Aff_list = []
 
     for aff in Affs:
-        organization = None
+        aff_dct = get_vals(aff)
+        aff_dct.update({
+            'Person':get_vals(aff.PersonObj),
+            'Organization': None
+        })
         if aff.OrganizationObj:
-            organization = Organization(
-                    org_type=aff.OrganizationObj.OrganizationTypeCV,
-                    code=aff.OrganizationObj.OrganizationCode,
-                    name=aff.OrganizationObj.OrganizationName,
-                    description=aff.OrganizationObj.OrganizationDescription,
-                    web_link=aff.OrganizationObj.OrganizationLink,
-                    parent_id=aff.OrganizationObj.ParentOrganizationID
-                )
+            aff_dct.update({
+                'Organization': get_vals(aff.OrganizationObj)
+            })
+
         Aff_list.append(
-            Affiliation(
-                person=People(
-                    firstname=aff.PersonObj.PersonFirstName,
-                    middlename=aff.PersonObj.PersonMiddleName,
-                    lastname=aff.PersonObj.PersonLastName
-                ),
-                organization=organization,
-                poc=aff.IsPrimaryOrganizationContact,
-                startdate=aff.AffiliationStartDate,
-                enddate=aff.AffiliationEndDate,
-                phone=aff.PrimaryPhone,
-                email=aff.PrimaryEmail,
-                address=aff.PrimaryAddress,
-                web_link=aff.PersonLink
-            )
+            Affiliation(aff_dct)
         )
 
     return Aff_list
@@ -85,14 +74,10 @@ def get_people(**kwargs):
                          lastname=person_last)
 
     Ppl_list = []
-
     for person in Ppl:
+        ppl_dct = get_vals(person)
         Ppl_list.append(
-            People(
-                firstname=person.PersonFirstName,
-                middlename=person.PersonMiddleName,
-                lastname=person.PersonLastName
-            )
+            People(ppl_dct)
         )
 
     return Ppl_list
@@ -112,7 +97,6 @@ def get_results(**kwargs):
     var_id = kwargs.get('variableID')
     sim_id = kwargs.get('simulationID')
 
-
     Results = READ.getResults(ids=ids,
                               type=result_type,
                               uuids=uuids,
@@ -124,59 +108,45 @@ def get_results(**kwargs):
 
     Results_list = []
     for res in Results:
-        tax_class = None
-        feat_act = FeatureAction(
-            sf=res.FeatureActionObj.SamplingFeatureObj.SamplingFeatureCode,
-            act=res.FeatureActionObj.ActionObj.ActionTypeCV
-        )
+        res_dct = get_vals(res)
 
-        var = Variable(
-            name=res.VariableObj.VariableNameCV,
-            var_type=res.VariableObj.VariableTypeCV,
-            nd=res.VariableObj.NoDataValue,
-            spec=res.VariableObj.SpeciationCV,
-            var_def=res.VariableObj.VariableDefinition,
-            code=res.VariableObj.VariableCode
-        )
+        # Get Feature Action ----
+        feat_act_dct = get_vals(res.FeatureActionObj)
+        feat_act_dct.update({
+            'SamplingFeature': get_vals(res.FeatureActionObj.SamplingFeatureObj),
+            'Action': get_vals(res.FeatureActionObj.ActionObj)
+        })
+        feat_act = FeatureAction(feat_act_dct)
+        # ------------------------
 
-        unit = Unit(
-            unit_type=res.UnitsObj.UnitsTypeCV,
-            abbv=res.UnitsObj.UnitsAbbreviation,
-            name=res.UnitsObj.UnitsName,
-            link=res.UnitsObj.UnitsLink
-        )
+        res_dct.update({
+            'FeatureAction': feat_act,
+            'ProcessingLevel': get_vals(res.ProcessingLevelObj),
+            'TaxonomicClassifier': None,
+            'Unit': get_vals(res.UnitsObj),
+            'Variable': get_vals(res.VariableObj)
+        })
 
         if res.TaxonomicClassifierObj:
-            tax_class = TaxonomicClassifier(
-                tc_type=res.TaxonomicClassifierObj.TaxonomicClassifierTypeCV,
-                name=res.TaxonomicClassifierObj.TaxonomicClassifierName,
-                com_name=res.TaxonomicClassifierObj.TaxonomicClassifierCommonName,
-                desc=res.TaxonomicClassifierObj.TaxonomicClassifierDescription,
-                pt_id=res.TaxonomicClassifierObj.ParentTaxonomicClassifierID
-            )
+            res_dct.update({
+                'TaxonomicClassifier': get_vals(res.TaxonomicClassifierObj)
+            })
 
-        proc_lvl = ProcessingLevel(
-            code=res.ProcessingLevelObj.ProcessingLevelCode,
-            pl_def=res.ProcessingLevelObj.Definition,
-            exp=res.ProcessingLevelObj.Explanation
-        )
         Results_list.append(
-            Result(
-                uuid=str(res.ResultUUID),
-                feat_act=feat_act,
-                res_type=res.ResultTypeCV,
-                var=var,
-                unit=unit,
-                tax_class=tax_class,
-                dt=res.ResultDateTime,
-                dt_utc_off=res.ResultDateTimeUTCOffset,
-                v_dt=res.ValidDateTime,
-                v_dt_utc_off=res.ValidDateTimeUTCOffset,
-                status=res.StatusCV,
-                sm=res.SampledMediumCV,
-                val_cnt=res.ValueCount,
-                proc_lvl=proc_lvl
-            )
+            Result(res_dct)
         )
 
     return Results_list
+
+# TODO: Needs work for queries
+def get_samplingfeatures(**kwargs):
+    sampling_features = READ.getSamplingFeatures()
+
+    sf_list = []
+    for sf in sampling_features:
+        sf_dct = get_vals(sf)
+        sf_list.append(
+            SamplingFeatures(sf_dct)
+        )
+
+    return sf_list

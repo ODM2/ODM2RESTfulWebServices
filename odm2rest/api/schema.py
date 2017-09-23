@@ -4,6 +4,34 @@ from __future__ import unicode_literals
 from __future__ import division
 
 import coreapi
+from rest_framework.fields import (
+    BooleanField,
+    CharField,
+    DateTimeField,
+    DecimalField,
+    FloatField,
+    IntegerField,
+)
+from sqlalchemy.types import (
+    Integer,
+    BIGINT,
+    CHAR,
+    CLOB,
+    DATE,
+    DECIMAL,
+    INTEGER,
+    SMALLINT,
+    TIMESTAMP,
+    VARCHAR,
+    BigInteger,
+    Boolean,
+    DateTime,
+    Float,
+    Numeric,
+    String,
+    Date,
+    Variant
+)
 
 SCHEMA = coreapi.Document(
     title='ODM2 REST API 1.0',
@@ -128,3 +156,24 @@ SCHEMA = coreapi.Document(
                 }
     }
 )
+
+field_mapping = {
+        Integer.__visit_name__: IntegerField,
+        String.__visit_name__: CharField,
+        INTEGER.__visit_name__: IntegerField,
+        SMALLINT.__visit_name__: IntegerField,
+        BIGINT.__visit_name__: IntegerField,
+        VARCHAR.__visit_name__: CharField,
+        CHAR.__visit_name__: CharField,
+        TIMESTAMP.__visit_name__: DateTimeField,
+        DATE.__visit_name__: DateTimeField,
+        Float.__visit_name__: FloatField,
+        BigInteger.__visit_name__: IntegerField,
+        Numeric.__visit_name__: IntegerField,
+        DateTime.__visit_name__: DateTimeField,
+        Boolean.__visit_name__: BooleanField,
+        CLOB.__visit_name__: CharField,
+        DECIMAL.__visit_name__: DecimalField,
+        Date.__visit_name__: DateTimeField,
+        Variant.__visit_name__: IntegerField
+}

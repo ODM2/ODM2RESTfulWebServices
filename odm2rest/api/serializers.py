@@ -3,114 +3,131 @@ from __future__ import print_function
 from __future__ import unicode_literals
 from __future__ import division
 
-from rest_framework.fields import (
-    BooleanField,
-    CharField,
-    DateTimeField,
-    DecimalField,
-    FloatField,
-    IntegerField,
-)
-
 from rest_framework.serializers import Serializer
 
-# Reference for serialization mapping
-# Resource: https://github.com/dealertrack/djangorest-alchemy/blob/master/djangorest_alchemy/serializers.py
-# sqlalchemy: restframework
-# field_mapping = {
-#         String: CharField,
-#         INTEGER: IntegerField,
-#         SMALLINT: IntegerField,
-#         BIGINT: IntegerField,
-#         VARCHAR: CharField,
-#         CHAR: CharField,
-#         TIMESTAMP: DateTimeField,
-#         DATE: DateTimeField,
-#         Float: FloatField,
-#         BigInteger: IntegerField,
-#         Numeric: IntegerField,
-#         DateTime: DateTimeField,
-#         Boolean: BooleanField,
-#         CLOB: CharField,
-#         DECIMAL: DecimalField,
-# }
+import odm2api.ODM2.models as odm2_mod
+
+from models import (get_col, OrderedDict)
 
 
-class PeopleSerializer(Serializer):
-    PersonFirstName = CharField()
-    PersonMiddleName = CharField()
-    PersonLastName = CharField()
+def get_sertype_dict(odm2_model):
+    dct = OrderedDict()
+    for field, val in get_col(odm2_model, True):
+        dct.update({
+            field: val
+        })
+
+    return dct
 
 
-class OrganizationSerializer(Serializer):
-    OrganizationTypeCV = CharField()
-    OrganizationCode = CharField()
-    OrganizationName = CharField()
-    OrganizationDescription = CharField()
-    OrganizationLink = CharField()
+# --- SamplingFeatures Serializer ---
+SamplingFeatures_dct = get_sertype_dict(odm2_mod.SamplingFeatures)
+SamplingFeatureSerializer = type(
+    str('SamplingFeatureSerializer'),
+    (Serializer,),
+    SamplingFeatures_dct
+)
 
-    ParentOrganizationID = IntegerField()
-
-
-class AffiliationSerializer(Serializer):
-    Person = PeopleSerializer()
-    Organization = OrganizationSerializer()
-    IsPrimaryOrganizationContact = BooleanField()
-    AffiliationStartDate = DateTimeField()
-    AffiliationEndDate = DateTimeField()
-    PrimaryPhone = CharField()
-    PrimaryEmail = CharField()
-    PrimaryAddress = CharField()
-    PersonLink = CharField()
+# --- People Serializer ---
+People_dct = get_sertype_dict(odm2_mod.People)
+PeopleSerializer = type(
+    str('PeopleSerializer'),
+    (Serializer,),
+    People_dct
+)
 
 
-class VariableSerializer(Serializer):
-    VariableNameCV = CharField()
-    VariableTypeCV = CharField()
-    NoDataValue = FloatField()
-    Speciation = CharField()
-    VariableDefinition = CharField()
-    VariableCode = CharField()
+# --- Organization Serializer ---
+Organization_dct = get_sertype_dict(odm2_mod.Organizations)
+OrganizationSerializer = type(
+    str('OrganizationSerializer'),
+    (Serializer,),
+    Organization_dct
+)
 
 
-class UnitSerializer(Serializer):
-    UnitsTypeCV = CharField()
-    UnitsAbbreviation = CharField()
-    UnitsName = CharField()
-    UnitsLink = CharField()
+# --- Affiliations Serializer ---
+Affiliations_dct = get_sertype_dict(odm2_mod.Affiliations)
+Affiliations_dct.update({
+    'Person':PeopleSerializer(),
+    'Organization':OrganizationSerializer()
+})
+AffiliationSerializer = type(
+    str('AffiliationSerializer'),
+    (Serializer,),
+    Affiliations_dct
+)
 
 
-class FeatureActionSerializer(Serializer):
-    SamplingFeature = CharField()
-    Action = CharField()
+# --- Variable Serializer ---
+Variable_dct = get_sertype_dict(odm2_mod.Variables)
+VariableSerializer = type(
+    str('VariableSerializer'),
+    (Serializer,),
+    Variable_dct
+)
 
 
-class ProcessingLevelSerializer(Serializer):
-    ProcessingLevelCode = CharField()
-    Definition = CharField()
-    Explanation = CharField()
+# --- Unit Serializer ---
+Unit_dct = get_sertype_dict(odm2_mod.Units)
+UnitSerializer = type(
+    str('UnitSerializer'),
+    (Serializer,),
+    Unit_dct
+)
 
 
-class TaxonomicClassifierSerializer(Serializer):
-    TaxonomicClassifierTypeCV = CharField()
-    TaxonomicClassifierName = CharField()
-    TaxonomicClassifierCommonName = CharField()
-    TaxonomicClassifierDescription = CharField()
-    ParentTaxonomicClassifierID = IntegerField()
+# --- Action Serializer ---
+Action_dct = get_sertype_dict(odm2_mod.Actions)
+ActionSerializer = type(
+    str('ActionSerializer'),
+    (Serializer,),
+    Action_dct
+)
 
 
-class ResultSerializer(Serializer):
-    ResultUUID = CharField()
-    FeatureAction = FeatureActionSerializer()
-    ResultTypeCV = CharField()
-    Variable = VariableSerializer()
-    Unit = UnitSerializer()
-    TaxonomicClassifier = TaxonomicClassifierSerializer()
-    ResultDateTime = DateTimeField()
-    ResultDateTimeUTCOffset = IntegerField()
-    ValidDateTime = DateTimeField()
-    ValidDateTimeUTCOffset = IntegerField()
-    StatusCV = CharField()
-    SampledMediumCV = CharField()
-    ValueCount = IntegerField()
-    ProcessingLevel = ProcessingLevelSerializer()
+# --- FeatureAction Serializer ---
+FeatureAction_dct = get_sertype_dict(odm2_mod.FeatureActions)
+FeatureAction_dct.update({
+    'SamplingFeature':SamplingFeatureSerializer(),
+    'Action':ActionSerializer()
+})
+FeatureActionSerializer = type(
+    str('FeatureActionSerializer'),
+    (Serializer,),
+    FeatureAction_dct
+)
+
+
+# --- ProcessingLevel Serializer---
+ProcessingLevel_dct = get_sertype_dict(odm2_mod.ProcessingLevels)
+ProcessingLevelSerializer = type(
+    str('ProcessingLevelSerializer'),
+    (Serializer,),
+    ProcessingLevel_dct
+)
+
+
+# --- TaxonomicClassifier Serializer---
+TaxonomicClassifier_dct = get_sertype_dict(odm2_mod.TaxonomicClassifiers)
+TaxonomicClassifierSerializer = type(
+    str('TaxonomicClassifierSerializer'),
+    (Serializer,),
+    TaxonomicClassifier_dct
+)
+
+
+# --- Result Serializer ---
+Result_dct = get_sertype_dict(odm2_mod.Results)
+Result_dct.update({
+    'FeatureAction': FeatureActionSerializer(),
+    'ProcessingLevel': ProcessingLevelSerializer(),
+    'TaxonomicClassifier': TaxonomicClassifierSerializer(),
+    'Unit': UnitSerializer(),
+    'Variable': VariableSerializer()
+})
+ResultSerializer = type(
+    str('ResultSerializer'),
+    (Serializer,),
+    Result_dct
+)

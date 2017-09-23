@@ -19,13 +19,15 @@ from schema import SCHEMA
 from core import (
     get_affiliations,
     get_people,
-    get_results
+    get_results,
+    get_samplingfeatures
 )
 
 from serializers import (
     AffiliationSerializer,
     PeopleSerializer,
-    ResultSerializer
+    ResultSerializer,
+    SamplingFeatureSerializer
 )
 
 
@@ -111,4 +113,18 @@ class ResultsViewSet(APIView):
 
         return Response(serialized.data)
 
+
+class SamplingFeaturesViewSet(APIView):
+
+    renderer_classes = (JSONRenderer, YAMLRenderer, CSVRenderer)
+
+    def get(self, request, format=None):
+
+        results = get_samplingfeatures()
+        serialized = SamplingFeatureSerializer(results, many=True)
+
+        if len(results) == 1:
+            serialized = SamplingFeatureSerializer(results[0])
+
+        return Response(serialized.data)
 

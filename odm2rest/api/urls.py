@@ -6,20 +6,21 @@ from __future__ import division
 
 from django.conf.urls import url
 from rest_framework.urlpatterns import format_suffix_patterns
-from rest_framework_swagger.views import get_swagger_view
 
 from views import (
     SwaggerSchemaView,
     AffiliationsViewSet,
     PeopleViewSet,
-    ResultsViewSet
+    ResultsViewSet,
+    SamplingFeaturesViewSet
 )
 
 urlpatterns = [
     url(r'^docs/$', SwaggerSchemaView.as_view()),
     url(r'^affiliations$', AffiliationsViewSet.as_view(), name='affiliations-list'),
     url(r'^people$', PeopleViewSet.as_view(), name='people-list'),
-    url(r'^results$', ResultsViewSet.as_view(), name='results-list')
+    url(r'^results$', ResultsViewSet.as_view(), name='results-list'),
+    # url(r'^samplingfeatures$', SamplingFeaturesViewSet.as_view(), name='samplingfeatures-list')
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns, allowed=['json', 'html', 'yaml', 'csv'])

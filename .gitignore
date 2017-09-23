@@ -2,3 +2,4 @@
 *.pyc
 *.ipynb
 *.sqlite3
+.ipynb_checkpoints
