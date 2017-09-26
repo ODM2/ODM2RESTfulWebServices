@@ -67,8 +67,6 @@ def get_people(**kwargs):
     person_first = kwargs.get('firstName')
     person_last = kwargs.get('lastName')
 
-    print(person_first, person_last)
-
     Ppl = READ.getPeople(ids=ids,
                          firstname=person_first,
                          lastname=person_last)
