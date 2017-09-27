@@ -17,8 +17,17 @@ from views import (
 
 urlpatterns = [
     url(r'^docs/$', SwaggerSchemaView.as_view()),
-    url(r'^affiliations$', AffiliationsViewSet.as_view(), name='affiliations-list'),
+    # Affiliations
+    url(r'^affiliations/$', AffiliationsViewSet.as_view(), name='affiliations-list'),
+    url(r'^affiliations/affiliationID/(?P<affiliationID>.+)/$',
+        AffiliationsViewSet.as_view(), name='affiliations-detail'),
+    url(r'^affiliations/(firstName/(?P<firstName>[^/]+)/)?(lastName/(?P<lastName>[^/]+)/)?$',
+        AffiliationsViewSet.as_view(), name='affiliations-detail'),
+    url(r'^affiliations/organizationCode/(?P<organizationCode>.+)/$',
+        AffiliationsViewSet.as_view(), name='affiliations-detail'),
+    # People
     url(r'^people$', PeopleViewSet.as_view(), name='people-list'),
+    # Results
     url(r'^results$', ResultsViewSet.as_view(), name='results-list'),
     # url(r'^samplingfeatures$', SamplingFeaturesViewSet.as_view(), name='samplingfeatures-list')
 ]

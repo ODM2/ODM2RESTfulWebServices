@@ -4,8 +4,10 @@ from __future__ import unicode_literals
 from __future__ import division
 
 from rest_framework.renderers import JSONRenderer, CoreJSONRenderer
+from rest_framework.parsers import JSONParser
 from rest_framework_yaml.renderers import YAMLRenderer
 from rest_framework_csv.renderers import CSVRenderer
+from rest_framework_yaml.parsers import YAMLParser
 from rest_framework.views import APIView
 from rest_framework.response import Response
 
@@ -37,7 +39,7 @@ class SwaggerSchemaView(APIView):
     renderer_classes = [
         CoreJSONRenderer,
         renderers.OpenAPIRenderer,
-        renderers.SwaggerUIRenderer
+        renderers.SwaggerUIRenderer,
     ]
 
     def get(self, request):
@@ -51,14 +53,16 @@ class AffiliationsViewSet(APIView):
     """
 
     renderer_classes = (JSONRenderer, YAMLRenderer, CSVRenderer)
+    parser_classes =  (JSONParser, YAMLParser,)
 
-    def get(self, request, format=None):
+    def get(self, request, affiliationID=None, firstName=None, lastName=None, organizationCode=None, format=None):
         get_kwargs = {
-            'affiliationID': request.query_params.get('affiliationID'),
-            'firstName': request.query_params.get('firstName'),
-            'lastName': request.query_params.get('lastName'),
-            'organizationCode': request.query_params.get('organizationCode')
+            'affiliationID': affiliationID,
+            'firstName': firstName,
+            'lastName': lastName,
+            'organizationCode': organizationCode
         }
+        print(self.kwargs)
         affiliations = get_affiliations(**get_kwargs)
         serialized = AffiliationSerializer(affiliations, many=True)
 

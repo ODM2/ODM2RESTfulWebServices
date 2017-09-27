@@ -38,36 +38,71 @@ SCHEMA = coreapi.Document(
     url='http://127.0.0.1:8000/',
     content={
         'affiliations': {
-            'list': coreapi.Link(
-                url='/affiliations',
+            'aff-list': coreapi.Link(
+                url='/affiliations/',
                 action='get',
-                fields=[
-                    coreapi.Field(
-                        name='affiliationID',
-                        required=False,
-                        location='query',
-                        description='Affiliation ID(s)',
-                    ),
-                    coreapi.Field(
-                        name='firstName',
-                        required=False,
-                        location='query',
-                        description='Affiliation First Name',
-                    ),
-                    coreapi.Field(
-                        name='lastName',
-                        required=False,
-                        location='query',
-                        description='Affiliation Last Name',
-                    ),
-                    coreapi.Field(
-                        name='organizationCode',
-                        required=False,
-                        location='query',
-                        description='Affiliation Organization Code',
-                    )
-                ],
+                fields=[],
                 description='All ODM2 affiliations retrieval.'
+            ),
+            'aff-detail': coreapi.Link(
+                url='/affiliations/affiliationID/{affiliationID}/',
+                action='get',
+                fields=[coreapi.Field(
+                    name='affiliationID',
+                    required=True,
+                    location='path',
+                    description='Affiliation ID(s)'
+                )],
+                description='All ODM2 affiliations based on ID(s).'
+            ),
+            'org-detail': coreapi.Link(
+                url='/affiliations/organizationCode/{organizationCode}/',
+                action='get',
+                fields=[coreapi.Field(
+                    name='organizationCode',
+                    required=True,
+                    location='path',
+                    description='Organization Code'
+                )],
+                description='All ODM2 affiliations based on Organization Code.'
+            ),
+            'person-first-detail': coreapi.Link(
+                url='/affiliations/firstName/{firstName}/',
+                action='get',
+                fields=[coreapi.Field(
+                    name='firstName',
+                    required=True,
+                    location='path',
+                    description='Person First Name'
+                )],
+                description='All ODM2 affiliations based on Person First Name.'
+            ),
+            'person-last-detail': coreapi.Link(
+                url='/affiliations/lastName/{lastName}/',
+                action='get',
+                fields=[coreapi.Field(
+                    name='lastName',
+                    required=True,
+                    location='path',
+                    description='Person Last Name'
+                )],
+                description='All ODM2 affiliations based on Person Last Name.'
+            ),
+            'person-detail': coreapi.Link(
+                url='/affiliations/firstName/{firstName}/lastName/{lastName}',
+                action='get',
+                fields=[coreapi.Field(
+                    name='firstName',
+                    required=True,
+                    location='path',
+                    description='Person First Name'
+                ), coreapi.Field(
+                    name='lastName',
+                    required=True,
+                    location='path',
+                    description='Person Last Name'
+                )],
+                description='All ODM2 affiliations based on Person First and Last Name.'
             )
         },
         'people': {
