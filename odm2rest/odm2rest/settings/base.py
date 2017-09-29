@@ -127,6 +127,7 @@ STATIC_URL = '/static/'
 
 # REST FRAMEWORK SETTINGS
 REST_FRAMEWORK = {
+    'DEFAULT_VERSIONING_CLASS': 'rest_framework.versioning.NamespaceVersioning',
     'DEFAULT_PERMISSION_CLASSES': ('rest_framework.permissions.AllowAny',),
     # 'DEFAULT_PERMISSION_CLASSES': ('rest_framework.permissions.IsAdminUser',),
     # 'VIEW_DESCRIPTION_FUNCTION': 'rest_framework_swagger.views.get_restructuredtext',

@@ -3,7 +3,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 from __future__ import division
 
-from rest_framework.renderers import JSONRenderer, CoreJSONRenderer
+from rest_framework.renderers import (JSONRenderer, CoreJSONRenderer)
 from rest_framework.parsers import JSONParser
 from rest_framework_yaml.renderers import YAMLRenderer
 from rest_framework_csv.renderers import CSVRenderer
@@ -114,7 +114,6 @@ class ResultsViewSet(APIView):
 
         if len(results) == 1:
             serialized = ResultSerializer(results[0])
-
         return Response(serialized.data)
 
 
