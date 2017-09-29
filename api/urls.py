@@ -5,6 +5,8 @@ from __future__ import division
 
 
 from django.conf.urls import url
+from django.views.generic import TemplateView
+
 from rest_framework.urlpatterns import format_suffix_patterns
 
 from views import (
@@ -16,7 +18,7 @@ from views import (
 )
 
 urlpatterns = [
-    url(r'^docs/$', SwaggerSchemaView.as_view()),
+    url(r'^docs/$', TemplateView.as_view(template_name='swagger.html')),
     # Affiliations
     url(r'^affiliations/$', AffiliationsViewSet.as_view(), name='affiliations-list'),
     url(r'^affiliations/affiliationID/(?P<affiliationID>.+)/$',

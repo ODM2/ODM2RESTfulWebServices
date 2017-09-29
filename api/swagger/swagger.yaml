@@ -1,0 +1,32 @@
+swagger: "2.0"
+info:
+  title: ODM2 REST API
+  version: v1
+  contact: 
+    email: landungs@uw.edu
+    name: Landung Setiawan
+  description: This is a development version for ODM2 REST API
+host: 127.0.0.1:8001
+basePath: /v1
+tags:
+  - name: people
+    description: People in database
+schemes:
+  - http
+consumes:
+  - application/json
+produces:
+  - application/json
+paths:
+  /people:
+    get:
+      tags:
+      - people
+      operationId: getPeopleVersion1
+      summary: All ODM2 people retrieval.
+      produces:
+      - application/json
+      - application/yaml
+      responses:
+        "200":
+          description: 200 Response

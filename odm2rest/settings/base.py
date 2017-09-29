@@ -59,7 +59,7 @@ ROOT_URLCONF = 'odm2rest.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -173,3 +173,8 @@ ODM2DATABASE = {
     'user': 'username',
     'password': 'mypassword'
 }
+
+
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, "static"),
+]
