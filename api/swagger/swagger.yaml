@@ -21,29 +21,94 @@ consumes:
   - application/json
 produces:
   - application/json
+  - application/yaml
+  - text/csv
 paths:
-  /people:
-    get:
-      tags:
-      - people
-      operationId: getPeopleVersion1
-      summary: All ODM2 people retrieval.
-      produces:
-      - application/json
-      - application/yaml
-      - text/csv
-      responses:
-        "200":
-          description: 200 Response
   /affiliations:
     get:
       tags:
       - affiliations
       operationId: getAffiliationsVersion1
       summary: All ODM2 affiliations retrieval.
-      produces:
-      - application/json
-      - application/yaml
+      responses:
+        "200":
+          description: 200 Response
+  /affiliations/affiliationID/{affiliationID}:
+    get:
+      tags:
+      - affiliations
+      operationId: getAffiliationsByAffiliationID
+      summary: ODM2 affiliations retrieval by Affiliation ID(s)
+      parameters:
+        - name: affiliationID
+          in: path
+          description: Affiliation ID(s)
+          required: true
+          type: string 
+      responses:
+        "200":
+          description: 200 Response
+  /affiliations/firstName/{firstName}/:
+    get:
+      tags:
+      - affiliations
+      operationId: getAffiliationsByFirstName
+      summary: ODM2 affiliations retrieval by First Name
+      parameters:
+        - name: firstName
+          in: path
+          description: Person First Name
+          required: true
+          type: string
+        - name: lastName
+          in: query
+          description: Person Last Name
+          required: false
+          type: string
+      responses:
+        "200":
+          description: 200 Response
+  /affiliations/lastName/{lastName}/:
+    get:
+      tags:
+      - affiliations
+      operationId: getAffiliationsByLastName
+      summary: ODM2 affiliations retrieval by Last Name
+      parameters:
+        - name: lastName
+          in: path
+          description: Person Last Name
+          required: true
+          type: string 
+      responses:
+        "200":
+          description: 200 Response
+  /affiliations/organizationCode/{organizationCode}/:
+    get:
+      tags:
+      - affiliations
+      operationId: getAffiliationsByOrganizationCode
+      summary: ODM2 affiliations retrieval by Organization Code
+      parameters:
+        - name: organizationCode
+          in: path
+          description: Organization Code
+          required: true
+          type: string 
+        - name: lastName
+          in: query
+          description: Person Last Name
+          required: false
+          type: string
+      responses:
+        "200":
+          description: 200 Response
+  /people:
+    get:
+      tags:
+      - people
+      operationId: getPeopleVersion1
+      summary: All ODM2 people retrieval.
       responses:
         "200":
           description: 200 Response
