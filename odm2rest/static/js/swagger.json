@@ -9,27 +9,84 @@
     }
   },
   "paths": {
-    "/affiliations": {
+    "/affiliations/organizationCode/{organizationCode}/": {
       "get": {
-        "operationId": "getAffiliationsVersion1",
-        "summary": "All ODM2 affiliations retrieval.",
+        "tags": [
+          "affiliations"
+        ],
+        "summary": "ODM2 affiliations retrieval by Organization Code",
         "responses": {
           "200": {
             "description": "200 Response"
           }
         },
+        "parameters": [
+          {
+            "required": true,
+            "type": "string",
+            "description": "Organization Code",
+            "in": "path",
+            "name": "organizationCode"
+          },
+          {
+            "required": false,
+            "type": "string",
+            "description": "Person Last Name",
+            "in": "query",
+            "name": "lastName"
+          }
+        ],
+        "operationId": "getAffiliationsByOrganizationCode"
+      }
+    },
+    "/affiliations/affiliationID/{affiliationID}": {
+      "get": {
         "tags": [
           "affiliations"
         ],
-        "produces": [
-          "application/json",
-          "application/yaml"
-        ]
+        "summary": "ODM2 affiliations retrieval by Affiliation ID(s)",
+        "responses": {
+          "200": {
+            "description": "200 Response"
+          }
+        },
+        "parameters": [
+          {
+            "required": true,
+            "type": "string",
+            "description": "Affiliation ID(s)",
+            "in": "path",
+            "name": "affiliationID"
+          }
+        ],
+        "operationId": "getAffiliationsByAffiliationID"
+      }
+    },
+    "/affiliations/lastName/{lastName}/": {
+      "get": {
+        "tags": [
+          "affiliations"
+        ],
+        "summary": "ODM2 affiliations retrieval by Last Name",
+        "responses": {
+          "200": {
+            "description": "200 Response"
+          }
+        },
+        "parameters": [
+          {
+            "required": true,
+            "type": "string",
+            "description": "Person Last Name",
+            "in": "path",
+            "name": "lastName"
+          }
+        ],
+        "operationId": "getAffiliationsByLastName"
       }
     },
     "/people": {
       "get": {
-        "operationId": "getPeopleVersion1",
         "summary": "All ODM2 people retrieval.",
         "responses": {
           "200": {
@@ -39,11 +96,7 @@
         "tags": [
           "people"
         ],
-        "produces": [
-          "application/json",
-          "application/yaml",
-          "text/csv"
-        ]
+        "operationId": "getPeopleVersion1"
       }
     },
     "/results": {
@@ -62,6 +115,50 @@
           "application/json",
           "application/yaml"
         ]
+      }
+    },
+    "/affiliations/firstName/{firstName}/": {
+      "get": {
+        "tags": [
+          "affiliations"
+        ],
+        "summary": "ODM2 affiliations retrieval by First Name",
+        "responses": {
+          "200": {
+            "description": "200 Response"
+          }
+        },
+        "parameters": [
+          {
+            "required": true,
+            "type": "string",
+            "description": "Person First Name",
+            "in": "path",
+            "name": "firstName"
+          },
+          {
+            "required": false,
+            "type": "string",
+            "description": "Person Last Name",
+            "in": "query",
+            "name": "lastName"
+          }
+        ],
+        "operationId": "getAffiliationsByFirstName"
+      }
+    },
+    "/affiliations": {
+      "get": {
+        "summary": "All ODM2 affiliations retrieval.",
+        "responses": {
+          "200": {
+            "description": "200 Response"
+          }
+        },
+        "tags": [
+          "affiliations"
+        ],
+        "operationId": "getAffiliationsVersion1"
       }
     }
   },
@@ -84,7 +181,9 @@
   ],
   "basePath": "/v1",
   "produces": [
-    "application/json"
+    "application/json",
+    "application/yaml",
+    "text/csv"
   ],
   "host": "127.0.0.1:8000",
   "swagger": "2.0",
