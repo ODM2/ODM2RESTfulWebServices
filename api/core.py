@@ -8,7 +8,7 @@ from django.core.management import settings
 from odm2api.ODMconnection import dbconnection
 from odm2api.ODM2.services.readService import ReadODM2
 
-from models import get_vals
+from utils import get_vals
 
 from models import (
     Affiliation,

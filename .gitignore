@@ -4,3 +4,5 @@
 *.sqlite3
 .ipynb_checkpoints
 .DS_Store
+package.json
+node_modules
