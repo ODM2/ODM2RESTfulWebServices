@@ -1,49 +1,94 @@
 {
-  "swagger": "2.0",
   "info": {
     "title": "ODM2 REST API",
     "version": "v1",
+    "description": "This is a development version for ODM2 REST API",
     "contact": {
       "email": "landungs@uw.edu",
       "name": "Landung Setiawan"
-    },
-    "description": "This is a development version for ODM2 REST API"
-  },
-  "host": "127.0.0.1:8001",
-  "basePath": "/v1",
-  "tags": [
-    {
-      "name": "people",
-      "description": "People in database"
     }
-  ],
-  "schemes": [
-    "http"
-  ],
-  "consumes": [
-    "application/json"
-  ],
-  "produces": [
-    "application/json"
-  ],
+  },
   "paths": {
-    "/people": {
+    "/affiliations": {
       "get": {
-        "tags": [
-          "people"
-        ],
-        "operationId": "getPeopleVersion1",
-        "summary": "All ODM2 people retrieval.",
-        "produces": [
-          "application/json",
-          "application/yaml"
-        ],
+        "operationId": "getAffiliationsVersion1",
+        "summary": "All ODM2 affiliations retrieval.",
         "responses": {
           "200": {
             "description": "200 Response"
           }
-        }
+        },
+        "tags": [
+          "affiliations"
+        ],
+        "produces": [
+          "application/json",
+          "application/yaml"
+        ]
+      }
+    },
+    "/people": {
+      "get": {
+        "operationId": "getPeopleVersion1",
+        "summary": "All ODM2 people retrieval.",
+        "responses": {
+          "200": {
+            "description": "200 Response"
+          }
+        },
+        "tags": [
+          "people"
+        ],
+        "produces": [
+          "application/json",
+          "application/yaml",
+          "text/csv"
+        ]
+      }
+    },
+    "/results": {
+      "get": {
+        "operationId": "getResultsVersion1",
+        "summary": "All ODM2 results retrieval.",
+        "responses": {
+          "200": {
+            "description": "200 Response"
+          }
+        },
+        "tags": [
+          "results"
+        ],
+        "produces": [
+          "application/json",
+          "application/yaml"
+        ]
       }
     }
-  }
+  },
+  "schemes": [
+    "http"
+  ],
+  "tags": [
+    {
+      "name": "affiliations",
+      "description": "Affiliations in database"
+    },
+    {
+      "name": "people",
+      "description": "People in database"
+    },
+    {
+      "name": "results",
+      "description": "Results in database"
+    }
+  ],
+  "basePath": "/v1",
+  "produces": [
+    "application/json"
+  ],
+  "host": "127.0.0.1:8000",
+  "swagger": "2.0",
+  "consumes": [
+    "application/json"
+  ]
 }
