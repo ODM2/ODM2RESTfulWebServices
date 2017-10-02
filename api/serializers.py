@@ -7,7 +7,7 @@ from rest_framework.serializers import Serializer
 
 import odm2api.ODM2.models as odm2_mod
 
-from models import (get_col, OrderedDict)
+from utils import (get_col, OrderedDict)
 
 
 def get_sertype_dict(odm2_model):

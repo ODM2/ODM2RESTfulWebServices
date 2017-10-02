@@ -6,11 +6,15 @@ info:
     email: landungs@uw.edu
     name: Landung Setiawan
   description: This is a development version for ODM2 REST API
-host: 127.0.0.1:8001
+host: 127.0.0.1:8000
 basePath: /v1
 tags:
+  - name: affiliations
+    description: Affiliations in database
   - name: people
     description: People in database
+  - name: results
+    description: Results in database
 schemes:
   - http
 consumes:
@@ -24,6 +28,31 @@ paths:
       - people
       operationId: getPeopleVersion1
       summary: All ODM2 people retrieval.
+      produces:
+      - application/json
+      - application/yaml
+      - text/csv
+      responses:
+        "200":
+          description: 200 Response
+  /affiliations:
+    get:
+      tags:
+      - affiliations
+      operationId: getAffiliationsVersion1
+      summary: All ODM2 affiliations retrieval.
+      produces:
+      - application/json
+      - application/yaml
+      responses:
+        "200":
+          description: 200 Response
+  /results:
+    get:
+      tags:
+      - results
+      operationId: getResultsVersion1
+      summary: All ODM2 results retrieval.
       produces:
       - application/json
       - application/yaml

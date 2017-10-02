@@ -16,7 +16,6 @@ from rest_framework.response import Response
 from rest_framework.schemas import SchemaGenerator
 from rest_framework.views import APIView
 from rest_framework_swagger import renderers
-from schema import SCHEMA
 
 from core import (
     get_affiliations,
@@ -31,20 +30,6 @@ from serializers import (
     ResultSerializer,
     SamplingFeatureSerializer
 )
-
-
-# Swagger schema view --------------
-class SwaggerSchemaView(APIView):
-    permission_classes = [AllowAny]
-    renderer_classes = [
-        CoreJSONRenderer,
-        renderers.OpenAPIRenderer,
-        renderers.SwaggerUIRenderer,
-    ]
-
-    def get(self, request):
-        return Response(SCHEMA)
-# end Swagger schema view -----------
 
 
 class AffiliationsViewSet(APIView):

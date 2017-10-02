@@ -10,7 +10,6 @@ from django.views.generic import TemplateView
 from rest_framework.urlpatterns import format_suffix_patterns
 
 from views import (
-    SwaggerSchemaView,
     AffiliationsViewSet,
     PeopleViewSet,
     ResultsViewSet,
