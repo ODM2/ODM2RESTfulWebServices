@@ -1,18 +1,42 @@
-ODM2 RESTful Web Services
-====
+# ODM2 RESTful Web Services
 
 A Python RESTful web service inteface for accessing data in an ODM2 database via Django rest swagger APIs.
 
-##  Base Requirements ##
+NOTE: Currently this repository is under heavy development, a working version is not guaranteed at any point.
 
-* [ODM2API](https://github.com/ODM2/ODM2PythonAPI)
-* [Python-2.7.6](https://www.python.org/download/releases/2.7.6/)
-* [Django-1.8.3](https://www.djangoproject.com/download/)
-* [djangorestframework-3.1.3](http://www.django-rest-framework.org/topics/release-notes/)
-* [django_rest_swagger-0.3.2](https://pypi.python.org/pypi/django-rest-swagger)
-* [djangorestframework-csv 1.3.3](https://github.com/mjumbewu/django-rest-framework-csv)
-* [djangorestframework-xml 1.0.1](https://github.com/jpadilla/django-rest-framework-xml)
-* [djangorestframework-yaml 1.0.2](http://jpadilla.github.io/django-rest-framework-yaml/)
+## Development Installation
+
+1. Clone both ODM2PythonAPI repository and ODM2RESTfulWebServices repository.
+
+    ```bash
+    $ git clone https://github.com/ODM2/ODM2RESTfulWebServices.git odm2restapi
+    $ git clone https://github.com/ODM2/ODM2PythonAPI.git odm2pythonapi
+    ```
+
+2. Create a new conda environment from the `odm2restapi` environment file.
+
+   ```bash
+   $ cd odm2restapi/
+   $ git checkout odm2rest_1_0 # This is the development branch, all PR's must merge to here!
+   $ conda env create --file environment.yml
+   ```
+
+3. Install `odm2pythonapi` master into the environment
+
+   ```bash
+   $ source activate odm2restenv
+   $ pip install -e ../odm2pythonapi/ # Assuming you're still under odm2restapi folder
+   ```
+
+4. Install [`npm` and `nodejs`](https://www.npmjs.com/get-npm), which will be used to install the swagger editor.
+5. Get swagger editor for a nice interface and syntax checking when editing the swagger yaml file.
+
+   ```bash
+   $ cd odm2restapi/
+   $ npm init -y
+   $ sudo npm install -g swagger
+   $ swagger project edit # This will open a new browser
+   ```
 
 ### Credits
 
