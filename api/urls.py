@@ -27,9 +27,20 @@ urlpatterns = [
     url(r'^affiliations/organizationCode/(?P<organizationCode>.+)/$',
         AffiliationsViewSet.as_view(), name='affiliations-detail'),
     # People
-    url(r'^people$', PeopleViewSet.as_view(), name='people-list'),
+    url(r'^people/$', PeopleViewSet.as_view(), name='people-list'),
+    url(r'^people/peopleID/(?P<peopleID>.+)/$', PeopleViewSet.as_view(), name='people-detail'),
+    url(r'^people/firstName/(?P<firstName>.+)/$', PeopleViewSet.as_view(), name='people-detail'),
+    url(r'^people/lastName/(?P<lastName>.+)/$', PeopleViewSet.as_view(), name='people-detail'),
     # Results
-    url(r'^results$', ResultsViewSet.as_view(), name='results-list'),
+    url(r'^results/$', ResultsViewSet.as_view(), name='results-list'),
+    url(r'^results/resultID/(?P<resultID>.+)/$', ResultsViewSet.as_view(), name='results-detail'),
+    url(r'^results/resultUUID/(?P<resultUUID>.+)/$', ResultsViewSet.as_view(), name='results-detail'),
+    url(r'^results/resultType/(?P<resultType>.+)/$', ResultsViewSet.as_view(), name='results-detail'),
+    url(r'^results/actionID/(?P<actionID>.+)/$', ResultsViewSet.as_view(), name='results-detail'),
+    url(r'^results/samplingFeatureID/(?P<samplingFeatureID>.+)/$',
+        ResultsViewSet.as_view(), name='results-detail'),
+    url(r'^results/variableID/(?P<variableID>.+)/$', ResultsViewSet.as_view(), name='results-detail'),
+    url(r'^results/simulationID/(?P<simulationID>.+)/$', ResultsViewSet.as_view(), name='results-detail'),
     # url(r'^samplingfeatures$', SamplingFeaturesViewSet.as_view(), name='samplingfeatures-list')
 ]
 

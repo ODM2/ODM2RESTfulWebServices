@@ -24,7 +24,7 @@ produces:
   - application/yaml
   - text/csv
 paths:
-  /affiliations:
+  /affiliations/:
     get:
       tags:
       - affiliations
@@ -33,7 +33,7 @@ paths:
       responses:
         "200":
           description: 200 Response
-  /affiliations/affiliationID/{affiliationID}:
+  /affiliations/affiliationID/{affiliationID}/:
     get:
       tags:
       - affiliations
@@ -103,7 +103,7 @@ paths:
       responses:
         "200":
           description: 200 Response
-  /people:
+  /people/:
     get:
       tags:
       - people
@@ -112,7 +112,57 @@ paths:
       responses:
         "200":
           description: 200 Response
-  /results:
+  /people/peopleID/{peopleID}/:
+    get:
+      tags:
+      - people
+      operationId: getPeopleByPeopleID
+      summary: ODM2 people retrieval by People ID(s)
+      parameters:
+        - name: peopleID
+          in: path
+          description: People ID(s)
+          required: true
+          type: string
+      responses:
+        "200":
+          description: 200 Response
+  /people/firstName/{firstName}/:
+    get:
+      tags:
+      - people
+      operationId: getPeopleByFirstName
+      summary: ODM2 people retrieval by First Name
+      parameters:
+        - name: firstName
+          in: path
+          description: Person First Name
+          required: true
+          type: string
+        - name: lastName
+          in: query
+          description: Person Last Name
+          required: false
+          type: string
+      responses:
+        "200":
+          description: 200 Response
+  /people/lastName/{lastName}/:
+    get:
+      tags:
+      - people
+      operationId: getPeopleByLastName
+      summary: ODM2 people retrieval by Last Name
+      parameters:
+        - name: lastName
+          in: path
+          description: Person Last Name
+          required: true
+          type: string 
+      responses:
+        "200":
+          description: 200 Response
+  /results/:
     get:
       tags:
       - results
@@ -121,6 +171,104 @@ paths:
       produces:
       - application/json
       - application/yaml
+      responses:
+        "200":
+          description: 200 Response
+  /results/resultID/{resultID}/:
+    get:
+      tags:
+      - results
+      operationId: getResultsByResultID
+      summary: ODM2 results retrieval by Result ID(s)
+      parameters:
+        - name: resultID
+          in: path
+          description: Result ID(s)
+          required: true
+          type: string 
+      responses:
+        "200":
+          description: 200 Response
+  /results/resultUUID/{resultUUID}/:
+    get:
+      tags:
+      - results
+      operationId: getResultsByResultUUID
+      summary: ODM2 results retrieval by Result UUID(s)
+      parameters:
+        - name: resultUUID
+          in: path
+          description: Result UUID(s)
+          required: true
+          type: string 
+      responses:
+        "200":
+          description: 200 Response
+  /results/resultType/{resultType}/:
+    get:
+      tags:
+      - results
+      operationId: getResultsByResultType
+      summary: ODM2 results retrieval by Result Type
+      externalDocs: 
+          description: "See all available Result Types"
+          url: "http://vocabulary.odm2.org/resulttype/"
+      parameters:
+        - name: resultType
+          in: path
+          description: Result Type (Name)
+          required: true
+          type: string 
+        - name: actionID
+          in: query
+          description: Action ID
+          required: false
+          type: integer
+        - name: samplingFeatureID
+          in: query
+          description: Sampling Feature ID
+          required: false
+          type: integer
+        - name: variableID
+          in: query
+          description: Variable ID
+          required: false
+          type: integer
+        - name: simulationID
+          in: query
+          description: Simulation ID
+          required: false
+          type: integer
+      responses:
+        "200":
+          description: 200 Response
+  /results/actionID/{actionID}/:
+      get:
+        tags:
+        - results
+        operationId: getResultsByActionID
+        summary: ODM2 results retrieval by Action ID(s)
+        parameters:
+          - name: actionID
+            in: path
+            description: Action ID(s)
+            required: true
+            type: integer
+        responses:
+          "200":
+            description: 200 Response
+  /results/samplingFeatureID/{samplingFeatureID}/:
+    get:
+      tags:
+      - results
+      operationId: getResultsBySamplingfeatureID
+      summary: ODM2 results retrieval by Sampling Feature ID(s)
+      parameters:
+        - name: samplingFeatureID
+          in: path
+          description: Sampling Feature ID(s)
+          required: true
+          type: integer 
       responses:
         "200":
           description: 200 Response
