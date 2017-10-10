@@ -66,6 +66,18 @@ field_mapping = {
 
 
 def get_col(sqlalch_obj, serializer=False):
+    """
+    This function gets a list of columns from a SQLAlchemy object.
+
+    Args:
+        sqlalch_obj (object): SQLAlchemy object to extract.
+        serializer (bool, optional): Boolean to indicate whether the result is for a Serializer or not.
+                                     If it is then the field types are also exported.
+
+    Returns:
+        list: List of tuples from SQLAlchemy object of (field name, type).
+
+    """
     d = []
     for col_prop in sqlalch_obj.__mapper__.iterate_properties:
         if isinstance(col_prop, ColumnProperty):
@@ -86,6 +98,16 @@ def get_col(sqlalch_obj, serializer=False):
 
 
 def get_vals(sqlalch_obj):
+    """
+    This function is used to extract the values from a sqlalchemy objects.
+
+    Args:
+        sqlalch_obj (object): SQLAlchemy Object to extract values from.
+
+    Returns:
+        dict: Dictionary of SQLAchemy Object field names and its value.
+
+    """
     d = OrderedDict()
     for col_prop in sqlalch_obj.__mapper__.iterate_properties:
         if isinstance(col_prop, ColumnProperty):
@@ -99,6 +121,12 @@ def get_vals(sqlalch_obj):
 
 
 def swagger_convert():
+    """
+    This functions converts the api/swagger/swagger.yaml to swagger.json for Swagger UI
+
+    Returns:
+        None
+    """
     with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'swagger', 'swagger.yaml')) as f:
         yaml_data = yaml.load(f)
         with open(os.path.join(settings.STATICFILES_DIRS[0], 'js', 'swagger.json'), 'w') as json_file:
