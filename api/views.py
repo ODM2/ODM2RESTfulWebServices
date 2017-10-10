@@ -57,7 +57,6 @@ class AffiliationsViewSet(APIView):
                     'lastName': last_name
                 })
 
-        print(self.kwargs)
         affiliations = get_affiliations(**get_kwargs)
         serialized = AffiliationSerializer(affiliations, many=True)
 

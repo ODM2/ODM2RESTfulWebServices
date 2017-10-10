@@ -7,6 +7,7 @@ from django.core.management import settings
 
 from odm2api.ODMconnection import dbconnection
 from odm2api.ODM2.services.readService import ReadODM2
+import odm2api.ODM2.models as odm2_models
 
 from utils import get_vals
 
@@ -27,7 +28,19 @@ SESSION_FACTORY = dbconnection.createConnection(**settings.ODM2DATABASE)
 READ = ReadODM2(SESSION_FACTORY)
 
 
+def db_check():
+    db_session = SESSION_FACTORY.getSession()
+    try:
+        db_session.query(odm2_models.SamplingFeatures).first()
+    except:
+        print('Rolling Back...')
+        db_session.rollback()
+    finally:
+        pass
+
+
 def get_affiliations(**kwargs):
+    db_check()
     ids = None
     if kwargs.get('affiliationID'):
         ids = [int(i) for i in kwargs.get('affiliationID').split(',')]
@@ -61,6 +74,7 @@ def get_affiliations(**kwargs):
 
 
 def get_people(**kwargs):
+    db_check()
     ids = None
     if kwargs.get('peopleID'):
         ids = [int(i) for i in kwargs.get('peopleID').split(',')]
@@ -82,6 +96,7 @@ def get_people(**kwargs):
 
 
 def get_results(**kwargs):
+    db_check()
     ids = None
     uuids = None
     if kwargs.get('resultID'):
@@ -137,6 +152,7 @@ def get_results(**kwargs):
 
 # TODO: Needs work for queries
 def get_samplingfeatures(**kwargs):
+    db_check()
     sampling_features = READ.getSamplingFeatures()
 
     sf_list = []
