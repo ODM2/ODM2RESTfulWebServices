@@ -11,12 +11,16 @@ from utils import (get_col, OrderedDict)
 
 
 def get_sertype_dict(odm2_model):
-    '''
+    """
     Function to get serialization types for rest framework from sqlalchemy field types.
 
-    :param odm2_model: ODM2 SQLAlchemy model.
-    :return: Dictionary of field:type to create a Serializer object.
-    '''
+    Args:
+        odm2_model (object):  ODM2 SQLAlchemy model class object.
+
+    Returns:
+        dict: Dictionary of {field:type} to create a Serializer object.
+
+    """
     dct = OrderedDict()
     for field, val in get_col(odm2_model, True):
         dct.update({
