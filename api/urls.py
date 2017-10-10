@@ -40,8 +40,18 @@ urlpatterns = [
     url(r'^results/samplingFeatureID/(?P<samplingFeatureID>.+)/$',
         ResultsViewSet.as_view(), name='results-detail'),
     url(r'^results/variableID/(?P<variableID>.+)/$', ResultsViewSet.as_view(), name='results-detail'),
-    url(r'^results/simulationID/(?P<simulationID>.+)/$', ResultsViewSet.as_view(), name='results-detail'),
-    # url(r'^samplingfeatures$', SamplingFeaturesViewSet.as_view(), name='samplingfeatures-list')
+    url(r'^results/simulationID/(?P<simulationID>.+)/$',
+        ResultsViewSet.as_view(), name='results-detail'),
+    # Sampling Features
+    url(r'^samplingfeatures/$', SamplingFeaturesViewSet.as_view(), name='samplingfeatures-list'),
+    url(r'^samplingfeatures/samplingFeatureID/(?P<samplingFeatureID>.+)/$',
+        SamplingFeaturesViewSet.as_view(), name='samplingfeatures-detail'),
+    url(r'^samplingfeatures/samplingFeatureUUID/(?P<samplingFeatureUUID>.+)/$',
+        SamplingFeaturesViewSet.as_view(), name='samplingfeatures-detail'),
+    url(r'^samplingfeatures/samplingFeatureCode/(?P<samplingFeatureCode>.+)/$',
+        SamplingFeaturesViewSet.as_view(), name='samplingfeatures-detail'),
+    url(r'^samplingfeatures/samplingFeatureType/(?P<samplingFeatureType>.+)/$',
+        SamplingFeaturesViewSet.as_view(), name='samplingfeatures-detail'),
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns, allowed=['json', 'html', 'yaml', 'csv'])

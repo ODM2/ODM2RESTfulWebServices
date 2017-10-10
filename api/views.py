@@ -130,13 +130,29 @@ class SamplingFeaturesViewSet(APIView):
 
     renderer_classes = (JSONRenderer, YAMLRenderer, CSVRenderer)
 
-    def get(self, request, format=None):
+    def get(self, request, samplingFeatureID=None,
+            samplingFeatureCode=None, samplingFeatureUUID=None,
+            samplingFeatureType=None, format=None):
 
-        results = get_samplingfeatures()
-        serialized = SamplingFeatureSerializer(results, many=True)
+        get_kwargs = {
+            'samplingFeatureID': samplingFeatureID,
+            'samplingFeatureCode': samplingFeatureCode,
+            'samplingFeatureUUID': samplingFeatureUUID,
+            'samplingFeatureType': samplingFeatureType,
+            'results': False
+        }
 
-        if len(results) == 1:
-            serialized = SamplingFeatureSerializer(results[0])
+        results = request.query_params.get('results')
+        if results:
+            get_kwargs.update({
+                'results': results
+            })
+
+        sfs = get_samplingfeatures(**get_kwargs)
+        serialized = SamplingFeatureSerializer(sfs, many=True)
+
+        if len(sfs) == 1:
+            serialized = SamplingFeatureSerializer(sfs[0])
 
         return Response(serialized.data)
 

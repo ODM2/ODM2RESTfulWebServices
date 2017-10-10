@@ -150,10 +150,34 @@ def get_results(**kwargs):
 
     return Results_list
 
-# TODO: Needs work for queries
+
 def get_samplingfeatures(**kwargs):
     db_check()
-    sampling_features = READ.getSamplingFeatures()
+    ids = None
+    codes = None
+    uuids = None
+    if kwargs.get('samplingFeatureID'):
+        ids = [int(i) for i in kwargs.get('samplingFeatureID').split(',')]
+    if kwargs.get('samplingFeatureUUID'):
+        uuids = kwargs.get('samplingFeatureUUID').split(',')
+    if kwargs.get('samplingFeatureCode'):
+        codes = kwargs.get('samplingFeatureCode').split(',')
+
+    sf_type = kwargs.get('samplingFeatureType')
+    res = kwargs.get('results')
+
+    if type(res) in [str, unicode]:
+        if res.upper() == 'TRUE':
+            res = True
+        else:
+            res = False
+
+    sampling_features = READ.getSamplingFeatures(ids=ids,
+                                                 codes=codes,
+                                                 uuids=uuids,
+                                                 type=sf_type,
+                                                 wkt=None,
+                                                 results=res)
 
     sf_list = []
     for sf in sampling_features:
