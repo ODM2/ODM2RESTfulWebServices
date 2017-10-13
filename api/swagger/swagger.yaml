@@ -17,6 +17,8 @@ tags:
     description: Results in database
   - name: samplingfeatures
     description: Sampling Features in database
+  - name: datasets
+    description: Data Sets in database
 schemes:
   - http
 consumes:
@@ -355,3 +357,46 @@ paths:
       responses:
         "200":
           description: 200 Response
+  /datasets/:
+    get:
+      tags:
+      - datasets
+      operationId: getDataSets
+      summary: All ODM2 datasets retrieval.
+      produces:
+      - application/json
+      - application/yaml
+      responses:
+        "200":
+          description: 200 Response
+  /datasets/datasetUUID/{datasetUUID}/:
+    get:
+      tags:
+      - datasets
+      operationId: getDataSetsByDataSetUUID
+      summary: ODM2 datasets retrieval by Data Set UUID(s)
+      parameters:
+        - name: datasetUUID
+          in: path
+          description: Data Set UUID(s)
+          required: true
+          type: string
+      responses:
+        "200":
+          description: 200 Response
+  /datasets/datasetCode/{datasetCode}/:
+    get:
+      tags:
+      - datasets
+      operationId: getDataSetsByDataSetCode
+      summary: ODM2 datasets retrieval by Data Set Code(s)
+      parameters:
+        - name: datasetCode
+          in: path
+          description: Data Set Code(s)
+          required: true
+          type: string
+      responses:
+        "200":
+          description: 200 Response
+  

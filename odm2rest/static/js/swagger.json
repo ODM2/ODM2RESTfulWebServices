@@ -57,6 +57,29 @@
         ]
       }
     },
+    "/people/lastName/{lastName}/": {
+      "get": {
+        "tags": [
+          "people"
+        ],
+        "summary": "ODM2 people retrieval by Last Name",
+        "responses": {
+          "200": {
+            "description": "200 Response"
+          }
+        },
+        "parameters": [
+          {
+            "required": true,
+            "type": "string",
+            "description": "Person Last Name",
+            "in": "path",
+            "name": "lastName"
+          }
+        ],
+        "operationId": "getPeopleByLastName"
+      }
+    },
     "/people/firstName/{firstName}/": {
       "get": {
         "tags": [
@@ -172,12 +195,12 @@
         "operationId": "getSamplingFeatureBySamplingFeatureID"
       }
     },
-    "/people/lastName/{lastName}/": {
+    "/datasets/datasetUUID/{datasetUUID}/": {
       "get": {
         "tags": [
-          "people"
+          "datasets"
         ],
-        "summary": "ODM2 people retrieval by Last Name",
+        "summary": "ODM2 datasets retrieval by Data Set UUID(s)",
         "responses": {
           "200": {
             "description": "200 Response"
@@ -187,12 +210,12 @@
           {
             "required": true,
             "type": "string",
-            "description": "Person Last Name",
+            "description": "Data Set UUID(s)",
             "in": "path",
-            "name": "lastName"
+            "name": "datasetUUID"
           }
         ],
-        "operationId": "getPeopleByLastName"
+        "operationId": "getDataSetsByDataSetUUID"
       }
     },
     "/samplingfeatures/samplingFeatureCode/{samplingFeatureCode}/": {
@@ -223,6 +246,29 @@
           }
         ],
         "operationId": "getSamplingFeatureBySamplingFeatureCode"
+      }
+    },
+    "/results/samplingFeatureID/{samplingFeatureID}/": {
+      "get": {
+        "tags": [
+          "results"
+        ],
+        "summary": "ODM2 results retrieval by Sampling Feature ID(s)",
+        "responses": {
+          "200": {
+            "description": "200 Response"
+          }
+        },
+        "parameters": [
+          {
+            "required": true,
+            "type": "integer",
+            "description": "Sampling Feature ID(s)",
+            "in": "path",
+            "name": "samplingFeatureID"
+          }
+        ],
+        "operationId": "getResultsBySamplingfeatureID"
       }
     },
     "/results/resultUUID/{resultUUID}/": {
@@ -269,6 +315,29 @@
           }
         ],
         "operationId": "getAffiliationsByAffiliationID"
+      }
+    },
+    "/datasets/datasetCode/{datasetCode}/": {
+      "get": {
+        "tags": [
+          "datasets"
+        ],
+        "summary": "ODM2 datasets retrieval by Data Set Code(s)",
+        "responses": {
+          "200": {
+            "description": "200 Response"
+          }
+        },
+        "parameters": [
+          {
+            "required": true,
+            "type": "string",
+            "description": "Data Set Code(s)",
+            "in": "path",
+            "name": "datasetCode"
+          }
+        ],
+        "operationId": "getDataSetsByDataSetCode"
       }
     },
     "/samplingfeatures/samplingFeatureType/{samplingFeatureType}/": {
@@ -395,27 +464,22 @@
         "operationId": "getAffiliationsByFirstName"
       }
     },
-    "/results/samplingFeatureID/{samplingFeatureID}/": {
+    "/datasets/": {
       "get": {
-        "tags": [
-          "results"
-        ],
-        "summary": "ODM2 results retrieval by Sampling Feature ID(s)",
+        "operationId": "getDataSets",
+        "summary": "All ODM2 datasets retrieval.",
         "responses": {
           "200": {
             "description": "200 Response"
           }
         },
-        "parameters": [
-          {
-            "required": true,
-            "type": "integer",
-            "description": "Sampling Feature ID(s)",
-            "in": "path",
-            "name": "samplingFeatureID"
-          }
+        "tags": [
+          "datasets"
         ],
-        "operationId": "getResultsBySamplingfeatureID"
+        "produces": [
+          "application/json",
+          "application/yaml"
+        ]
       }
     },
     "/people/": {
@@ -525,6 +589,10 @@
     {
       "name": "samplingfeatures",
       "description": "Sampling Features in database"
+    },
+    {
+      "name": "datasets",
+      "description": "Data Sets in database"
     }
   ],
   "basePath": "/v1",
