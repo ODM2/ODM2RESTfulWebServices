@@ -21,7 +21,8 @@ from models import (
     FeatureAction,
     ProcessingLevel,
     TaxonomicClassifier,
-    SamplingFeatures
+    SamplingFeatures,
+    DataSets
 )
 
 SESSION_FACTORY = dbconnection.createConnection(**settings.ODM2DATABASE)
@@ -187,3 +188,23 @@ def get_samplingfeatures(**kwargs):
         )
 
     return sf_list
+
+
+def get_datasets(**kwargs):
+    codes = kwargs.get('datasetCode')
+    uuids = kwargs.get('datasetUUID')
+
+    if codes:
+        codes = codes.split(',')
+    if uuids:
+        uuids = uuids.split(',')
+
+    datasets = READ.getDataSets(codes=codes, uuids=uuids)
+    ds_list = []
+    for ds in datasets:
+        ds_dct = get_vals(ds)
+        ds_list.append(
+            DataSets(ds_dct)
+        )
+
+    return ds_list
