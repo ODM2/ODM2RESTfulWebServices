@@ -21,14 +21,16 @@ from core import (
     get_affiliations,
     get_people,
     get_results,
-    get_samplingfeatures
+    get_samplingfeatures,
+    get_datasets
 )
 
 from serializers import (
     AffiliationSerializer,
     PeopleSerializer,
     ResultSerializer,
-    SamplingFeatureSerializer
+    SamplingFeatureSerializer,
+    DataSetSerializer
 )
 
 
@@ -156,3 +158,22 @@ class SamplingFeaturesViewSet(APIView):
 
         return Response(serialized.data)
 
+
+class DataSetsViewSet(APIView):
+
+    renderer_classes = (JSONRenderer, YAMLRenderer, CSVRenderer)
+
+    def get(self, request, datasetUUID=None, datasetCode=None, format=None):
+
+        get_kwargs = {
+            'datasetCode': datasetCode,
+            'datasetUUID': datasetUUID,
+        }
+
+        ds = get_datasets(**get_kwargs)
+        serialized = DataSetSerializer(ds, many=True)
+
+        if len(ds) == 1:
+            serialized = DataSetSerializer(ds[0])
+
+        return Response(serialized.data)

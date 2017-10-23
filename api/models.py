@@ -48,3 +48,7 @@ class TaxonomicClassifier(BASEMODEL):
 
 class Result(BASEMODEL):
     pass
+
+
+class DataSets(BASEMODEL):
+    pass

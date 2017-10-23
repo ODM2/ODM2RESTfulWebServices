@@ -141,3 +141,12 @@ ResultSerializer = type(
     (Serializer,),
     Result_dct
 )
+
+
+# --- DataSets Serializer ---
+DataSet_dct = get_sertype_dict(odm2_mod.DataSets)
+DataSetSerializer = type(
+    str('DataSetSerializer'),
+    (Serializer,),
+    DataSet_dct
+)
