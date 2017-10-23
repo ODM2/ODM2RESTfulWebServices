@@ -4,6 +4,9 @@ A Python RESTful web service inteface for accessing data in an ODM2 database via
 
 NOTE: Currently this repository is under heavy development, a working version is not guaranteed at any point.
 
+For current stable version, please refer to the
+[odm2rest_legacy branch](https://github.com/ODM2/ODM2RESTfulWebServices/tree/odm2rest_legacy).
+
 ## Development Installation
 
 1. Clone both ODM2PythonAPI repository and ODM2RESTfulWebServices repository.
