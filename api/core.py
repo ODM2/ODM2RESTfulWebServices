@@ -208,3 +208,25 @@ def get_datasets(**kwargs):
         )
 
     return ds_list
+
+
+def get_resultvalues(**kwargs):
+    # Result Values doesn't use model,
+    # it outputs dataframe,
+    # therefore can be serialized directly
+
+    ids = kwargs.get('resultID')
+    starttime = kwargs.get('beginDate')
+    endtime = kwargs.get('endDate')
+
+    if ids:
+        ids = [int(i) for i in ids.split(',')]
+
+    result_values = READ.getResultValues(resultids=ids,
+                                         starttime=starttime,
+                                         endtime=endtime)
+    res = READ.getResults(ids=ids)[0]
+    res_type = res.ResultTypeCV.lower()
+
+    return [r.to_dict() for idx, r in result_values.iterrows()], res_type
+
