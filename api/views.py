@@ -22,7 +22,8 @@ from core import (
     get_people,
     get_results,
     get_samplingfeatures,
-    get_datasets
+    get_datasets,
+    get_resultvalues
 )
 
 from serializers import (
@@ -30,7 +31,16 @@ from serializers import (
     PeopleSerializer,
     ResultSerializer,
     SamplingFeatureSerializer,
-    DataSetSerializer
+    DataSetSerializer,
+    CategoricalResultValuesSerializer,
+    MeasurementResultValuesSerializer,
+    PointCoverageResultValuesSerializer,
+    ProfileResultValuesSerializer,
+    SectionResultsSerializer,
+    SpectraResultValuesSerializer,
+    TimeSeriesResultValuesSerializer,
+    TrajectoryResultValuesSerializer,
+    TransectResultValuesSerializer
 )
 
 
@@ -175,5 +185,45 @@ class DataSetsViewSet(APIView):
 
         if len(ds) == 1:
             serialized = DataSetSerializer(ds[0])
+
+        return Response(serialized.data)
+
+
+class ResultValuesViewSet(APIView):
+
+    renderer_classes = (JSONRenderer, YAMLRenderer, CSVRenderer)
+
+    def get(self, request, resultID=None, beginDate=None, endDate=None, format=None):
+
+        get_kwargs = {
+            'resultID': resultID,
+            'beginDate': beginDate,
+            'endDate': endDate
+        }
+
+        res_val, res_type = get_resultvalues(**get_kwargs)
+        RVSerializer = None
+        if 'categorical' in res_type.lower():
+            RVSerializer = CategoricalResultValuesSerializer
+        elif 'measurement' in res_type.lower():
+            RVSerializer = MeasurementResultValuesSerializer
+        elif 'point' in res_type.lower():
+            RVSerializer = PointCoverageResultValuesSerializer
+        elif 'profile' in res_type.lower():
+            RVSerializer = ProfileResultValuesSerializer
+        elif 'section' in res_type.lower():
+            RVSerializer = SectionResultsSerializer
+        elif 'spectra' in res_type.lower():
+            RVSerializer = SpectraResultValuesSerializer
+        elif 'time' in res_type.lower():
+            RVSerializer = TimeSeriesResultValuesSerializer
+        elif 'trajectory' in res_type.lower():
+            RVSerializer = TrajectoryResultValuesSerializer
+        elif 'transect' in res_type.lower():
+            RVSerializer = TransectResultValuesSerializer
+        serialized = RVSerializer(res_val, many=True)
+
+        if len(res_val) == 1:
+            serialized = RVSerializer(res_val[0])
 
         return Response(serialized.data)
