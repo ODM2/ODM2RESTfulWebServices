@@ -14,7 +14,8 @@ from views import (
     PeopleViewSet,
     ResultsViewSet,
     SamplingFeaturesViewSet,
-    DataSetsViewSet
+    DataSetsViewSet,
+    ResultValuesViewSet
 )
 
 urlpatterns = [
@@ -58,7 +59,10 @@ urlpatterns = [
     url(r'^datasets/datasetUUID/(?P<datasetUUID>.+)/$', DataSetsViewSet.as_view(),
         name='datasets-detail'),
     url(r'^datasets/datasetCode/(?P<datasetCode>.+)/$', DataSetsViewSet.as_view(),
-        name='datasets-detail')
+        name='datasets-detail'),
+    # Result Values
+    url(r'^resultvalues/resultID/(?P<resultID>.+)/', ResultValuesViewSet.as_view(),
+        name='resultvalues-detail'),
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns, allowed=['json', 'html', 'yaml', 'csv'])
