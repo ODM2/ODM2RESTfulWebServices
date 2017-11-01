@@ -276,6 +276,31 @@ paths:
       responses:
         "200":
           description: 200 Response
+  /resultvalues/resultID/{resultID}/:
+      get:
+        tags:
+        - results
+        operationId: getResultValuesByResultID
+        summary: ODM2 result values retrieval by Result ID(s)
+        parameters:
+          - name: resultID
+            in: path
+            description: Result ID(s)
+            required: true
+            type: integer
+          - name: beginDate
+            in: query
+            description: Begin Date
+            required: false
+            type: string
+          - name: endDate
+            in: query
+            description: End Date
+            required: false
+            type: string
+        responses:
+          "200":
+            description: 200 Response
   /samplingfeatures/:
     get:
       tags:
