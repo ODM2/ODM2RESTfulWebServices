@@ -1,0 +1,609 @@
+{
+  "info": {
+    "title": "ODM2 REST API",
+    "version": "v1",
+    "description": "This is a development version for ODM2 REST API",
+    "contact": {
+      "email": "landungs@uw.edu",
+      "name": "Landung Setiawan"
+    }
+  },
+  "paths": {
+    "/affiliations/organizationCode/{organizationCode}/": {
+      "get": {
+        "tags": [
+          "affiliations"
+        ],
+        "summary": "ODM2 affiliations retrieval by Organization Code",
+        "responses": {
+          "200": {
+            "description": "200 Response"
+          }
+        },
+        "parameters": [
+          {
+            "required": true,
+            "type": "string",
+            "description": "Organization Code",
+            "in": "path",
+            "name": "organizationCode"
+          },
+          {
+            "required": false,
+            "type": "string",
+            "description": "Person Last Name",
+            "in": "query",
+            "name": "lastName"
+          }
+        ],
+        "operationId": "getAffiliationsByOrganizationCode"
+      }
+    },
+    "/results/": {
+      "get": {
+        "operationId": "getResultsVersion1",
+        "summary": "All ODM2 results retrieval.",
+        "responses": {
+          "200": {
+            "description": "200 Response"
+          }
+        },
+        "tags": [
+          "results"
+        ],
+        "produces": [
+          "application/json",
+          "application/yaml"
+        ]
+      }
+    },
+    "/people/lastName/{lastName}/": {
+      "get": {
+        "tags": [
+          "people"
+        ],
+        "summary": "ODM2 people retrieval by Last Name",
+        "responses": {
+          "200": {
+            "description": "200 Response"
+          }
+        },
+        "parameters": [
+          {
+            "required": true,
+            "type": "string",
+            "description": "Person Last Name",
+            "in": "path",
+            "name": "lastName"
+          }
+        ],
+        "operationId": "getPeopleByLastName"
+      }
+    },
+    "/people/firstName/{firstName}/": {
+      "get": {
+        "tags": [
+          "people"
+        ],
+        "summary": "ODM2 people retrieval by First Name",
+        "responses": {
+          "200": {
+            "description": "200 Response"
+          }
+        },
+        "parameters": [
+          {
+            "required": true,
+            "type": "string",
+            "description": "Person First Name",
+            "in": "path",
+            "name": "firstName"
+          },
+          {
+            "required": false,
+            "type": "string",
+            "description": "Person Last Name",
+            "in": "query",
+            "name": "lastName"
+          }
+        ],
+        "operationId": "getPeopleByFirstName"
+      }
+    },
+    "/results/resultType/{resultType}/": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "200 Response"
+          }
+        },
+        "parameters": [
+          {
+            "required": true,
+            "type": "string",
+            "description": "Result Type (Name)",
+            "in": "path",
+            "name": "resultType"
+          },
+          {
+            "required": false,
+            "type": "integer",
+            "description": "Action ID",
+            "in": "query",
+            "name": "actionID"
+          },
+          {
+            "required": false,
+            "type": "integer",
+            "description": "Sampling Feature ID",
+            "in": "query",
+            "name": "samplingFeatureID"
+          },
+          {
+            "required": false,
+            "type": "integer",
+            "description": "Variable ID",
+            "in": "query",
+            "name": "variableID"
+          },
+          {
+            "required": false,
+            "type": "integer",
+            "description": "Simulation ID",
+            "in": "query",
+            "name": "simulationID"
+          }
+        ],
+        "tags": [
+          "results"
+        ],
+        "operationId": "getResultsByResultType",
+        "externalDocs": {
+          "url": "http://vocabulary.odm2.org/resulttype/",
+          "description": "See all available Result Types"
+        },
+        "summary": "ODM2 results retrieval by Result Type"
+      }
+    },
+    "/samplingfeatures/samplingFeatureID/{samplingFeatureID}/": {
+      "get": {
+        "tags": [
+          "samplingfeatures"
+        ],
+        "summary": "ODM2 samplingfeatures retrieval by Sampling Feature ID(s)",
+        "responses": {
+          "200": {
+            "description": "200 Response"
+          }
+        },
+        "parameters": [
+          {
+            "required": true,
+            "type": "string",
+            "description": "Sampling Feature ID(s)",
+            "in": "path",
+            "name": "samplingFeatureID"
+          },
+          {
+            "required": false,
+            "type": "boolean",
+            "description": "Get Sampling Features that has Results",
+            "in": "query",
+            "name": "results"
+          }
+        ],
+        "operationId": "getSamplingFeatureBySamplingFeatureID"
+      }
+    },
+    "/datasets/datasetUUID/{datasetUUID}/": {
+      "get": {
+        "tags": [
+          "datasets"
+        ],
+        "summary": "ODM2 datasets retrieval by Data Set UUID(s)",
+        "responses": {
+          "200": {
+            "description": "200 Response"
+          }
+        },
+        "parameters": [
+          {
+            "required": true,
+            "type": "string",
+            "description": "Data Set UUID(s)",
+            "in": "path",
+            "name": "datasetUUID"
+          }
+        ],
+        "operationId": "getDataSetsByDataSetUUID"
+      }
+    },
+    "/samplingfeatures/samplingFeatureCode/{samplingFeatureCode}/": {
+      "get": {
+        "tags": [
+          "samplingfeatures"
+        ],
+        "summary": "ODM2 samplingfeatures retrieval by Sampling Feature Code(s)",
+        "responses": {
+          "200": {
+            "description": "200 Response"
+          }
+        },
+        "parameters": [
+          {
+            "required": true,
+            "type": "string",
+            "description": "Sampling Feature Code(s)",
+            "in": "path",
+            "name": "samplingFeatureCode"
+          },
+          {
+            "required": false,
+            "type": "boolean",
+            "description": "Get Sampling Features that has Results",
+            "in": "query",
+            "name": "results"
+          }
+        ],
+        "operationId": "getSamplingFeatureBySamplingFeatureCode"
+      }
+    },
+    "/results/samplingFeatureID/{samplingFeatureID}/": {
+      "get": {
+        "tags": [
+          "results"
+        ],
+        "summary": "ODM2 results retrieval by Sampling Feature ID(s)",
+        "responses": {
+          "200": {
+            "description": "200 Response"
+          }
+        },
+        "parameters": [
+          {
+            "required": true,
+            "type": "integer",
+            "description": "Sampling Feature ID(s)",
+            "in": "path",
+            "name": "samplingFeatureID"
+          }
+        ],
+        "operationId": "getResultsBySamplingfeatureID"
+      }
+    },
+    "/results/resultUUID/{resultUUID}/": {
+      "get": {
+        "tags": [
+          "results"
+        ],
+        "summary": "ODM2 results retrieval by Result UUID(s)",
+        "responses": {
+          "200": {
+            "description": "200 Response"
+          }
+        },
+        "parameters": [
+          {
+            "required": true,
+            "type": "string",
+            "description": "Result UUID(s)",
+            "in": "path",
+            "name": "resultUUID"
+          }
+        ],
+        "operationId": "getResultsByResultUUID"
+      }
+    },
+    "/affiliations/affiliationID/{affiliationID}/": {
+      "get": {
+        "tags": [
+          "affiliations"
+        ],
+        "summary": "ODM2 affiliations retrieval by Affiliation ID(s)",
+        "responses": {
+          "200": {
+            "description": "200 Response"
+          }
+        },
+        "parameters": [
+          {
+            "required": true,
+            "type": "string",
+            "description": "Affiliation ID(s)",
+            "in": "path",
+            "name": "affiliationID"
+          }
+        ],
+        "operationId": "getAffiliationsByAffiliationID"
+      }
+    },
+    "/datasets/datasetCode/{datasetCode}/": {
+      "get": {
+        "tags": [
+          "datasets"
+        ],
+        "summary": "ODM2 datasets retrieval by Data Set Code(s)",
+        "responses": {
+          "200": {
+            "description": "200 Response"
+          }
+        },
+        "parameters": [
+          {
+            "required": true,
+            "type": "string",
+            "description": "Data Set Code(s)",
+            "in": "path",
+            "name": "datasetCode"
+          }
+        ],
+        "operationId": "getDataSetsByDataSetCode"
+      }
+    },
+    "/samplingfeatures/samplingFeatureType/{samplingFeatureType}/": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "200 Response"
+          }
+        },
+        "parameters": [
+          {
+            "required": true,
+            "type": "string",
+            "description": "Sampling Feature Type(s)",
+            "in": "path",
+            "name": "samplingFeatureType"
+          },
+          {
+            "required": false,
+            "type": "boolean",
+            "description": "Get Sampling Features that has Results",
+            "in": "query",
+            "name": "results"
+          }
+        ],
+        "tags": [
+          "samplingfeatures"
+        ],
+        "operationId": "getSamplingFeatureBySamplingFeatureType",
+        "externalDocs": {
+          "url": "http://vocabulary.odm2.org/samplingfeaturetype/",
+          "description": "See all available Sampling Feature Types"
+        },
+        "summary": "ODM2 samplingfeatures retrieval by Sampling Feature Type"
+      }
+    },
+    "/affiliations/lastName/{lastName}/": {
+      "get": {
+        "tags": [
+          "affiliations"
+        ],
+        "summary": "ODM2 affiliations retrieval by Last Name",
+        "responses": {
+          "200": {
+            "description": "200 Response"
+          }
+        },
+        "parameters": [
+          {
+            "required": true,
+            "type": "string",
+            "description": "Person Last Name",
+            "in": "path",
+            "name": "lastName"
+          }
+        ],
+        "operationId": "getAffiliationsByLastName"
+      }
+    },
+    "/affiliations/": {
+      "get": {
+        "summary": "All ODM2 affiliations retrieval.",
+        "responses": {
+          "200": {
+            "description": "200 Response"
+          }
+        },
+        "tags": [
+          "affiliations"
+        ],
+        "operationId": "getAffiliationsVersion1"
+      }
+    },
+    "/results/actionID/{actionID}/": {
+      "get": {
+        "tags": [
+          "results"
+        ],
+        "summary": "ODM2 results retrieval by Action ID(s)",
+        "responses": {
+          "200": {
+            "description": "200 Response"
+          }
+        },
+        "parameters": [
+          {
+            "required": true,
+            "type": "integer",
+            "description": "Action ID(s)",
+            "in": "path",
+            "name": "actionID"
+          }
+        ],
+        "operationId": "getResultsByActionID"
+      }
+    },
+    "/affiliations/firstName/{firstName}/": {
+      "get": {
+        "tags": [
+          "affiliations"
+        ],
+        "summary": "ODM2 affiliations retrieval by First Name",
+        "responses": {
+          "200": {
+            "description": "200 Response"
+          }
+        },
+        "parameters": [
+          {
+            "required": true,
+            "type": "string",
+            "description": "Person First Name",
+            "in": "path",
+            "name": "firstName"
+          },
+          {
+            "required": false,
+            "type": "string",
+            "description": "Person Last Name",
+            "in": "query",
+            "name": "lastName"
+          }
+        ],
+        "operationId": "getAffiliationsByFirstName"
+      }
+    },
+    "/datasets/": {
+      "get": {
+        "operationId": "getDataSets",
+        "summary": "All ODM2 datasets retrieval.",
+        "responses": {
+          "200": {
+            "description": "200 Response"
+          }
+        },
+        "tags": [
+          "datasets"
+        ],
+        "produces": [
+          "application/json",
+          "application/yaml"
+        ]
+      }
+    },
+    "/people/": {
+      "get": {
+        "summary": "All ODM2 people retrieval.",
+        "responses": {
+          "200": {
+            "description": "200 Response"
+          }
+        },
+        "tags": [
+          "people"
+        ],
+        "operationId": "getPeopleVersion1"
+      }
+    },
+    "/samplingfeatures/": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "200 Response"
+          }
+        },
+        "parameters": [
+          {
+            "required": false,
+            "type": "boolean",
+            "description": "Get Sampling Features that has Results",
+            "in": "query",
+            "name": "results"
+          }
+        ],
+        "produces": [
+          "application/json",
+          "application/yaml"
+        ],
+        "operationId": "getSamplingFeatures",
+        "tags": [
+          "samplingfeatures"
+        ],
+        "summary": "All ODM2 samplingfeatures retrieval."
+      }
+    },
+    "/people/peopleID/{peopleID}/": {
+      "get": {
+        "tags": [
+          "people"
+        ],
+        "summary": "ODM2 people retrieval by People ID(s)",
+        "responses": {
+          "200": {
+            "description": "200 Response"
+          }
+        },
+        "parameters": [
+          {
+            "required": true,
+            "type": "string",
+            "description": "People ID(s)",
+            "in": "path",
+            "name": "peopleID"
+          }
+        ],
+        "operationId": "getPeopleByPeopleID"
+      }
+    },
+    "/results/resultID/{resultID}/": {
+      "get": {
+        "tags": [
+          "results"
+        ],
+        "summary": "ODM2 results retrieval by Result ID(s)",
+        "responses": {
+          "200": {
+            "description": "200 Response"
+          }
+        },
+        "parameters": [
+          {
+            "required": true,
+            "type": "string",
+            "description": "Result ID(s)",
+            "in": "path",
+            "name": "resultID"
+          }
+        ],
+        "operationId": "getResultsByResultID"
+      }
+    }
+  },
+  "schemes": [
+    "http"
+  ],
+  "tags": [
+    {
+      "name": "affiliations",
+      "description": "Affiliations in database"
+    },
+    {
+      "name": "people",
+      "description": "People in database"
+    },
+    {
+      "name": "results",
+      "description": "Results in database"
+    },
+    {
+      "name": "samplingfeatures",
+      "description": "Sampling Features in database"
+    },
+    {
+      "name": "datasets",
+      "description": "Data Sets in database"
+    }
+  ],
+  "basePath": "/v1",
+  "produces": [
+    "application/json",
+    "application/yaml",
+    "text/csv"
+  ],
+  "host": "127.0.0.1:8000",
+  "swagger": "2.0",
+  "consumes": [
+    "application/json"
+  ]
+}

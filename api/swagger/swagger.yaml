@@ -1,0 +1,402 @@
+swagger: "2.0"
+info:
+  title: ODM2 REST API
+  version: v1
+  contact: 
+    email: landungs@uw.edu
+    name: Landung Setiawan
+  description: This is a development version for ODM2 REST API
+host: 127.0.0.1:8000
+basePath: /v1
+tags:
+  - name: affiliations
+    description: Affiliations in database
+  - name: people
+    description: People in database
+  - name: results
+    description: Results in database
+  - name: samplingfeatures
+    description: Sampling Features in database
+  - name: datasets
+    description: Data Sets in database
+schemes:
+  - http
+consumes:
+  - application/json
+produces:
+  - application/json
+  - application/yaml
+  - text/csv
+paths:
+  /affiliations/:
+    get:
+      tags:
+      - affiliations
+      operationId: getAffiliationsVersion1
+      summary: All ODM2 affiliations retrieval.
+      responses:
+        "200":
+          description: 200 Response
+  /affiliations/affiliationID/{affiliationID}/:
+    get:
+      tags:
+      - affiliations
+      operationId: getAffiliationsByAffiliationID
+      summary: ODM2 affiliations retrieval by Affiliation ID(s)
+      parameters:
+        - name: affiliationID
+          in: path
+          description: Affiliation ID(s)
+          required: true
+          type: string 
+      responses:
+        "200":
+          description: 200 Response
+  /affiliations/firstName/{firstName}/:
+    get:
+      tags:
+      - affiliations
+      operationId: getAffiliationsByFirstName
+      summary: ODM2 affiliations retrieval by First Name
+      parameters:
+        - name: firstName
+          in: path
+          description: Person First Name
+          required: true
+          type: string
+        - name: lastName
+          in: query
+          description: Person Last Name
+          required: false
+          type: string
+      responses:
+        "200":
+          description: 200 Response
+  /affiliations/lastName/{lastName}/:
+    get:
+      tags:
+      - affiliations
+      operationId: getAffiliationsByLastName
+      summary: ODM2 affiliations retrieval by Last Name
+      parameters:
+        - name: lastName
+          in: path
+          description: Person Last Name
+          required: true
+          type: string 
+      responses:
+        "200":
+          description: 200 Response
+  /affiliations/organizationCode/{organizationCode}/:
+    get:
+      tags:
+      - affiliations
+      operationId: getAffiliationsByOrganizationCode
+      summary: ODM2 affiliations retrieval by Organization Code
+      parameters:
+        - name: organizationCode
+          in: path
+          description: Organization Code
+          required: true
+          type: string 
+        - name: lastName
+          in: query
+          description: Person Last Name
+          required: false
+          type: string
+      responses:
+        "200":
+          description: 200 Response
+  /people/:
+    get:
+      tags:
+      - people
+      operationId: getPeopleVersion1
+      summary: All ODM2 people retrieval.
+      responses:
+        "200":
+          description: 200 Response
+  /people/peopleID/{peopleID}/:
+    get:
+      tags:
+      - people
+      operationId: getPeopleByPeopleID
+      summary: ODM2 people retrieval by People ID(s)
+      parameters:
+        - name: peopleID
+          in: path
+          description: People ID(s)
+          required: true
+          type: string
+      responses:
+        "200":
+          description: 200 Response
+  /people/firstName/{firstName}/:
+    get:
+      tags:
+      - people
+      operationId: getPeopleByFirstName
+      summary: ODM2 people retrieval by First Name
+      parameters:
+        - name: firstName
+          in: path
+          description: Person First Name
+          required: true
+          type: string
+        - name: lastName
+          in: query
+          description: Person Last Name
+          required: false
+          type: string
+      responses:
+        "200":
+          description: 200 Response
+  /people/lastName/{lastName}/:
+    get:
+      tags:
+      - people
+      operationId: getPeopleByLastName
+      summary: ODM2 people retrieval by Last Name
+      parameters:
+        - name: lastName
+          in: path
+          description: Person Last Name
+          required: true
+          type: string 
+      responses:
+        "200":
+          description: 200 Response
+  /results/:
+    get:
+      tags:
+      - results
+      operationId: getResultsVersion1
+      summary: All ODM2 results retrieval.
+      produces:
+      - application/json
+      - application/yaml
+      responses:
+        "200":
+          description: 200 Response
+  /results/resultID/{resultID}/:
+    get:
+      tags:
+      - results
+      operationId: getResultsByResultID
+      summary: ODM2 results retrieval by Result ID(s)
+      parameters:
+        - name: resultID
+          in: path
+          description: Result ID(s)
+          required: true
+          type: string 
+      responses:
+        "200":
+          description: 200 Response
+  /results/resultUUID/{resultUUID}/:
+    get:
+      tags:
+      - results
+      operationId: getResultsByResultUUID
+      summary: ODM2 results retrieval by Result UUID(s)
+      parameters:
+        - name: resultUUID
+          in: path
+          description: Result UUID(s)
+          required: true
+          type: string 
+      responses:
+        "200":
+          description: 200 Response
+  /results/resultType/{resultType}/:
+    get:
+      tags:
+      - results
+      operationId: getResultsByResultType
+      summary: ODM2 results retrieval by Result Type
+      externalDocs: 
+          description: "See all available Result Types"
+          url: "http://vocabulary.odm2.org/resulttype/"
+      parameters:
+        - name: resultType
+          in: path
+          description: Result Type (Name)
+          required: true
+          type: string 
+        - name: actionID
+          in: query
+          description: Action ID
+          required: false
+          type: integer
+        - name: samplingFeatureID
+          in: query
+          description: Sampling Feature ID
+          required: false
+          type: integer
+        - name: variableID
+          in: query
+          description: Variable ID
+          required: false
+          type: integer
+        - name: simulationID
+          in: query
+          description: Simulation ID
+          required: false
+          type: integer
+      responses:
+        "200":
+          description: 200 Response
+  /results/actionID/{actionID}/:
+      get:
+        tags:
+        - results
+        operationId: getResultsByActionID
+        summary: ODM2 results retrieval by Action ID(s)
+        parameters:
+          - name: actionID
+            in: path
+            description: Action ID(s)
+            required: true
+            type: integer
+        responses:
+          "200":
+            description: 200 Response
+  /results/samplingFeatureID/{samplingFeatureID}/:
+    get:
+      tags:
+      - results
+      operationId: getResultsBySamplingfeatureID
+      summary: ODM2 results retrieval by Sampling Feature ID(s)
+      parameters:
+        - name: samplingFeatureID
+          in: path
+          description: Sampling Feature ID(s)
+          required: true
+          type: integer 
+      responses:
+        "200":
+          description: 200 Response
+  /samplingfeatures/:
+    get:
+      tags:
+      - samplingfeatures
+      operationId: getSamplingFeatures
+      summary: All ODM2 samplingfeatures retrieval.
+      parameters:
+        - name: results
+          in: query
+          description: Get Sampling Features that has Results
+          required: false
+          type: boolean
+      produces:
+      - application/json
+      - application/yaml
+      responses:
+        "200":
+          description: 200 Response
+  /samplingfeatures/samplingFeatureID/{samplingFeatureID}/:
+    get:
+      tags:
+      - samplingfeatures
+      operationId: getSamplingFeatureBySamplingFeatureID
+      summary: ODM2 samplingfeatures retrieval by Sampling Feature ID(s)
+      parameters:
+        - name: samplingFeatureID
+          in: path
+          description: Sampling Feature ID(s)
+          required: true
+          type: string 
+        - name: results
+          in: query
+          description: Get Sampling Features that has Results
+          required: false
+          type: boolean
+      responses:
+        "200":
+          description: 200 Response
+  /samplingfeatures/samplingFeatureCode/{samplingFeatureCode}/:
+    get:
+      tags:
+      - samplingfeatures
+      operationId: getSamplingFeatureBySamplingFeatureCode
+      summary: ODM2 samplingfeatures retrieval by Sampling Feature Code(s)
+      parameters:
+        - name: samplingFeatureCode
+          in: path
+          description: Sampling Feature Code(s)
+          required: true
+          type: string 
+        - name: results
+          in: query
+          description: Get Sampling Features that has Results
+          required: false
+          type: boolean
+      responses:
+        "200":
+          description: 200 Response
+  /samplingfeatures/samplingFeatureType/{samplingFeatureType}/:
+    get:
+      tags:
+      - samplingfeatures
+      operationId: getSamplingFeatureBySamplingFeatureType
+      summary: ODM2 samplingfeatures retrieval by Sampling Feature Type
+      externalDocs: 
+          description: "See all available Sampling Feature Types"
+          url: "http://vocabulary.odm2.org/samplingfeaturetype/"
+      parameters:
+        - name: samplingFeatureType
+          in: path
+          description: Sampling Feature Type(s)
+          required: true
+          type: string 
+        - name: results
+          in: query
+          description: Get Sampling Features that has Results
+          required: false
+          type: boolean
+      responses:
+        "200":
+          description: 200 Response
+  /datasets/:
+    get:
+      tags:
+      - datasets
+      operationId: getDataSets
+      summary: All ODM2 datasets retrieval.
+      produces:
+      - application/json
+      - application/yaml
+      responses:
+        "200":
+          description: 200 Response
+  /datasets/datasetUUID/{datasetUUID}/:
+    get:
+      tags:
+      - datasets
+      operationId: getDataSetsByDataSetUUID
+      summary: ODM2 datasets retrieval by Data Set UUID(s)
+      parameters:
+        - name: datasetUUID
+          in: path
+          description: Data Set UUID(s)
+          required: true
+          type: string
+      responses:
+        "200":
+          description: 200 Response
+  /datasets/datasetCode/{datasetCode}/:
+    get:
+      tags:
+      - datasets
+      operationId: getDataSetsByDataSetCode
+      summary: ODM2 datasets retrieval by Data Set Code(s)
+      parameters:
+        - name: datasetCode
+          in: path
+          description: Data Set Code(s)
+          required: true
+          type: string
+      responses:
+        "200":
+          description: 200 Response
+  
