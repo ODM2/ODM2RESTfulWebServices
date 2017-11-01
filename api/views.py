@@ -201,6 +201,12 @@ class ResultValuesViewSet(APIView):
             'endDate': endDate
         }
 
+        if resultID:
+            get_kwargs.update({
+                'beginDate': request.query_params.get('beginDate'),
+                'endDate': request.query_params.get('endDate')
+            })
+
         res_val, res_type = get_resultvalues(**get_kwargs)
         RVSerializer = None
         if 'categorical' in res_type.lower():
