@@ -131,7 +131,7 @@ def swagger_convert():
         yaml_data = yaml.load(f)
         with open(os.path.join(settings.STATICFILES_DIRS[0], 'js', 'swagger.json'), 'w') as json_file:
             json_file.write(json.dumps(yaml_data, sort_keys=False, indent=2, separators=(',', ': ')))
-            print(json.dumps(yaml_data, sort_keys=False, indent=2, separators=(',', ': ')))
+            # print(json.dumps(yaml_data, sort_keys=False, indent=2, separators=(',', ': ')))
 
 
 def lower_keys(dct):

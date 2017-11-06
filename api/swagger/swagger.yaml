@@ -290,12 +290,12 @@ paths:
             type: integer
           - name: beginDate
             in: query
-            description: Begin Date
+            description: Begin Date 'yyyy-mm-dd hh:mm:ss'
             required: false
             type: string
           - name: endDate
             in: query
-            description: End Date
+            description: End Date 'yyyy-mm-dd hh:mm:ss'
             required: false
             type: string
         responses:

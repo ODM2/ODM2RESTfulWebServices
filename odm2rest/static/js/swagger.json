@@ -248,6 +248,43 @@
         "operationId": "getSamplingFeatureBySamplingFeatureCode"
       }
     },
+    "/resultvalues/resultID/{resultID}/": {
+      "get": {
+        "tags": [
+          "results"
+        ],
+        "summary": "ODM2 result values retrieval by Result ID(s)",
+        "responses": {
+          "200": {
+            "description": "200 Response"
+          }
+        },
+        "parameters": [
+          {
+            "required": true,
+            "type": "integer",
+            "description": "Result ID(s)",
+            "in": "path",
+            "name": "resultID"
+          },
+          {
+            "required": false,
+            "type": "string",
+            "description": "Begin Date 'yyyy-mm-dd hh:mm:ss'",
+            "in": "query",
+            "name": "beginDate"
+          },
+          {
+            "required": false,
+            "type": "string",
+            "description": "End Date 'yyyy-mm-dd hh:mm:ss'",
+            "in": "query",
+            "name": "endDate"
+          }
+        ],
+        "operationId": "getResultValuesByResultID"
+      }
+    },
     "/results/samplingFeatureID/{samplingFeatureID}/": {
       "get": {
         "tags": [
