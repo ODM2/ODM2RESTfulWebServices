@@ -14,6 +14,7 @@ ALLOWED_HOSTS = ['127.0.0.1',]
 ODM2DATABASE = {
     'engine': 'db engine',
     'address': 'localhost',
+    'port': 5432,
     'db': 'db name',
     'user': 'username',
     'password': 'mypassword'

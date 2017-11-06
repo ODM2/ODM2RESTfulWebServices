@@ -5,6 +5,8 @@ from __future__ import division
 
 from django.core.management import settings
 
+from sqlalchemy.engine.url import URL
+
 from odm2api.ODMconnection import dbconnection
 from odm2api.ODM2.services.readService import ReadODM2
 import odm2api.ODM2.models as odm2_models
@@ -25,7 +27,16 @@ from models import (
     DataSets
 )
 
-SESSION_FACTORY = dbconnection.createConnection(**settings.ODM2DATABASE)
+db_settings = {
+    'drivername': settings.ODM2DATABASE['engine'],
+    'username': settings.ODM2DATABASE['user'],
+    'password': settings.ODM2DATABASE['password'],
+    'host': settings.ODM2DATABASE['address'],
+    'port': settings.ODM2DATABASE['port'],
+    'database': settings.ODM2DATABASE['db']
+}
+
+SESSION_FACTORY = dbconnection.createConnectionFromString(str(URL(**db_settings)))
 READ = ReadODM2(SESSION_FACTORY)
 
 
