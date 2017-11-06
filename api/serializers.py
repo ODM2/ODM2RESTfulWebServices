@@ -3,11 +3,13 @@ from __future__ import print_function
 from __future__ import unicode_literals
 from __future__ import division
 
+from collections import OrderedDict
+
 from rest_framework.serializers import Serializer
 
 import odm2api.ODM2.models as odm2_mod
 
-from utils import (get_col, OrderedDict)
+from utils import (get_col, lower_keys)
 
 
 def get_sertype_dict(odm2_model):
@@ -59,8 +61,8 @@ OrganizationSerializer = type(
 # --- Affiliations Serializer ---
 Affiliations_dct = get_sertype_dict(odm2_mod.Affiliations)
 Affiliations_dct.update({
-    'Person':PeopleSerializer(),
-    'Organization':OrganizationSerializer()
+    'Person': PeopleSerializer(),
+    'Organization': OrganizationSerializer()
 })
 AffiliationSerializer = type(
     str('AffiliationSerializer'),
@@ -99,8 +101,8 @@ ActionSerializer = type(
 # --- FeatureAction Serializer ---
 FeatureAction_dct = get_sertype_dict(odm2_mod.FeatureActions)
 FeatureAction_dct.update({
-    'SamplingFeature':SamplingFeatureSerializer(),
-    'Action':ActionSerializer()
+    'SamplingFeature': SamplingFeatureSerializer(),
+    'Action': ActionSerializer()
 })
 FeatureActionSerializer = type(
     str('FeatureActionSerializer'),
@@ -149,4 +151,85 @@ DataSetSerializer = type(
     str('DataSetSerializer'),
     (Serializer,),
     DataSet_dct
+)
+
+# RESULT VALUES SERIALIZERS
+# --- CategoricalResultValues Serializer ---
+CategoricalResultValues_dct = lower_keys(get_sertype_dict(odm2_mod.CategoricalResultValues))
+CategoricalResultValuesSerializer = type(
+    str('CategoricalResultValuesSerializer'),
+    (Serializer,),
+    CategoricalResultValues_dct
+)
+
+
+# --- MeasurementResultValues Serializer ---
+MeasurementResultValues_dct = lower_keys(get_sertype_dict(odm2_mod.MeasurementResultValues))
+MeasurementResultValuesSerializer = type(
+    str('MeasurementResultValuesSerializer'),
+    (Serializer,),
+    MeasurementResultValues_dct
+)
+
+
+# --- PointCoverageResultValues Serializer ---
+PointCoverageResultValues_dct = lower_keys(get_sertype_dict(odm2_mod.PointCoverageResultValues))
+PointCoverageResultValuesSerializer = type(
+    str('PointCoverageResultValuesSerializer'),
+    (Serializer,),
+    PointCoverageResultValues_dct
+)
+
+
+# --- ProfileResultValues Serializer ---
+ProfileResultValues_dct = lower_keys(get_sertype_dict(odm2_mod.ProfileResultValues))
+ProfileResultValuesSerializer = type(
+    str('ProfileResultValuesSerializer'),
+    (Serializer,),
+    ProfileResultValues_dct
+)
+
+
+# --- SectionResults Serializer ---
+SectionResults_dct = lower_keys(get_sertype_dict(odm2_mod.SectionResults))
+SectionResultsSerializer = type(
+    str('SectionResultsSerializer'),
+    (Serializer,),
+    SectionResults_dct
+)
+
+
+# --- SpectraResultValues Serializer ---
+SpectraResultValues_dct = lower_keys(get_sertype_dict(odm2_mod.SpectraResultValues))
+SpectraResultValuesSerializer = type(
+    str('SpectraResultValuesSerializer'),
+    (Serializer,),
+    SpectraResultValues_dct
+)
+
+
+# ---TimeSeriesResultValues Serializer ---
+TimeSeriesResultValues_dct = lower_keys(get_sertype_dict(odm2_mod.TimeSeriesResultValues))
+TimeSeriesResultValuesSerializer = type(
+    str('TimeSeriesResultValuesSerializer'),
+    (Serializer,),
+    TimeSeriesResultValues_dct
+)
+
+
+# --- TrajectoryResultValues Serializer ---
+TrajectoryResultValues_dct = lower_keys(get_sertype_dict(odm2_mod.TrajectoryResultValues))
+TrajectoryResultValuesSerializer = type(
+    str('TrajectoryResultValuesSerializer'),
+    (Serializer,),
+    TrajectoryResultValues_dct
+)
+
+
+# --- TransectResultValues Serializer ---
+TransectResultValues_dct = lower_keys(get_sertype_dict(odm2_mod.TransectResultValues))
+TransectResultValuesSerializer = type(
+    str('TransectResultValuesSerializer'),
+    (Serializer,),
+    TransectResultValues_dct
 )
