@@ -57,6 +57,29 @@
         ]
       }
     },
+    "/methods/methodID/{methodID}/": {
+      "get": {
+        "tags": [
+          "methods"
+        ],
+        "summary": "ODM2 methods retrieval by Method ID(s)",
+        "responses": {
+          "200": {
+            "description": "200 Response"
+          }
+        },
+        "parameters": [
+          {
+            "required": true,
+            "type": "string",
+            "description": "Method ID(s)",
+            "in": "path",
+            "name": "methodID"
+          }
+        ],
+        "operationId": "getMethodsByMethodID"
+      }
+    },
     "/people/lastName/{lastName}/": {
       "get": {
         "tags": [
@@ -246,6 +269,52 @@
           }
         ],
         "operationId": "getSamplingFeatureBySamplingFeatureCode"
+      }
+    },
+    "/methods/methodType/{methodType}/": {
+      "get": {
+        "tags": [
+          "methods"
+        ],
+        "summary": "ODM2 methods retrieval by Method Type(s)",
+        "responses": {
+          "200": {
+            "description": "200 Response"
+          }
+        },
+        "parameters": [
+          {
+            "required": true,
+            "type": "string",
+            "description": "Method Type",
+            "in": "path",
+            "name": "methodType"
+          }
+        ],
+        "operationId": "getMethodsByMethodType"
+      }
+    },
+    "/methods/methodCode/{methodCode}/": {
+      "get": {
+        "tags": [
+          "methods"
+        ],
+        "summary": "ODM2 methods retrieval by Method Code(s)",
+        "responses": {
+          "200": {
+            "description": "200 Response"
+          }
+        },
+        "parameters": [
+          {
+            "required": true,
+            "type": "string",
+            "description": "Method Code(s)",
+            "in": "path",
+            "name": "methodCode"
+          }
+        ],
+        "operationId": "getMethodsByMethodCode"
       }
     },
     "/resultvalues/resultID/{resultID}/": {
@@ -471,6 +540,24 @@
         "operationId": "getResultsByActionID"
       }
     },
+    "/methods/": {
+      "get": {
+        "operationId": "getMethods",
+        "summary": "All ODM2 methods retrieval",
+        "responses": {
+          "200": {
+            "description": "200 Response"
+          }
+        },
+        "tags": [
+          "methods"
+        ],
+        "produces": [
+          "application/json",
+          "application/yaml"
+        ]
+      }
+    },
     "/affiliations/firstName/{firstName}/": {
       "get": {
         "tags": [
@@ -630,6 +717,10 @@
     {
       "name": "datasets",
       "description": "Data Sets in database"
+    },
+    {
+      "name": "methods",
+      "description": "Methods in database"
     }
   ],
   "basePath": "/v1",

@@ -98,6 +98,18 @@ ActionSerializer = type(
 )
 
 
+# --- Method Serializer ---
+Method_dct = get_sertype_dict(odm2_mod.Methods)
+Method_dct.update({
+    'Organization': OrganizationSerializer()
+})
+MethodSerializer = type(
+    str('MethodSerializer'),
+    (Serializer,),
+    Method_dct
+)
+
+
 # --- FeatureAction Serializer ---
 FeatureAction_dct = get_sertype_dict(odm2_mod.FeatureActions)
 FeatureAction_dct.update({
