@@ -19,6 +19,8 @@ tags:
     description: Sampling Features in database
   - name: datasets
     description: Data Sets in database
+  - name: methods
+    description: Methods in database
 schemes:
   - http
 consumes:
@@ -424,4 +426,60 @@ paths:
       responses:
         "200":
           description: 200 Response
-  
+  /methods/:
+    get:
+      tags:
+      - methods
+      operationId: getMethods
+      summary: All ODM2 methods retrieval
+      produces:
+      - application/json
+      - application/yaml
+      responses:
+        "200":
+          description: 200 Response
+  /methods/methodCode/{methodCode}/:
+    get:
+      tags:
+      - methods
+      operationId: getMethodsByMethodCode
+      summary: ODM2 methods retrieval by Method Code(s)
+      parameters:
+        - name: methodCode
+          in: path
+          description: Method Code(s)
+          required: true
+          type: string
+      responses:
+        "200":
+          description: 200 Response
+  /methods/methodID/{methodID}/:
+    get:
+      tags:
+      - methods
+      operationId: getMethodsByMethodID
+      summary: ODM2 methods retrieval by Method ID(s)
+      parameters:
+        - name: methodID
+          in: path
+          description: Method ID(s)
+          required: true
+          type: string
+      responses:
+        "200":
+          description: 200 Response
+  /methods/methodType/{methodType}/:
+    get:
+      tags:
+      - methods
+      operationId: getMethodsByMethodType
+      summary: ODM2 methods retrieval by Method Type(s)
+      parameters:
+        - name: methodType
+          in: path
+          description: Method Type
+          required: true
+          type: string
+      responses:
+        "200":
+          description: 200 Response
