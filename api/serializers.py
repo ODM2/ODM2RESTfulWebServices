@@ -153,6 +153,19 @@ DataSetSerializer = type(
     DataSet_dct
 )
 
+# --- DataSetsResults Serializer ---
+DataSetsResults_dct = get_sertype_dict(odm2_mod.DataSetsResults)
+DataSetsResults_dct.update({
+    'DataSet': DataSetSerializer(),
+    'Result': ResultSerializer()
+})
+
+DataSetsResultsSerializer = type(
+    str('DataSetsResultsSerializer'),
+    (Serializer,),
+    DataSetsResults_dct
+)
+
 # RESULT VALUES SERIALIZERS
 # --- CategoricalResultValues Serializer ---
 CategoricalResultValues_dct = lower_keys(get_sertype_dict(odm2_mod.CategoricalResultValues))

@@ -6,3 +6,6 @@
 .DS_Store
 package.json
 node_modules
+development.py
+odm2rest/settings/development.py
+

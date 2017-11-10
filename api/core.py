@@ -24,7 +24,8 @@ from models import (
     ProcessingLevel,
     TaxonomicClassifier,
     SamplingFeatures,
-    DataSets
+    DataSets,
+    DataSetsResults
 )
 
 db_settings = {
@@ -199,6 +200,68 @@ def get_samplingfeatures(**kwargs):
         )
 
     return sf_list
+
+
+def get_samplingfeaturedatasets(**kwargs):
+    db_check()
+    ids = None
+    codes = None
+    uuids = None
+    if kwargs.get('samplingFeatureID'):
+        ids = [int(i) for i in kwargs.get('samplingFeatureID').split(',')]
+    if kwargs.get('samplingFeatureUUID'):
+        uuids = kwargs.get('samplingFeatureUUID').split(',')
+    if kwargs.get('samplingFeatureCode'):
+        codes = kwargs.get('samplingFeatureCode').split(',')
+
+
+    ds_type = kwargs.get('dataSetType')
+
+    dataSetResults = READ.getSamplingFeatureDatasets(ids=ids,
+                                                 codes=codes,
+                                                 uuids=uuids,
+                                                 dstype=ds_type
+                                                 )
+
+    dsr_list = []
+    for dsr in dataSetResults:
+        dsr_dct = get_vals(dsr)
+
+        ds_dct = get_vals(dsr.DataSetObj)
+
+        res_dct = get_vals(dsr.ResultObj)
+
+        feat_act_dct = get_vals(dsr.ResultObj.FeatureActionObj)
+        feat_act_dct.update({
+            'SamplingFeature': get_vals(dsr.ResultObj.FeatureActionObj.SamplingFeatureObj),
+            'Action': get_vals(dsr.ResultObj.FeatureActionObj.ActionObj)
+        })
+        feat_act = FeatureAction(feat_act_dct)
+        # ------------------------
+
+        res_dct.update({
+            'FeatureAction': feat_act,
+            'ProcessingLevel': get_vals(dsr.ResultObj.ProcessingLevelObj),
+            'TaxonomicClassifier': None,
+            'Unit': get_vals(dsr.ResultObj.UnitsObj),
+            'Variable': get_vals(dsr.ResultObj.VariableObj)
+        })
+
+        if dsr.ResultObj.TaxonomicClassifierObj:
+            res_dct.update({
+                'TaxonomicClassifier': get_vals(dsr.ResultObj.TaxonomicClassifierObj)
+            })
+
+        dsr_dct.update({
+            'Result': res_dct,
+            'DataSet': ds_dct
+        })
+
+        dsr_list.append(
+            DataSetsResults(dsr_dct)
+        )
+
+    return dsr_list
 
 
 def get_datasets(**kwargs):

@@ -15,7 +15,8 @@ from views import (
     ResultsViewSet,
     SamplingFeaturesViewSet,
     DataSetsViewSet,
-    ResultValuesViewSet
+    ResultValuesViewSet,
+    SamplingFeaturesDataSetViewSet
 )
 
 urlpatterns = [
@@ -54,6 +55,13 @@ urlpatterns = [
         SamplingFeaturesViewSet.as_view(), name='samplingfeatures-detail'),
     url(r'^samplingfeatures/samplingFeatureType/(?P<samplingFeatureType>.+)/$',
         SamplingFeaturesViewSet.as_view(), name='samplingfeatures-detail'),
+    # Sampling Feature Datasets
+    url(r'^samplingfeaturedatasets/samplingFeatureID/(?P<samplingFeatureID>.+)/$',
+        SamplingFeaturesDataSetViewSet.as_view(), name='samplingfeaturedatasets-detail'),
+    url(r'^samplingfeaturedatasets/samplingFeatureUUID/(?P<samplingFeatureUUID>.+)/$',
+        SamplingFeaturesDataSetViewSet.as_view(), name='samplingfeaturedatasets-detail'),
+    url(r'^samplingfeaturedatasets/samplingFeatureCode/(?P<samplingFeatureCode>.+)/$',
+        SamplingFeaturesDataSetViewSet.as_view(), name='samplingfeaturedatasets-detail'),
     # DataSets
     url(r'^datasets/$', DataSetsViewSet.as_view(), name='datasets-list'),
     url(r'^datasets/datasetUUID/(?P<datasetUUID>.+)/$', DataSetsViewSet.as_view(),

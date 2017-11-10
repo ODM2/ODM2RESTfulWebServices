@@ -15,7 +15,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.schemas import SchemaGenerator
 from rest_framework.views import APIView
-from rest_framework_swagger import renderers
+
 
 from core import (
     get_affiliations,
@@ -23,7 +23,8 @@ from core import (
     get_results,
     get_samplingfeatures,
     get_datasets,
-    get_resultvalues
+    get_resultvalues,
+    get_samplingfeaturedatasets
 )
 
 from serializers import (
@@ -40,7 +41,8 @@ from serializers import (
     SpectraResultValuesSerializer,
     TimeSeriesResultValuesSerializer,
     TrajectoryResultValuesSerializer,
-    TransectResultValuesSerializer
+    TransectResultValuesSerializer,
+    DataSetsResultsSerializer
 )
 
 
@@ -165,6 +167,37 @@ class SamplingFeaturesViewSet(APIView):
 
         if len(sfs) == 1:
             serialized = SamplingFeatureSerializer(sfs[0])
+
+        return Response(serialized.data)
+
+
+class SamplingFeaturesDataSetViewSet(APIView):
+
+    renderer_classes = (JSONRenderer, YAMLRenderer, CSVRenderer)
+
+    def get(self, request, samplingFeatureID=None,
+            samplingFeatureCode=None, samplingFeatureUUID=None,
+            dataSetType=None,):
+
+        get_kwargs = {
+            'samplingFeatureID': samplingFeatureID,
+            'samplingFeatureCode': samplingFeatureCode,
+            'samplingFeatureUUID': samplingFeatureUUID,
+            'dataSetType': dataSetType,
+            'results': False
+        }
+
+        results = request.query_params.get('results')
+        if results:
+            get_kwargs.update({
+                'results': results
+            })
+
+        sfs = get_samplingfeaturedatasets(**get_kwargs)
+        serialized = DataSetsResultsSerializer(sfs, many=True)
+
+        if len(sfs) == 1:
+            serialized = DataSetsResultsSerializer(sfs[0])
 
         return Response(serialized.data)
 
