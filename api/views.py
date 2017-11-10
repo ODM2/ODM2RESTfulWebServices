@@ -58,20 +58,11 @@ class AffiliationsViewSet(APIView):
 
     def get(self, request, affiliationID=None, firstName=None, lastName=None, organizationCode=None, format=None):
         get_kwargs = {
-            'affiliationID': affiliationID,
-            'firstName': firstName,
-            'lastName': lastName,
-            'organizationCode': organizationCode
+            'affiliationID': request.query_params.get('affiliationID'),
+            'firstName': request.query_params.get('firstName'),
+            'lastName': request.query_params.get('lastName'),
+            'organizationCode': request.query_params.get('organizationCode')
         }
-
-        # Query parameter for lastName available when querying with
-        # first name and organization code.
-        if firstName or organizationCode:
-            last_name = request.query_params.get('lastName')
-            if last_name:
-                get_kwargs.update({
-                    'lastName': last_name
-                })
 
         affiliations = get_affiliations(**get_kwargs)
         serialized = AffiliationSerializer(affiliations, many=True)
