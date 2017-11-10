@@ -23,13 +23,7 @@ from views import (
 urlpatterns = [
     url(r'^docs/$', TemplateView.as_view(template_name='swagger.html')),
     # Affiliations
-    url(r'^affiliations/$', AffiliationsViewSet.as_view(), name='affiliations-list'),
-    url(r'^affiliations/affiliationID/(?P<affiliationID>.+)/$',
-        AffiliationsViewSet.as_view(), name='affiliations-detail'),
-    url(r'^affiliations/(firstName/(?P<firstName>[^/]+)/)?(lastName/(?P<lastName>[^/]+)/)?$',
-        AffiliationsViewSet.as_view(), name='affiliations-detail'),
-    url(r'^affiliations/organizationCode/(?P<organizationCode>.+)/$',
-        AffiliationsViewSet.as_view(), name='affiliations-detail'),
+    url(r'^affiliations$', AffiliationsViewSet.as_view(), name='affiliations-list'),
     # People
     url(r'^people/$', PeopleViewSet.as_view(), name='people-list'),
     url(r'^people/peopleID/(?P<peopleID>.+)/$', PeopleViewSet.as_view(), name='people-detail'),
