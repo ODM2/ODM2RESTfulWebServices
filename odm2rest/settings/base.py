@@ -162,7 +162,12 @@ SWAGGER_SETTINGS = {
     'APIS_SORTER': 'alpha',
     'JSON_EDITOR': True,
     'SHOW_REQUEST_HEADERS': True,
-    'SUPPORTED_SUBMIT_METHODS': ['get']
+    'SUPPORTED_SUBMIT_METHODS': ['get'],
+
+    # Application base domain.
+    # If IP Address also include port
+    # else only need domain name
+    'BASE_DOMAIN': '127.0.0.1:8000'
 }
 
 # SQLAlchemy settings
