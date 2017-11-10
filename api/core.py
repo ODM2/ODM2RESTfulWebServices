@@ -25,7 +25,7 @@ from models import (
     TaxonomicClassifier,
     SamplingFeatures,
     DataSets,
-    DataSetsResults
+    DataSetsResults,
     Methods
 )
 

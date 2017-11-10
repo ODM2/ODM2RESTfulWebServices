@@ -16,7 +16,7 @@ from views import (
     SamplingFeaturesViewSet,
     DataSetsViewSet,
     ResultValuesViewSet,
-    SamplingFeaturesDataSetViewSet
+    SamplingFeaturesDataSetViewSet,
     MethodsViewSet
 )
 

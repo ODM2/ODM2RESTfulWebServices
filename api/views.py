@@ -24,7 +24,7 @@ from core import (
     get_samplingfeatures,
     get_datasets,
     get_resultvalues,
-    get_samplingfeaturedatasets
+    get_samplingfeaturedatasets,
     get_methods
 )
 
@@ -43,7 +43,7 @@ from serializers import (
     TimeSeriesResultValuesSerializer,
     TrajectoryResultValuesSerializer,
     TransectResultValuesSerializer,
-    DataSetsResultsSerializer
+    DataSetsResultsSerializer,
     SitesSerializer,
     SpecimensSerializer,
     MethodSerializer
