@@ -56,7 +56,7 @@ class AffiliationsViewSet(APIView):
     renderer_classes = (JSONRenderer, YAMLRenderer, CSVRenderer)
     parser_classes =  (JSONParser, YAMLParser,)
 
-    def get(self, request, affiliationID=None, firstName=None, lastName=None, organizationCode=None, format=None):
+    def get(self, request, format=None):
         get_kwargs = {
             'affiliationID': request.query_params.get('affiliationID'),
             'firstName': request.query_params.get('firstName'),
