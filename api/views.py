@@ -180,9 +180,9 @@ class SamplingFeaturesDataSetViewSet(APIView):
             dataSetType=None,):
 
         get_kwargs = {
-            'samplingFeatureID': samplingFeatureID,
-            'samplingFeatureCode': samplingFeatureCode,
-            'samplingFeatureUUID': samplingFeatureUUID,
+            'samplingFeatureID': request.GET.get('samplingFeatureID'),
+            'samplingFeatureCode': request.GET.get('samplingFeatureCode'),
+            'samplingFeatureUUID': request.GET.get('samplingFeatureUUID'),
             'dataSetType': dataSetType,
             'results': False
         }

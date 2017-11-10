@@ -56,7 +56,7 @@ urlpatterns = [
     url(r'^samplingfeatures/samplingFeatureType/(?P<samplingFeatureType>.+)/$',
         SamplingFeaturesViewSet.as_view(), name='samplingfeatures-detail'),
     # Sampling Feature Datasets
-    url(r'^samplingfeaturedatasets/samplingFeatureID/(?P<samplingFeatureID>.+)/$',
+    url(r'^samplingfeaturedatasets/',
         SamplingFeaturesDataSetViewSet.as_view(), name='samplingfeaturedatasets-detail'),
     url(r'^samplingfeaturedatasets/samplingFeatureUUID/(?P<samplingFeatureUUID>.+)/$',
         SamplingFeaturesDataSetViewSet.as_view(), name='samplingfeaturedatasets-detail'),
