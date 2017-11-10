@@ -102,29 +102,19 @@ class ResultsViewSet(APIView):
 
     renderer_classes = (JSONRenderer, YAMLRenderer, CSVRenderer)
 
-    def get(self, request, resultID=None,
-            resultUUID=None, resultType=None,
-            actionID=None, samplingFeatureID=None,
-            variableID=None, simulationID=None, format=None):
+    def get(self, request, format=None):
 
         get_kwargs = {
-            'resultID': resultID,
-            'resultUUID': resultUUID,
-            'resultType': resultType,
-            'actionID': actionID,
-            'samplingFeatureID': samplingFeatureID,
-            'variableID': variableID,
-            'simulationID': simulationID
+            'resultID': request.query_params.get('resultID'),
+            'resultUUID': request.query_params.get('resultUUID'),
+            'resultType': request.query_params.get('resultType'),
+            'actionID': request.query_params.get('actionID'),
+            'samplingFeatureID': request.query_params.get('samplingFeatureID'),
+            'variableID': request.query_params.get('variableID'),
+            'simulationID': request.query_params.get('simulationID'),
+            'siteID': request.query_params.get('siteID')
         }
-        if resultType:
-            get_kwargs.update({
-                'actionID': request.query_params.get('actionID'),
-                'samplingFeatureID': request.query_params.get('samplingFeatureID'),
-                'variableID': request.query_params.get('variableID'),
-                'simulationID': request.query_params.get('simulationID')
-            })
 
-        print(get_kwargs)
         results = get_results(**get_kwargs)
         serialized = ResultSerializer(results, many=True)
 
