@@ -42,6 +42,8 @@ from serializers import (
     TimeSeriesResultValuesSerializer,
     TrajectoryResultValuesSerializer,
     TransectResultValuesSerializer,
+    SitesSerializer,
+    SpecimensSerializer,
     MethodSerializer
 )
 
@@ -162,13 +164,23 @@ class SamplingFeaturesViewSet(APIView):
                 'results': results
             })
 
-        sfs = get_samplingfeatures(**get_kwargs)
-        serialized = SamplingFeatureSerializer(sfs, many=True)
+        sf_serialized, sp_serialized, si_serialized = [], [], []
+        sf_list, sp_list, si_list = get_samplingfeatures(**get_kwargs)
 
-        if len(sfs) == 1:
-            serialized = SamplingFeatureSerializer(sfs[0])
+        if sf_list:
+            sf_serialized = SamplingFeatureSerializer(sf_list, many=True).data
+        if sp_list:
+            sp_serialized = SpecimensSerializer(sp_list, many=True).data
+        if si_list:
+            si_serialized = SitesSerializer(si_list, many=True).data
 
-        return Response(serialized.data)
+        sf_all = sf_serialized + sp_serialized + si_serialized
+
+
+        if len(sf_all) == 1:
+            sf_all = sf_all[0]
+
+        return Response(sf_all)
 
 
 class DataSetsViewSet(APIView):
