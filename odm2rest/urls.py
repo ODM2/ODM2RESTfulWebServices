@@ -15,10 +15,13 @@ Including another URLconf
 """
 from django.conf.urls import (include, url)
 from django.contrib import admin
+from django.views.generic import RedirectView
 
-
+from api.utils import swagger_convert
+swagger_convert()
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
-    url(r'^v1/', include('api.urls', namespace='v1'))
+    url(r'^v1/', include('api.urls', namespace='v1')),
+    url(r'^', RedirectView.as_view(url='/v1/docs/', pattern_name='docs', permanent=False))
 ]
