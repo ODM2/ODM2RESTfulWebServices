@@ -9,36 +9,6 @@
     }
   },
   "paths": {
-    "/affiliations/organizationCode/{organizationCode}/": {
-      "get": {
-        "tags": [
-          "affiliations"
-        ],
-        "summary": "ODM2 affiliations retrieval by Organization Code",
-        "responses": {
-          "200": {
-            "description": "200 Response"
-          }
-        },
-        "parameters": [
-          {
-            "required": true,
-            "type": "string",
-            "description": "Organization Code",
-            "in": "path",
-            "name": "organizationCode"
-          },
-          {
-            "required": false,
-            "type": "string",
-            "description": "Person Last Name",
-            "in": "query",
-            "name": "lastName"
-          }
-        ],
-        "operationId": "getAffiliationsByOrganizationCode"
-      }
-    },
     "/results/": {
       "get": {
         "operationId": "getResultsVersion1",
@@ -271,12 +241,12 @@
         "operationId": "getSamplingFeatureBySamplingFeatureCode"
       }
     },
-    "/methods/methodType/{methodType}/": {
+    "/affiliations": {
       "get": {
         "tags": [
-          "methods"
+          "affiliations"
         ],
-        "summary": "ODM2 methods retrieval by Method Type(s)",
+        "summary": "ODM2 affiliations retrieval by Affiliation ID(s)",
         "responses": {
           "200": {
             "description": "200 Response"
@@ -284,37 +254,35 @@
         },
         "parameters": [
           {
-            "required": true,
+            "required": false,
             "type": "string",
-            "description": "Method Type",
-            "in": "path",
-            "name": "methodType"
-          }
-        ],
-        "operationId": "getMethodsByMethodType"
-      }
-    },
-    "/methods/methodCode/{methodCode}/": {
-      "get": {
-        "tags": [
-          "methods"
-        ],
-        "summary": "ODM2 methods retrieval by Method Code(s)",
-        "responses": {
-          "200": {
-            "description": "200 Response"
-          }
-        },
-        "parameters": [
+            "description": "Affiliation ID(s)",
+            "in": "query",
+            "name": "affiliationID"
+          },
           {
-            "required": true,
+            "required": false,
             "type": "string",
-            "description": "Method Code(s)",
-            "in": "path",
-            "name": "methodCode"
+            "description": "Person First Name",
+            "in": "query",
+            "name": "firstName"
+          },
+          {
+            "required": false,
+            "type": "string",
+            "description": "Person Last Name",
+            "in": "query",
+            "name": "lastName"
+          },
+          {
+            "required": false,
+            "type": "string",
+            "description": "Organization Code",
+            "in": "query",
+            "name": "organizationCode"
           }
         ],
-        "operationId": "getMethodsByMethodCode"
+        "operationId": "getAffiliations"
       }
     },
     "/resultvalues/resultID/{resultID}/": {
@@ -400,12 +368,12 @@
         "operationId": "getResultsByResultUUID"
       }
     },
-    "/affiliations/affiliationID/{affiliationID}/": {
+    "/methods/methodCode/{methodCode}/": {
       "get": {
         "tags": [
-          "affiliations"
+          "methods"
         ],
-        "summary": "ODM2 affiliations retrieval by Affiliation ID(s)",
+        "summary": "ODM2 methods retrieval by Method Code(s)",
         "responses": {
           "200": {
             "description": "200 Response"
@@ -415,12 +383,12 @@
           {
             "required": true,
             "type": "string",
-            "description": "Affiliation ID(s)",
+            "description": "Method Code(s)",
             "in": "path",
-            "name": "affiliationID"
+            "name": "methodCode"
           }
         ],
-        "operationId": "getAffiliationsByAffiliationID"
+        "operationId": "getMethodsByMethodCode"
       }
     },
     "/datasets/datasetCode/{datasetCode}/": {
@@ -480,41 +448,22 @@
         "summary": "ODM2 samplingfeatures retrieval by Sampling Feature Type"
       }
     },
-    "/affiliations/lastName/{lastName}/": {
+    "/methods/": {
       "get": {
-        "tags": [
-          "affiliations"
-        ],
-        "summary": "ODM2 affiliations retrieval by Last Name",
-        "responses": {
-          "200": {
-            "description": "200 Response"
-          }
-        },
-        "parameters": [
-          {
-            "required": true,
-            "type": "string",
-            "description": "Person Last Name",
-            "in": "path",
-            "name": "lastName"
-          }
-        ],
-        "operationId": "getAffiliationsByLastName"
-      }
-    },
-    "/affiliations/": {
-      "get": {
-        "summary": "All ODM2 affiliations retrieval.",
+        "operationId": "getMethods",
+        "summary": "All ODM2 methods retrieval",
         "responses": {
           "200": {
             "description": "200 Response"
           }
         },
         "tags": [
-          "affiliations"
+          "methods"
         ],
-        "operationId": "getAffiliationsVersion1"
+        "produces": [
+          "application/json",
+          "application/yaml"
+        ]
       }
     },
     "/results/actionID/{actionID}/": {
@@ -540,30 +489,12 @@
         "operationId": "getResultsByActionID"
       }
     },
-    "/methods/": {
+    "/methods/methodType/{methodType}/": {
       "get": {
-        "operationId": "getMethods",
-        "summary": "All ODM2 methods retrieval",
-        "responses": {
-          "200": {
-            "description": "200 Response"
-          }
-        },
         "tags": [
           "methods"
         ],
-        "produces": [
-          "application/json",
-          "application/yaml"
-        ]
-      }
-    },
-    "/affiliations/firstName/{firstName}/": {
-      "get": {
-        "tags": [
-          "affiliations"
-        ],
-        "summary": "ODM2 affiliations retrieval by First Name",
+        "summary": "ODM2 methods retrieval by Method Type(s)",
         "responses": {
           "200": {
             "description": "200 Response"
@@ -573,19 +504,12 @@
           {
             "required": true,
             "type": "string",
-            "description": "Person First Name",
+            "description": "Method Type",
             "in": "path",
-            "name": "firstName"
-          },
-          {
-            "required": false,
-            "type": "string",
-            "description": "Person Last Name",
-            "in": "query",
-            "name": "lastName"
+            "name": "methodType"
           }
         ],
-        "operationId": "getAffiliationsByFirstName"
+        "operationId": "getMethodsByMethodType"
       }
     },
     "/datasets/": {
