@@ -138,7 +138,8 @@ paths:
           type: string
         - name: resultType
           in: query
-          description: Result Type
+          description: Result Type (Name). <br>
+                       See all available Result Types [here](http://vocabulary.odm2.org/resulttype/).
           required: false
           type: integer
         - name: actionID
