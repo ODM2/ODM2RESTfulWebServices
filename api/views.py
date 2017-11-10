@@ -23,7 +23,8 @@ from core import (
     get_results,
     get_samplingfeatures,
     get_datasets,
-    get_resultvalues
+    get_resultvalues,
+    get_methods
 )
 
 from serializers import (
@@ -42,7 +43,8 @@ from serializers import (
     TrajectoryResultValuesSerializer,
     TransectResultValuesSerializer,
     SitesSerializer,
-    SpecimensSerializer
+    SpecimensSerializer,
+    MethodSerializer
 )
 
 
@@ -245,3 +247,24 @@ class ResultValuesViewSet(APIView):
             serialized = RVSerializer(res_val[0])
 
         return Response(serialized.data)
+
+
+class MethodsViewSet(APIView):
+    renderer_classes = (JSONRenderer, YAMLRenderer, CSVRenderer)
+
+    def get(self, request, methodID=None, methodCode=None, methodType=None, format=None):
+
+        get_kwargs = {
+            'methodID': methodID,
+            'methodCode': methodCode,
+            'methodType': methodType
+        }
+
+        methods = get_methods(**get_kwargs)
+        serialized = MethodSerializer(methods, many=True)
+
+        if len(methods) == 1:
+            serialized = MethodSerializer(methods[0])
+
+        return Response(serialized.data)
+
