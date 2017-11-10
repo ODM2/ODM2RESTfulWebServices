@@ -26,6 +26,7 @@ from models import (
     SamplingFeatures,
     DataSets,
     DataSetsResults
+    Methods
 )
 
 db_settings = {
@@ -193,13 +194,24 @@ def get_samplingfeatures(**kwargs):
                                                  results=res)
 
     sf_list = []
+    sp_list = []
+    si_list = []
     for sf in sampling_features:
         sf_dct = get_vals(sf)
-        sf_list.append(
-            SamplingFeatures(sf_dct)
-        )
+        if sf.SamplingFeatureTypeCV == 'Site':
+            si_list.append(
+                SamplingFeatures(sf_dct)
+            )
+        elif sf.SamplingFeatureTypeCV == 'Specimen':
+            sp_list.append(
+                SamplingFeatures(sf_dct)
+            )
+        else:
+            sf_list.append(
+                SamplingFeatures(sf_dct)
+            )
 
-    return sf_list
+    return sf_list, sp_list, si_list
 
 
 def get_samplingfeaturedatasets(**kwargs):
@@ -304,3 +316,28 @@ def get_resultvalues(**kwargs):
 
     return [r.to_dict() for idx, r in result_values.iterrows()], res_type
 
+
+def get_methods(**kwargs):
+    ids = kwargs.get('methodID')
+    codes = kwargs.get('methodCode')
+    mtype = kwargs.get('methodType')
+
+    if ids:
+        ids = [int(i) for i in ids.split(',')]
+    if codes:
+        codes = codes.split(',')
+
+    methods = READ.getMethods(ids=ids,
+                              codes=codes,
+                              type=mtype)
+    m_list = []
+    for m in methods:
+        m_dct = get_vals(m)
+        m_dct.update({
+            'Organization': get_vals(m.OrganizationObj)
+        })
+        m_list.append(
+            Methods(m_dct)
+        )
+
+    return m_list

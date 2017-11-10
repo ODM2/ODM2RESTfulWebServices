@@ -10,6 +10,11 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['127.0.0.1',]
 
+# Application base domain.
+# If IP Address also include port
+# else only need domain name
+SWAGGER_SETTINGS['BASE_DOMAIN'] = '127.0.0.1:8000'
+
 # SQLAlchemy settings
 ODM2DATABASE = {
     'engine': 'db engine',

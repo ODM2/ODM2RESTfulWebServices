@@ -25,6 +25,7 @@ from core import (
     get_datasets,
     get_resultvalues,
     get_samplingfeaturedatasets
+    get_methods
 )
 
 from serializers import (
@@ -43,6 +44,10 @@ from serializers import (
     TrajectoryResultValuesSerializer,
     TransectResultValuesSerializer,
     DataSetsResultsSerializer
+    SitesSerializer,
+    SpecimensSerializer,
+    MethodSerializer
+
 )
 
 
@@ -162,13 +167,23 @@ class SamplingFeaturesViewSet(APIView):
                 'results': results
             })
 
-        sfs = get_samplingfeatures(**get_kwargs)
-        serialized = SamplingFeatureSerializer(sfs, many=True)
+        sf_serialized, sp_serialized, si_serialized = [], [], []
+        sf_list, sp_list, si_list = get_samplingfeatures(**get_kwargs)
 
-        if len(sfs) == 1:
-            serialized = SamplingFeatureSerializer(sfs[0])
+        if sf_list:
+            sf_serialized = SamplingFeatureSerializer(sf_list, many=True).data
+        if sp_list:
+            sp_serialized = SpecimensSerializer(sp_list, many=True).data
+        if si_list:
+            si_serialized = SitesSerializer(si_list, many=True).data
 
-        return Response(serialized.data)
+        sf_all = sf_serialized + sp_serialized + si_serialized
+
+
+        if len(sf_all) == 1:
+            sf_all = sf_all[0]
+
+        return Response(sf_all)
 
 
 class SamplingFeaturesDataSetViewSet(APIView):
@@ -266,3 +281,24 @@ class ResultValuesViewSet(APIView):
             serialized = RVSerializer(res_val[0])
 
         return Response(serialized.data)
+
+
+class MethodsViewSet(APIView):
+    renderer_classes = (JSONRenderer, YAMLRenderer, CSVRenderer)
+
+    def get(self, request, methodID=None, methodCode=None, methodType=None, format=None):
+
+        get_kwargs = {
+            'methodID': methodID,
+            'methodCode': methodCode,
+            'methodType': methodType
+        }
+
+        methods = get_methods(**get_kwargs)
+        serialized = MethodSerializer(methods, many=True)
+
+        if len(methods) == 1:
+            serialized = MethodSerializer(methods[0])
+
+        return Response(serialized.data)
+
