@@ -192,13 +192,24 @@ def get_samplingfeatures(**kwargs):
                                                  results=res)
 
     sf_list = []
+    sp_list = []
+    si_list = []
     for sf in sampling_features:
         sf_dct = get_vals(sf)
-        sf_list.append(
-            SamplingFeatures(sf_dct)
-        )
+        if sf.SamplingFeatureTypeCV == 'Site':
+            si_list.append(
+                SamplingFeatures(sf_dct)
+            )
+        elif sf.SamplingFeatureTypeCV == 'Specimen':
+            sp_list.append(
+                SamplingFeatures(sf_dct)
+            )
+        else:
+            sf_list.append(
+                SamplingFeatures(sf_dct)
+            )
 
-    return sf_list
+    return sf_list, sp_list, si_list
 
 
 def get_datasets(**kwargs):
