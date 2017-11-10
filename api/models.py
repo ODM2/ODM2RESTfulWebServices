@@ -53,6 +53,8 @@ class Result(BASEMODEL):
 class DataSets(BASEMODEL):
     pass
 
-
 class DataSetsResults(BASEMODEL):
+    pass
+  
+class Methods(BASEMODEL):
     pass

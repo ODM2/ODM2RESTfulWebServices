@@ -40,6 +40,25 @@ SamplingFeatureSerializer = type(
     SamplingFeatures_dct
 )
 
+
+# --- Specimens Serializer ---
+Specimens_dct = get_sertype_dict(odm2_mod.Specimens)
+SpecimensSerializer = type(
+    str('SpecimensSerializer'),
+    (Serializer,),
+    Specimens_dct
+)
+
+
+# --- Sites Serializer ---
+Sites_dct = get_sertype_dict(odm2_mod.Sites)
+SitesSerializer = type(
+    str('SitesSerializer'),
+    (Serializer,),
+    Sites_dct
+)
+
+
 # --- People Serializer ---
 People_dct = get_sertype_dict(odm2_mod.People)
 PeopleSerializer = type(
@@ -95,6 +114,18 @@ ActionSerializer = type(
     str('ActionSerializer'),
     (Serializer,),
     Action_dct
+)
+
+
+# --- Method Serializer ---
+Method_dct = get_sertype_dict(odm2_mod.Methods)
+Method_dct.update({
+    'Organization': OrganizationSerializer()
+})
+MethodSerializer = type(
+    str('MethodSerializer'),
+    (Serializer,),
+    Method_dct
 )
 
 
