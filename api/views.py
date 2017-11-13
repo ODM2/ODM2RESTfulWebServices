@@ -182,21 +182,19 @@ class ResultValuesViewSet(APIView):
 
     renderer_classes = (JSONRenderer, YAMLRenderer, CSVRenderer)
 
-    def get(self, request, resultID=None, beginDate=None, endDate=None, format=None):
+    def get(self, request, format=None):
 
         get_kwargs = {
-            'resultID': resultID,
-            'beginDate': beginDate,
-            'endDate': endDate
+            'resultID': request.query_params.get('resultID'),
+            'beginDate': request.query_params.get('beginDate'),
+            'endDate': request.query_params.get('endDate')
         }
 
-        if resultID:
-            get_kwargs.update({
-                'beginDate': request.query_params.get('beginDate'),
-                'endDate': request.query_params.get('endDate')
-            })
+        if get_kwargs['resultID']:
+            res_val, res_type = get_resultvalues(**get_kwargs)
+        else:
+            raise Exception('Must enter resultID')
 
-        res_val, res_type = get_resultvalues(**get_kwargs)
         RVSerializer = None
         if 'categorical' in res_type.lower():
             RVSerializer = CategoricalResultValuesSerializer
