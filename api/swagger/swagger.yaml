@@ -161,6 +161,24 @@ paths:
         responses:
           "200":
             description: 200 Response
+  /samplingfeaturedatasets/:
+    get:
+      tags:
+      - samplingfeaturedatasets
+      operationId: getSamplingFeatureDatasets
+      summary: Get ODM2 Datasets for given set of SamplingFeatures
+      parameters:
+        - name: samplingFeatureID
+          description: Get SamplingFeatureDatasets associated with SamplingFeature ID
+          required: false
+          type: string
+        - name: SamplingFeatureCode
+          description: Get SamplingFeatureDatasets associated with SamplingFeature Code
+          required: false
+          type: string
+      responses:
+        "200":
+          description: 200 Response
   /samplingfeatures:
     get:
       tags:
