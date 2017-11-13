@@ -162,11 +162,11 @@ class DataSetsViewSet(APIView):
 
     renderer_classes = (JSONRenderer, YAMLRenderer, CSVRenderer)
 
-    def get(self, request, datasetUUID=None, datasetCode=None, format=None):
+    def get(self, request, format=None):
 
         get_kwargs = {
-            'datasetCode': datasetCode,
-            'datasetUUID': datasetUUID,
+            'datasetCode': request.query_params.get('datasetCode'),
+            'datasetUUID': request.query_params.get('datasetUUID')
         }
 
         ds = get_datasets(**get_kwargs)

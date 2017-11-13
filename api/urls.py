@@ -30,11 +30,7 @@ urlpatterns = [
     # Sampling Features
     url(r'^samplingfeatures$', SamplingFeaturesViewSet.as_view(), name='samplingfeatures-list'),
     # DataSets
-    url(r'^datasets/$', DataSetsViewSet.as_view(), name='datasets-list'),
-    url(r'^datasets/datasetUUID/(?P<datasetUUID>.+)/$', DataSetsViewSet.as_view(),
-        name='datasets-detail'),
-    url(r'^datasets/datasetCode/(?P<datasetCode>.+)/$', DataSetsViewSet.as_view(),
-        name='datasets-detail'),
+    url(r'^datasets$', DataSetsViewSet.as_view(), name='datasets-list'),
     # Result Values
     url(r'^resultvalues/resultID/(?P<resultID>.+)/', ResultValuesViewSet.as_view(),
         name='resultvalues-detail'),
