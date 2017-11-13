@@ -60,62 +60,28 @@ paths:
       responses:
         "200":
           description: 200 Response
-  /people/:
+  /people:
     get:
       tags:
       - people
       operationId: getPeopleVersion1
       summary: All ODM2 people retrieval.
-      responses:
-        "200":
-          description: 200 Response
-  /people/peopleID/{peopleID}/:
-    get:
-      tags:
-      - people
-      operationId: getPeopleByPeopleID
-      summary: ODM2 people retrieval by People ID(s)
       parameters:
         - name: peopleID
-          in: path
+          in: query
           description: People ID(s)
-          required: true
+          required: false
           type: string
-      responses:
-        "200":
-          description: 200 Response
-  /people/firstName/{firstName}/:
-    get:
-      tags:
-      - people
-      operationId: getPeopleByFirstName
-      summary: ODM2 people retrieval by First Name
-      parameters:
         - name: firstName
-          in: path
+          in: query
           description: Person First Name
-          required: true
+          required: false
           type: string
         - name: lastName
           in: query
           description: Person Last Name
           required: false
           type: string
-      responses:
-        "200":
-          description: 200 Response
-  /people/lastName/{lastName}/:
-    get:
-      tags:
-      - people
-      operationId: getPeopleByLastName
-      summary: ODM2 people retrieval by Last Name
-      parameters:
-        - name: lastName
-          in: path
-          description: Person Last Name
-          required: true
-          type: string 
       responses:
         "200":
           description: 200 Response

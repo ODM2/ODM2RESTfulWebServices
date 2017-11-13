@@ -24,10 +24,7 @@ urlpatterns = [
     # Affiliations
     url(r'^affiliations$', AffiliationsViewSet.as_view(), name='affiliations-list'),
     # People
-    url(r'^people/$', PeopleViewSet.as_view(), name='people-list'),
-    url(r'^people/peopleID/(?P<peopleID>.+)/$', PeopleViewSet.as_view(), name='people-detail'),
-    url(r'^people/firstName/(?P<firstName>.+)/$', PeopleViewSet.as_view(), name='people-detail'),
-    url(r'^people/lastName/(?P<lastName>.+)/$', PeopleViewSet.as_view(), name='people-detail'),
+    url(r'^people$', PeopleViewSet.as_view(), name='people-list'),
     # Results
     url(r'^results$', ResultsViewSet.as_view(), name='results-list'),
     # Sampling Features

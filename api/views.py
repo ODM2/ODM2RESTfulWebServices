@@ -77,18 +77,14 @@ class PeopleViewSet(APIView):
 
     renderer_classes = (JSONRenderer, YAMLRenderer, CSVRenderer)
 
-    def get(self, request, peopleID=None, firstName=None, lastName=None, format=None):
+    def get(self, request, format=None):
 
         get_kwargs = {
-            'peopleID': peopleID,
-            'firstName': firstName,
-            'lastName': lastName
+            'peopleID': request.query_params.get('peopleID'),
+            'firstName': request.query_params.get('firstName'),
+            'lastName': request.query_params.get('lastName')
         }
 
-        if firstName:
-            get_kwargs.update({
-                'lastName': request.query_params.get('lastName')
-            })
         people = get_people(**get_kwargs)
         serialized = PeopleSerializer(people, many=True)
 
