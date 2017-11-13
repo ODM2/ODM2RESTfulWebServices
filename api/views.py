@@ -230,9 +230,9 @@ class MethodsViewSet(APIView):
     def get(self, request, methodID=None, methodCode=None, methodType=None, format=None):
 
         get_kwargs = {
-            'methodID': methodID,
-            'methodCode': methodCode,
-            'methodType': methodType
+            'methodID': request.query_params.get('methodID'),
+            'methodCode': request.query_params.get('methodCode'),
+            'methodType': request.query_params.get('methodType')
         }
 
         methods = get_methods(**get_kwargs)
