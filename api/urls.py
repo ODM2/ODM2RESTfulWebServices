@@ -32,7 +32,7 @@ urlpatterns = [
     # DataSets
     url(r'^datasets$', DataSetsViewSet.as_view(), name='datasets-list'),
     # Result Values
-    url(r'^resultvalues/resultID/(?P<resultID>.+)/', ResultValuesViewSet.as_view(),
+    url(r'^resultvalues', ResultValuesViewSet.as_view(),
         name='resultvalues-detail'),
     # Methods
     url(r'^methods$', MethodsViewSet.as_view(), name='methods-list')

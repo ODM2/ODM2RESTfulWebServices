@@ -136,7 +136,7 @@ paths:
       responses:
         "200":
           description: 200 Response
-  /resultvalues/resultID/{resultID}/:
+  /resultvalues:
       get:
         tags:
         - results
@@ -144,7 +144,7 @@ paths:
         summary: ODM2 result values retrieval by Result ID(s)
         parameters:
           - name: resultID
-            in: path
+            in: query
             description: Result ID(s)
             required: true
             type: integer
