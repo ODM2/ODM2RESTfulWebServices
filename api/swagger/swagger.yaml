@@ -147,7 +147,7 @@ paths:
             in: query
             description: Result ID(s)
             required: true
-            type: integer
+            type: string
           - name: beginDate
             in: query
             description: Begin Date 'yyyy-mm-dd hh:mm:ss'
