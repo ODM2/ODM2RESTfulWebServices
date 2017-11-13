@@ -130,6 +130,7 @@ MethodSerializer = type(
 
 
 # --- FeatureAction Serializer ---
+# TODO: Need to make SamplingFeatureSerializer smarter!
 FeatureAction_dct = get_sertype_dict(odm2_mod.FeatureActions)
 FeatureAction_dct.update({
     'SamplingFeature': SamplingFeatureSerializer(),

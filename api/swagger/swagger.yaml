@@ -60,41 +60,22 @@ paths:
       responses:
         "200":
           description: 200 Response
-  /people/:
+  /people:
     get:
       tags:
       - people
       operationId: getPeopleVersion1
       summary: All ODM2 people retrieval.
-      responses:
-        "200":
-          description: 200 Response
-  /people/peopleID/{peopleID}/:
-    get:
-      tags:
-      - people
-      operationId: getPeopleByPeopleID
-      summary: ODM2 people retrieval by People ID(s)
       parameters:
         - name: peopleID
-          in: path
+          in: query
           description: People ID(s)
-          required: true
+          required: false
           type: string
-      responses:
-        "200":
-          description: 200 Response
-  /people/firstName/{firstName}/:
-    get:
-      tags:
-      - people
-      operationId: getPeopleByFirstName
-      summary: ODM2 people retrieval by First Name
-      parameters:
         - name: firstName
-          in: path
+          in: query
           description: Person First Name
-          required: true
+          required: false
           type: string
         - name: lastName
           in: query
@@ -104,78 +85,29 @@ paths:
       responses:
         "200":
           description: 200 Response
-  /people/lastName/{lastName}/:
-    get:
-      tags:
-      - people
-      operationId: getPeopleByLastName
-      summary: ODM2 people retrieval by Last Name
-      parameters:
-        - name: lastName
-          in: path
-          description: Person Last Name
-          required: true
-          type: string 
-      responses:
-        "200":
-          description: 200 Response
-  /results/:
+  /results:
     get:
       tags:
       - results
       operationId: getResultsVersion1
       summary: All ODM2 results retrieval.
-      produces:
-      - application/json
-      - application/yaml
-      responses:
-        "200":
-          description: 200 Response
-  /results/resultID/{resultID}/:
-    get:
-      tags:
-      - results
-      operationId: getResultsByResultID
-      summary: ODM2 results retrieval by Result ID(s)
       parameters:
         - name: resultID
-          in: path
+          in: query
           description: Result ID(s)
-          required: true
-          type: string 
-      responses:
-        "200":
-          description: 200 Response
-  /results/resultUUID/{resultUUID}/:
-    get:
-      tags:
-      - results
-      operationId: getResultsByResultUUID
-      summary: ODM2 results retrieval by Result UUID(s)
-      parameters:
+          required: false
+          type: string
         - name: resultUUID
-          in: path
+          in: query
           description: Result UUID(s)
-          required: true
-          type: string 
-      responses:
-        "200":
-          description: 200 Response
-  /results/resultType/{resultType}/:
-    get:
-      tags:
-      - results
-      operationId: getResultsByResultType
-      summary: ODM2 results retrieval by Result Type
-      externalDocs: 
-          description: "See all available Result Types"
-          url: "http://vocabulary.odm2.org/resulttype/"
-      parameters:
+          required: false
+          type: string
         - name: resultType
-          in: path
-          description: Result Type (Name)
-          required: true
-          type: string 
+          in: query
+          description: Result Type (Name). <br>
+                       See all available Result Types [here](http://vocabulary.odm2.org/resulttype/).
+          required: false
+          type: integer
         - name: actionID
           in: query
           description: Action ID
@@ -184,6 +116,11 @@ paths:
         - name: samplingFeatureID
           in: query
           description: Sampling Feature ID
+          required: false
+          type: integer
+        - name: siteID
+          in: query
+          description: Site ID
           required: false
           type: integer
         - name: variableID
@@ -196,36 +133,6 @@ paths:
           description: Simulation ID
           required: false
           type: integer
-      responses:
-        "200":
-          description: 200 Response
-  /results/actionID/{actionID}/:
-      get:
-        tags:
-        - results
-        operationId: getResultsByActionID
-        summary: ODM2 results retrieval by Action ID(s)
-        parameters:
-          - name: actionID
-            in: path
-            description: Action ID(s)
-            required: true
-            type: integer
-        responses:
-          "200":
-            description: 200 Response
-  /results/samplingFeatureID/{samplingFeatureID}/:
-    get:
-      tags:
-      - results
-      operationId: getResultsBySamplingfeatureID
-      summary: ODM2 results retrieval by Sampling Feature ID(s)
-      parameters:
-        - name: samplingFeatureID
-          in: path
-          description: Sampling Feature ID(s)
-          required: true
-          type: integer 
       responses:
         "200":
           description: 200 Response
@@ -254,13 +161,29 @@ paths:
         responses:
           "200":
             description: 200 Response
-  /samplingfeatures/:
+  /samplingfeatures:
     get:
       tags:
       - samplingfeatures
       operationId: getSamplingFeatures
       summary: All ODM2 samplingfeatures retrieval.
       parameters:
+        - name: samplingFeatureID
+          in: query
+          description: Sampling Feature ID(s)
+          required: false
+          type: string
+        - name: samplingFeatureCode
+          in: query
+          description: Sampling Feature Code(s)
+          required: false
+          type: string
+        - name: samplingFeatureType
+          in: query
+          description: Sampling Feature Type (Name). <br>
+                       See all available Sampling Feature Types [here](http://vocabulary.odm2.org/samplingfeaturetype/).
+          required: false
+          type: string 
         - name: results
           in: query
           description: Get Sampling Features that has Results
@@ -269,69 +192,6 @@ paths:
       produces:
       - application/json
       - application/yaml
-      responses:
-        "200":
-          description: 200 Response
-  /samplingfeatures/samplingFeatureID/{samplingFeatureID}/:
-    get:
-      tags:
-      - samplingfeatures
-      operationId: getSamplingFeatureBySamplingFeatureID
-      summary: ODM2 samplingfeatures retrieval by Sampling Feature ID(s)
-      parameters:
-        - name: samplingFeatureID
-          in: path
-          description: Sampling Feature ID(s)
-          required: true
-          type: string 
-        - name: results
-          in: query
-          description: Get Sampling Features that has Results
-          required: false
-          type: boolean
-      responses:
-        "200":
-          description: 200 Response
-  /samplingfeatures/samplingFeatureCode/{samplingFeatureCode}/:
-    get:
-      tags:
-      - samplingfeatures
-      operationId: getSamplingFeatureBySamplingFeatureCode
-      summary: ODM2 samplingfeatures retrieval by Sampling Feature Code(s)
-      parameters:
-        - name: samplingFeatureCode
-          in: path
-          description: Sampling Feature Code(s)
-          required: true
-          type: string 
-        - name: results
-          in: query
-          description: Get Sampling Features that has Results
-          required: false
-          type: boolean
-      responses:
-        "200":
-          description: 200 Response
-  /samplingfeatures/samplingFeatureType/{samplingFeatureType}/:
-    get:
-      tags:
-      - samplingfeatures
-      operationId: getSamplingFeatureBySamplingFeatureType
-      summary: ODM2 samplingfeatures retrieval by Sampling Feature Type
-      externalDocs: 
-          description: "See all available Sampling Feature Types"
-          url: "http://vocabulary.odm2.org/samplingfeaturetype/"
-      parameters:
-        - name: samplingFeatureType
-          in: path
-          description: Sampling Feature Type(s)
-          required: true
-          type: string 
-        - name: results
-          in: query
-          description: Get Sampling Features that has Results
-          required: false
-          type: boolean
       responses:
         "200":
           description: 200 Response

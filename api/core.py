@@ -120,6 +120,7 @@ def get_results(**kwargs):
     result_type = kwargs.get('resultType')
     act_id = kwargs.get('actionID')
     sf_id = kwargs.get('samplingFeatureID')
+    site_id = kwargs.get('siteID')
     var_id = kwargs.get('variableID')
     sim_id = kwargs.get('simulationID')
 
@@ -130,7 +131,7 @@ def get_results(**kwargs):
                               simulationid=sim_id,
                               sfid=sf_id,
                               variableid=var_id,
-                              siteid=None)
+                              siteid=site_id)
 
     Results_list = []
     for res in Results:

@@ -80,18 +80,14 @@ class PeopleViewSet(APIView):
 
     renderer_classes = (JSONRenderer, YAMLRenderer, CSVRenderer)
 
-    def get(self, request, peopleID=None, firstName=None, lastName=None, format=None):
+    def get(self, request, format=None):
 
         get_kwargs = {
-            'peopleID': peopleID,
-            'firstName': firstName,
-            'lastName': lastName
+            'peopleID': request.query_params.get('peopleID'),
+            'firstName': request.query_params.get('firstName'),
+            'lastName': request.query_params.get('lastName')
         }
 
-        if firstName:
-            get_kwargs.update({
-                'lastName': request.query_params.get('lastName')
-            })
         people = get_people(**get_kwargs)
         serialized = PeopleSerializer(people, many=True)
 
@@ -105,29 +101,19 @@ class ResultsViewSet(APIView):
 
     renderer_classes = (JSONRenderer, YAMLRenderer, CSVRenderer)
 
-    def get(self, request, resultID=None,
-            resultUUID=None, resultType=None,
-            actionID=None, samplingFeatureID=None,
-            variableID=None, simulationID=None, format=None):
+    def get(self, request, format=None):
 
         get_kwargs = {
-            'resultID': resultID,
-            'resultUUID': resultUUID,
-            'resultType': resultType,
-            'actionID': actionID,
-            'samplingFeatureID': samplingFeatureID,
-            'variableID': variableID,
-            'simulationID': simulationID
+            'resultID': request.query_params.get('resultID'),
+            'resultUUID': request.query_params.get('resultUUID'),
+            'resultType': request.query_params.get('resultType'),
+            'actionID': request.query_params.get('actionID'),
+            'samplingFeatureID': request.query_params.get('samplingFeatureID'),
+            'variableID': request.query_params.get('variableID'),
+            'simulationID': request.query_params.get('simulationID'),
+            'siteID': request.query_params.get('siteID')
         }
-        if resultType:
-            get_kwargs.update({
-                'actionID': request.query_params.get('actionID'),
-                'samplingFeatureID': request.query_params.get('samplingFeatureID'),
-                'variableID': request.query_params.get('variableID'),
-                'simulationID': request.query_params.get('simulationID')
-            })
 
-        print(get_kwargs)
         results = get_results(**get_kwargs)
         serialized = ResultSerializer(results, many=True)
 
@@ -140,15 +126,13 @@ class SamplingFeaturesViewSet(APIView):
 
     renderer_classes = (JSONRenderer, YAMLRenderer, CSVRenderer)
 
-    def get(self, request, samplingFeatureID=None,
-            samplingFeatureCode=None, samplingFeatureUUID=None,
-            samplingFeatureType=None, format=None):
+    def get(self, request, format=None):
 
         get_kwargs = {
-            'samplingFeatureID': samplingFeatureID,
-            'samplingFeatureCode': samplingFeatureCode,
-            'samplingFeatureUUID': samplingFeatureUUID,
-            'samplingFeatureType': samplingFeatureType,
+            'samplingFeatureID': request.query_params.get('samplingFeatureID'),
+            'samplingFeatureCode': request.query_params.get('samplingFeatureCode'),
+            'samplingFeatureUUID': request.query_params.get('samplingFeatureUUID'),
+            'samplingFeatureType': request.query_params.get('samplingFeatureType'),
             'results': False
         }
 

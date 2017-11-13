@@ -25,31 +25,9 @@ urlpatterns = [
     # Affiliations
     url(r'^affiliations$', AffiliationsViewSet.as_view(), name='affiliations-list'),
     # People
-    url(r'^people/$', PeopleViewSet.as_view(), name='people-list'),
-    url(r'^people/peopleID/(?P<peopleID>.+)/$', PeopleViewSet.as_view(), name='people-detail'),
-    url(r'^people/firstName/(?P<firstName>.+)/$', PeopleViewSet.as_view(), name='people-detail'),
-    url(r'^people/lastName/(?P<lastName>.+)/$', PeopleViewSet.as_view(), name='people-detail'),
+    url(r'^people$', PeopleViewSet.as_view(), name='people-list'),
     # Results
-    url(r'^results/$', ResultsViewSet.as_view(), name='results-list'),
-    url(r'^results/resultID/(?P<resultID>.+)/$', ResultsViewSet.as_view(), name='results-detail'),
-    url(r'^results/resultUUID/(?P<resultUUID>.+)/$', ResultsViewSet.as_view(), name='results-detail'),
-    url(r'^results/resultType/(?P<resultType>.+)/$', ResultsViewSet.as_view(), name='results-detail'),
-    url(r'^results/actionID/(?P<actionID>.+)/$', ResultsViewSet.as_view(), name='results-detail'),
-    url(r'^results/samplingFeatureID/(?P<samplingFeatureID>.+)/$',
-        ResultsViewSet.as_view(), name='results-detail'),
-    url(r'^results/variableID/(?P<variableID>.+)/$', ResultsViewSet.as_view(), name='results-detail'),
-    url(r'^results/simulationID/(?P<simulationID>.+)/$',
-        ResultsViewSet.as_view(), name='results-detail'),
-    # Sampling Features
-    url(r'^samplingfeatures/$', SamplingFeaturesViewSet.as_view(), name='samplingfeatures-list'),
-    url(r'^samplingfeatures/samplingFeatureID/(?P<samplingFeatureID>.+)/$',
-        SamplingFeaturesViewSet.as_view(), name='samplingfeatures-detail'),
-    url(r'^samplingfeatures/samplingFeatureUUID/(?P<samplingFeatureUUID>.+)/$',
-        SamplingFeaturesViewSet.as_view(), name='samplingfeatures-detail'),
-    url(r'^samplingfeatures/samplingFeatureCode/(?P<samplingFeatureCode>.+)/$',
-        SamplingFeaturesViewSet.as_view(), name='samplingfeatures-detail'),
-    url(r'^samplingfeatures/samplingFeatureType/(?P<samplingFeatureType>.+)/$',
-        SamplingFeaturesViewSet.as_view(), name='samplingfeatures-detail'),
+    url(r'^results$', ResultsViewSet.as_view(), name='results-list'),
     # Sampling Feature Datasets
     url(r'^samplingfeaturedatasets/',
         SamplingFeaturesDataSetViewSet.as_view(), name='samplingfeaturedatasets-detail'),
@@ -57,6 +35,8 @@ urlpatterns = [
         SamplingFeaturesDataSetViewSet.as_view(), name='samplingfeaturedatasets-detail'),
     url(r'^samplingfeaturedatasets/samplingFeatureCode/(?P<samplingFeatureCode>.+)/$',
         SamplingFeaturesDataSetViewSet.as_view(), name='samplingfeaturedatasets-detail'),
+    # Sampling Features
+    url(r'^samplingfeatures$', SamplingFeaturesViewSet.as_view(), name='samplingfeatures-list'),
     # DataSets
     url(r'^datasets/$', DataSetsViewSet.as_view(), name='datasets-list'),
     url(r'^datasets/datasetUUID/(?P<datasetUUID>.+)/$', DataSetsViewSet.as_view(),
