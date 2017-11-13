@@ -123,15 +123,13 @@ class SamplingFeaturesViewSet(APIView):
 
     renderer_classes = (JSONRenderer, YAMLRenderer, CSVRenderer)
 
-    def get(self, request, samplingFeatureID=None,
-            samplingFeatureCode=None, samplingFeatureUUID=None,
-            samplingFeatureType=None, format=None):
+    def get(self, request, format=None):
 
         get_kwargs = {
-            'samplingFeatureID': samplingFeatureID,
-            'samplingFeatureCode': samplingFeatureCode,
-            'samplingFeatureUUID': samplingFeatureUUID,
-            'samplingFeatureType': samplingFeatureType,
+            'samplingFeatureID': request.query_params.get('samplingFeatureID'),
+            'samplingFeatureCode': request.query_params.get('samplingFeatureCode'),
+            'samplingFeatureUUID': request.query_params.get('samplingFeatureUUID'),
+            'samplingFeatureType': request.query_params.get('samplingFeatureType'),
             'results': False
         }
 
