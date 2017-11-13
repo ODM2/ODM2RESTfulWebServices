@@ -28,15 +28,7 @@ urlpatterns = [
     # Results
     url(r'^results$', ResultsViewSet.as_view(), name='results-list'),
     # Sampling Features
-    url(r'^samplingfeatures/$', SamplingFeaturesViewSet.as_view(), name='samplingfeatures-list'),
-    url(r'^samplingfeatures/samplingFeatureID/(?P<samplingFeatureID>.+)/$',
-        SamplingFeaturesViewSet.as_view(), name='samplingfeatures-detail'),
-    url(r'^samplingfeatures/samplingFeatureUUID/(?P<samplingFeatureUUID>.+)/$',
-        SamplingFeaturesViewSet.as_view(), name='samplingfeatures-detail'),
-    url(r'^samplingfeatures/samplingFeatureCode/(?P<samplingFeatureCode>.+)/$',
-        SamplingFeaturesViewSet.as_view(), name='samplingfeatures-detail'),
-    url(r'^samplingfeatures/samplingFeatureType/(?P<samplingFeatureType>.+)/$',
-        SamplingFeaturesViewSet.as_view(), name='samplingfeatures-detail'),
+    url(r'^samplingfeatures$', SamplingFeaturesViewSet.as_view(), name='samplingfeatures-list'),
     # DataSets
     url(r'^datasets/$', DataSetsViewSet.as_view(), name='datasets-list'),
     url(r'^datasets/datasetUUID/(?P<datasetUUID>.+)/$', DataSetsViewSet.as_view(),

@@ -161,13 +161,29 @@ paths:
         responses:
           "200":
             description: 200 Response
-  /samplingfeatures/:
+  /samplingfeatures:
     get:
       tags:
       - samplingfeatures
       operationId: getSamplingFeatures
       summary: All ODM2 samplingfeatures retrieval.
       parameters:
+        - name: samplingFeatureID
+          in: query
+          description: Sampling Feature ID(s)
+          required: false
+          type: string
+        - name: samplingFeatureCode
+          in: query
+          description: Sampling Feature Code(s)
+          required: false
+          type: string
+        - name: samplingFeatureType
+          in: query
+          description: Sampling Feature Type (Name). <br>
+                       See all available Sampling Feature Types [here](http://vocabulary.odm2.org/samplingfeaturetype/).
+          required: false
+          type: string 
         - name: results
           in: query
           description: Get Sampling Features that has Results
@@ -176,69 +192,6 @@ paths:
       produces:
       - application/json
       - application/yaml
-      responses:
-        "200":
-          description: 200 Response
-  /samplingfeatures/samplingFeatureID/{samplingFeatureID}/:
-    get:
-      tags:
-      - samplingfeatures
-      operationId: getSamplingFeatureBySamplingFeatureID
-      summary: ODM2 samplingfeatures retrieval by Sampling Feature ID(s)
-      parameters:
-        - name: samplingFeatureID
-          in: path
-          description: Sampling Feature ID(s)
-          required: true
-          type: string 
-        - name: results
-          in: query
-          description: Get Sampling Features that has Results
-          required: false
-          type: boolean
-      responses:
-        "200":
-          description: 200 Response
-  /samplingfeatures/samplingFeatureCode/{samplingFeatureCode}/:
-    get:
-      tags:
-      - samplingfeatures
-      operationId: getSamplingFeatureBySamplingFeatureCode
-      summary: ODM2 samplingfeatures retrieval by Sampling Feature Code(s)
-      parameters:
-        - name: samplingFeatureCode
-          in: path
-          description: Sampling Feature Code(s)
-          required: true
-          type: string 
-        - name: results
-          in: query
-          description: Get Sampling Features that has Results
-          required: false
-          type: boolean
-      responses:
-        "200":
-          description: 200 Response
-  /samplingfeatures/samplingFeatureType/{samplingFeatureType}/:
-    get:
-      tags:
-      - samplingfeatures
-      operationId: getSamplingFeatureBySamplingFeatureType
-      summary: ODM2 samplingfeatures retrieval by Sampling Feature Type
-      externalDocs: 
-          description: "See all available Sampling Feature Types"
-          url: "http://vocabulary.odm2.org/samplingfeaturetype/"
-      parameters:
-        - name: samplingFeatureType
-          in: path
-          description: Sampling Feature Type(s)
-          required: true
-          type: string 
-        - name: results
-          in: query
-          description: Get Sampling Features that has Results
-          required: false
-          type: boolean
       responses:
         "200":
           description: 200 Response
