@@ -163,7 +163,7 @@ paths:
         responses:
           "200":
             description: 200 Response
-  /samplingfeaturedatasets/:
+  /samplingfeaturedatasets:
     get:
       tags:
       - samplingfeaturedatasets
@@ -171,12 +171,23 @@ paths:
       summary: Get ODM2 Datasets for given set of SamplingFeatures
       parameters:
         - name: samplingFeatureID
-          description: Get SamplingFeatureDatasets associated with SamplingFeature ID
+          description: SamplingFeature ID(s) **Required (or SamplingfeatureUUID)**
+          required: false
+          in: query
+          type: string
+        - name: samplingFeatureUUID
+          description: SamplingFeature UUID(s) **Required (or SamplingFeatureID)**
           required: false
           in: query
           type: string
         - name: SamplingFeatureCode
-          description: Get SamplingFeatureDatasets associated with SamplingFeature Code
+          description: SamplingFeature Code(s)
+          required: false
+          in: query
+          type: string
+        - name: datasetType
+          description: Dataset Type (Name). <br>
+                       See all available Dataset Types [here](http://vocabulary.odm2.org/datasettype/).
           required: false
           in: query
           type: string

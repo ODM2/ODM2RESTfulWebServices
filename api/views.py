@@ -165,15 +165,13 @@ class SamplingFeaturesDataSetViewSet(APIView):
 
     renderer_classes = (JSONRenderer, YAMLRenderer, CSVRenderer)
 
-    def get(self, request, samplingFeatureID=None,
-            samplingFeatureCode=None, samplingFeatureUUID=None,
-            dataSetType=None,):
+    def get(self, request, format=None):
 
         get_kwargs = {
             'samplingFeatureID': request.query_params.get('samplingFeatureID'),
             'samplingFeatureCode': request.query_params.get('samplingFeatureCode'),
             'samplingFeatureUUID': request.query_params.get('samplingFeatureUUID'),
-            'dataSetType': dataSetType,
+            'datasetType': request.query_params.get('datasetType'),
             'results': False
         }
 
