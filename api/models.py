@@ -26,6 +26,10 @@ class Affiliation(BASEMODEL):
     pass
 
 
+class Action(BASEMODEL):
+    pass
+
+
 class Variable(BASEMODEL):
     pass
 

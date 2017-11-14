@@ -108,15 +108,6 @@ UnitSerializer = type(
 )
 
 
-# --- Action Serializer ---
-Action_dct = get_sertype_dict(odm2_mod.Actions)
-ActionSerializer = type(
-    str('ActionSerializer'),
-    (Serializer,),
-    Action_dct
-)
-
-
 # --- Method Serializer ---
 Method_dct = get_sertype_dict(odm2_mod.Methods)
 Method_dct.update({
@@ -126,6 +117,18 @@ MethodSerializer = type(
     str('MethodSerializer'),
     (Serializer,),
     Method_dct
+)
+
+
+# --- Action Serializer ---
+Action_dct = get_sertype_dict(odm2_mod.Actions)
+Action_dct.update({
+    'Method': MethodSerializer()
+})
+ActionSerializer = type(
+    str('ActionSerializer'),
+    (Serializer,),
+    Action_dct
 )
 
 

@@ -43,6 +43,11 @@ from sqlalchemy.types import (
     Variant
 )
 
+from odm2api.ODM2.models import (
+    BigIntegerType,
+    DateTimeType
+)
+
 field_mapping = {
         Integer.__visit_name__: IntegerField,
         String.__visit_name__: CharField,
@@ -57,11 +62,13 @@ field_mapping = {
         BigInteger.__visit_name__: IntegerField,
         Numeric.__visit_name__: IntegerField,
         DateTime.__visit_name__: DateTimeField,
+        DateTimeType.__visit_name__: DateTimeField,
+        BigIntegerType.__visit_name__: IntegerField,
         Boolean.__visit_name__: BooleanField,
         CLOB.__visit_name__: CharField,
         DECIMAL.__visit_name__: DecimalField,
         Date.__visit_name__: DateTimeField,
-        Variant.__visit_name__: IntegerField
+        Variant.__visit_name__: CharField
 }
 
 

@@ -25,7 +25,8 @@ from core import (
     get_datasets,
     get_resultvalues,
     get_samplingfeaturedatasets,
-    get_methods
+    get_methods,
+    get_actions
 )
 
 from serializers import (
@@ -46,7 +47,8 @@ from serializers import (
     DataSetsResultsSerializer,
     SitesSerializer,
     SpecimensSerializer,
-    MethodSerializer
+    MethodSerializer,
+    ActionSerializer
 
 )
 
@@ -257,7 +259,7 @@ class ResultValuesViewSet(APIView):
 class MethodsViewSet(APIView):
     renderer_classes = (JSONRenderer, YAMLRenderer, CSVRenderer)
 
-    def get(self, request, methodID=None, methodCode=None, methodType=None, format=None):
+    def get(self, request, format=None):
 
         get_kwargs = {
             'methodID': request.query_params.get('methodID'),
@@ -273,3 +275,20 @@ class MethodsViewSet(APIView):
 
         return Response(serialized.data)
 
+class ActionsViewSet(APIView):
+    renderer_classes = (JSONRenderer, YAMLRenderer, CSVRenderer)
+
+    def get(self, request, format=None):
+        get_kwargs = {
+            'actionID': request.query_params.get('actionID'),
+            'actionType': request.query_params.get('actionType'),
+            'samplingFeatureID': request.query_params.get('samplingFeatureID')
+        }
+
+        actions = get_actions(**get_kwargs)
+        serialized = ActionSerializer(actions, many=True)
+
+        if len(actions) == 1:
+            serialized = ActionSerializer(actions[0])
+
+        return Response(serialized.data)
