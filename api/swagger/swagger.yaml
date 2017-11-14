@@ -21,6 +21,8 @@ tags:
     description: Data Sets in database
   - name: methods
     description: Methods in database
+  - name: samplingfeaturedatasets
+    description: DataSets in database for a given set of SamplingFeatures
 schemes:
   - http
 consumes:
@@ -161,6 +163,37 @@ paths:
         responses:
           "200":
             description: 200 Response
+  /samplingfeaturedatasets:
+    get:
+      tags:
+      - samplingfeaturedatasets
+      operationId: getSamplingFeatureDatasets
+      summary: Get ODM2 Datasets for given set of SamplingFeatures
+      parameters:
+        - name: samplingFeatureID
+          description: SamplingFeature ID(s) **Required (or SamplingfeatureUUID)**
+          required: false
+          in: query
+          type: string
+        - name: samplingFeatureUUID
+          description: SamplingFeature UUID(s) **Required (or SamplingFeatureID)**
+          required: false
+          in: query
+          type: string
+        - name: SamplingFeatureCode
+          description: SamplingFeature Code(s)
+          required: false
+          in: query
+          type: string
+        - name: datasetType
+          description: Dataset Type (Name). <br>
+                       See all available Dataset Types [here](http://vocabulary.odm2.org/datasettype/).
+          required: false
+          in: query
+          type: string
+      responses:
+        "200":
+          description: 200 Response
   /samplingfeatures:
     get:
       tags:
