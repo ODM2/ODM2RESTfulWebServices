@@ -15,6 +15,7 @@ from utils import get_vals
 
 from models import (
     Affiliation,
+    Action,
     Organization,
     People,
     Result,
@@ -137,11 +138,28 @@ def get_results(**kwargs):
     for res in Results:
         res_dct = get_vals(res)
 
+        act_obj = res.FeatureActionObj.ActionObj
+
+        # Get methods
+        m_dct = get_vals(act_obj.MethodObj)
+        m_dct.update({
+            'Organization': get_vals(act_obj.MethodObj.OrganizationObj)
+        })
+        method = Methods(m_dct)
+
+        a_dct = get_vals(res.FeatureActionObj.ActionObj)
+
+        a_dct.update({
+            'Method': method
+        })
+
+        action = Action(a_dct)
+
         # Get Feature Action ----
         feat_act_dct = get_vals(res.FeatureActionObj)
         feat_act_dct.update({
             'SamplingFeature': get_vals(res.FeatureActionObj.SamplingFeatureObj),
-            'Action': get_vals(res.FeatureActionObj.ActionObj)
+            'Action': action
         })
         feat_act = FeatureAction(feat_act_dct)
         # ------------------------
@@ -342,3 +360,34 @@ def get_methods(**kwargs):
         )
 
     return m_list
+
+def get_actions(**kwargs):
+    ids = kwargs.get('actionID')
+    acttype = kwargs.get('actionType')
+    sfid = kwargs.get('samplingFeatureID')
+
+    if ids:
+        ids = [int(i) for i in ids.split(',')]
+
+    actions = READ.getActions(ids=ids,
+                              type=acttype,
+                              sfid=sfid)
+
+    act_list = []
+    for a in actions:
+        a_dct = get_vals(a)
+
+        # Get methods
+        m_dct = get_vals(a.MethodObj)
+        m_dct.update({
+            'Organization': get_vals(a.MethodObj.OrganizationObj)
+        })
+        method = Methods(m_dct)
+
+        a_dct.update({
+            'Method': method
+        })
+
+        act_list.append(a_dct)
+
+    return act_list

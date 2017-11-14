@@ -11,10 +11,14 @@ basePath: /v1
 tags:
   - name: affiliations
     description: Affiliations in database
+  - name: actions
+    description: Actions in database
   - name: people
     description: People in database
   - name: results
     description: Results in database
+  - name: resultvalues
+    description: Get values of Results in database
   - name: samplingfeatures
     description: Sampling Features in database
   - name: datasets
@@ -141,7 +145,7 @@ paths:
   /resultvalues:
       get:
         tags:
-        - results
+        - resultvalues
         operationId: getResultValuesByResultID
         summary: ODM2 result values retrieval by Result ID(s)
         parameters:
@@ -271,6 +275,32 @@ paths:
                        See all available Method Types [here](http://vocabulary.odm2.org/methodtype/).
           required: false
           type: string
+      responses:
+        "200":
+          description: 200 Response
+  /actions:
+    get:
+      tags:
+        - actions
+      operationId: getActions
+      summary: All ODM2 actions retrieval
+      parameters:
+        - name: actionID
+          in: query
+          description: Action ID(s)
+          required: false
+          type: string
+        - name: actionType
+          in: query
+          description: Action Type (Name). <br> 
+                       See all available Action Types [here](http://vocabulary.odm2.org/actiontype/).
+          required: false
+          type: string
+        - name: samplingFeatureID
+          in: query
+          description: Sampling Feature ID
+          required: false
+          type: integer
       responses:
         "200":
           description: 200 Response
