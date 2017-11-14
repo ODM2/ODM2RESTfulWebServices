@@ -18,7 +18,8 @@ from views import (
     ResultValuesViewSet,
     SamplingFeaturesDataSetViewSet,
     MethodsViewSet,
-    ActionsViewSet
+    ActionsViewSet,
+    VariablesViewSet
 )
 
 urlpatterns = [
@@ -43,6 +44,8 @@ urlpatterns = [
     url(r'^methods$', MethodsViewSet.as_view(), name='methods-list'),
     # Actions
     url(r'^actions$', ActionsViewSet.as_view(), name='actions-list'),
+    # Variables
+    url(r'^variables$', VariablesViewSet.as_view(), name='variables-list')
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns, allowed=['json', 'html', 'yaml', 'csv'])

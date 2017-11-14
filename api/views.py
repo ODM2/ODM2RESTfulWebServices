@@ -26,7 +26,8 @@ from core import (
     get_resultvalues,
     get_samplingfeaturedatasets,
     get_methods,
-    get_actions
+    get_actions,
+    get_variables
 )
 
 from serializers import (
@@ -48,7 +49,8 @@ from serializers import (
     SitesSerializer,
     SpecimensSerializer,
     MethodSerializer,
-    ActionSerializer
+    ActionSerializer,
+    VariableSerializer
 
 )
 
@@ -290,5 +292,30 @@ class ActionsViewSet(APIView):
 
         if len(actions) == 1:
             serialized = ActionSerializer(actions[0])
+
+        return Response(serialized.data)
+
+class VariablesViewSet(APIView):
+    renderer_classes = (JSONRenderer, YAMLRenderer, CSVRenderer)
+
+    def get(self, request, format=None):
+        get_kwargs = {
+            'variableID': request.query_params.get('variableID'),
+            'variableCode': request.query_params.get('variableCode'),
+            'siteCode': request.query_params.get('siteCode'),
+            'results': False
+        }
+
+        results = request.query_params.get('results')
+        if results:
+            get_kwargs.update({
+                'results': results
+            })
+
+        variables = get_variables(**get_kwargs)
+        serialized = VariableSerializer(variables, many=True)
+
+        if len(variables) == 1:
+            serialized = VariableSerializer(variables[0])
 
         return Response(serialized.data)
