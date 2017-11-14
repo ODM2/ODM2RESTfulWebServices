@@ -27,6 +27,8 @@ tags:
     description: Methods in database
   - name: samplingfeaturedatasets
     description: DataSets in database for a given set of SamplingFeatures
+  - name: variables
+    description: Variables in database
 schemes:
   - http
 consumes:
@@ -301,6 +303,35 @@ paths:
           description: Sampling Feature ID
           required: false
           type: integer
+      responses:
+        "200":
+          description: 200 Response
+  /variables:
+    get:
+      tags:
+        - variables
+      operationId: getVariables
+      summary: All ODM2 variables retrieval
+      parameters:
+        - name: variableID
+          in: query
+          description: Variable ID(s)
+          required: false
+          type: string
+        - name: variableCode
+          in: query
+          description: Variable Code(s)
+          required: false
+          type: string
+        - name: siteCode
+          in: query
+          description: Sampling Feature ID
+          required: false
+          type: integer
+        - name: results
+          in: query
+          required: false
+          type: boolean
       responses:
         "200":
           description: 200 Response

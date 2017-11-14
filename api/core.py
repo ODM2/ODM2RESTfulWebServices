@@ -408,3 +408,36 @@ def get_actions(**kwargs):
         act_list.append(a_dct)
 
     return act_list
+
+def get_variables(**kwargs):
+    db_check()
+    ids = kwargs.get('variableID')
+    codes = kwargs.get('variableCode')
+    sitecode = kwargs.get('siteCode')
+
+    if ids:
+        ids = [int(i) for i in ids.split(',')]
+    if codes:
+        codes = codes.split(',')
+
+    res = kwargs.get('results')
+
+    if type(res) in [str, unicode]:
+        if res.upper() == 'TRUE':
+            res = True
+        else:
+            res = False
+
+    varibles = READ.getVariables(ids=ids,
+                                 codes=codes,
+                                 sitecode=sitecode,
+                                 results=res)
+
+    vars_list = []
+    for var in varibles:
+        var_dct = get_vals(var)
+        vars_list.append(
+            Variable(var_dct)
+        )
+
+    return vars_list
