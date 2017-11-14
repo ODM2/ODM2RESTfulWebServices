@@ -21,6 +21,8 @@ tags:
     description: Data Sets in database
   - name: methods
     description: Methods in database
+  - name: samplingfeaturedatasets
+    description: DataSets in database for a given set of SamplingFeatures
 schemes:
   - http
 consumes:
@@ -171,10 +173,12 @@ paths:
         - name: samplingFeatureID
           description: Get SamplingFeatureDatasets associated with SamplingFeature ID
           required: false
+          in: query
           type: string
         - name: SamplingFeatureCode
           description: Get SamplingFeatureDatasets associated with SamplingFeature Code
           required: false
+          in: query
           type: string
       responses:
         "200":
