@@ -262,10 +262,27 @@ def get_samplingfeaturedatasets(**kwargs):
 
         res_dct = get_vals(dsr.ResultObj)
 
+        # Action ---
+        act_obj = dsr.ResultObj.FeatureActionObj.ActionObj
+        m_dct = get_vals(act_obj.MethodObj)
+        m_dct.update({
+            'Organization': get_vals(act_obj.MethodObj.OrganizationObj)
+        })
+        method = Methods(m_dct)
+
+        a_dct = get_vals(dsr.ResultObj.FeatureActionObj.ActionObj)
+
+        a_dct.update({
+            'Method': method
+        })
+
+        action = Action(a_dct)
+        # ------------------
+        # Feature Action ---
         feat_act_dct = get_vals(dsr.ResultObj.FeatureActionObj)
         feat_act_dct.update({
             'SamplingFeature': get_vals(dsr.ResultObj.FeatureActionObj.SamplingFeatureObj),
-            'Action': get_vals(dsr.ResultObj.FeatureActionObj.ActionObj)
+            'Action': action
         })
         feat_act = FeatureAction(feat_act_dct)
         # ------------------------
