@@ -379,6 +379,7 @@ def get_methods(**kwargs):
     return m_list
 
 def get_actions(**kwargs):
+    # TODO: Get relationship to affiliations via ActionBy, currently not in API
     ids = kwargs.get('actionID')
     acttype = kwargs.get('actionType')
     sfid = kwargs.get('samplingFeatureID')
@@ -441,3 +442,25 @@ def get_variables(**kwargs):
         )
 
     return vars_list
+
+def get_units(**kwargs):
+    db_check()
+    ids = kwargs.get('unitsID')
+    name = kwargs.get('unitsName')
+    unitstype = kwargs.get('unitsType')
+
+    if ids:
+        ids = [int(i) for i in ids.split(',')]
+
+    units = READ.getUnits(ids=ids,
+                          name=name,
+                          type=unitstype)
+
+    units_list = []
+    for u in units:
+        units_dct = get_vals(u)
+        units_list.append(
+            Unit(units_dct)
+        )
+
+    return units_list
