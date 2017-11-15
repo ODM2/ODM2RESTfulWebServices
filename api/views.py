@@ -28,7 +28,8 @@ from core import (
     get_methods,
     get_actions,
     get_variables,
-    get_units
+    get_units,
+    get_organizations
 )
 
 from serializers import (
@@ -52,7 +53,8 @@ from serializers import (
     MethodSerializer,
     ActionSerializer,
     VariableSerializer,
-    UnitSerializer
+    UnitSerializer,
+    OrganizationSerializer
 
 )
 
@@ -339,5 +341,23 @@ class UnitsViewSet(APIView):
 
         if len(units) == 1:
             serialized = UnitSerializer(units[0])
+
+        return Response(serialized.data)
+
+
+class OrganizationViewSet(APIView):
+    renderer_classes = (JSONRenderer, YAMLRenderer, CSVRenderer)
+
+    def get(self, request, format=None):
+        get_kwargs = {
+            'organizationID': request.query_params.get('organizationID'),
+            'organizationCode': request.query_params.get('organizationCode')
+        }
+
+        organizations = get_organizations(**get_kwargs)
+        serialized = OrganizationSerializer(organizations, many=True)
+
+        if len(organizations) == 1:
+            serialized = OrganizationSerializer(organizations[0])
 
         return Response(serialized.data)
