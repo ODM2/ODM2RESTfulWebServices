@@ -29,6 +29,8 @@ tags:
     description: DataSets in database for a given set of SamplingFeatures
   - name: variables
     description: Variables in database
+  - name: units
+    description: Units in database
 schemes:
   - http
 consumes:
@@ -332,6 +334,32 @@ paths:
           in: query
           required: false
           type: boolean
+      responses:
+        "200":
+          description: 200 Response
+  /units:
+    get:
+      tags:
+        - units
+      operationId: getUnits
+      summary: All ODM2 units retrieval
+      parameters:
+        - name: unitsID
+          in: query
+          description: Units ID(s)
+          required: false
+          type: string
+        - name: unitsName
+          in: query
+          description: Units Name
+          required: false
+          type: string
+        - name: unitsType
+          in: query
+          description: Units Type (Name). <br> 
+                       See all available Units Types [here](http://vocabulary.odm2.org/unitstype/).
+          required: false
+          type: string
       responses:
         "200":
           description: 200 Response

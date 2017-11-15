@@ -19,7 +19,8 @@ from views import (
     SamplingFeaturesDataSetViewSet,
     MethodsViewSet,
     ActionsViewSet,
-    VariablesViewSet
+    VariablesViewSet,
+    UnitsViewSet
 )
 
 urlpatterns = [
@@ -45,7 +46,9 @@ urlpatterns = [
     # Actions
     url(r'^actions$', ActionsViewSet.as_view(), name='actions-list'),
     # Variables
-    url(r'^variables$', VariablesViewSet.as_view(), name='variables-list')
+    url(r'^variables$', VariablesViewSet.as_view(), name='variables-list'),
+    # Units
+    url(r'^units$', UnitsViewSet.as_view(), name='units-list')
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns, allowed=['json', 'html', 'yaml', 'csv'])

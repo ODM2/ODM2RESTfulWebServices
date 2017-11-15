@@ -27,7 +27,8 @@ from core import (
     get_samplingfeaturedatasets,
     get_methods,
     get_actions,
-    get_variables
+    get_variables,
+    get_units
 )
 
 from serializers import (
@@ -50,7 +51,8 @@ from serializers import (
     SpecimensSerializer,
     MethodSerializer,
     ActionSerializer,
-    VariableSerializer
+    VariableSerializer,
+    UnitSerializer
 
 )
 
@@ -295,6 +297,7 @@ class ActionsViewSet(APIView):
 
         return Response(serialized.data)
 
+
 class VariablesViewSet(APIView):
     renderer_classes = (JSONRenderer, YAMLRenderer, CSVRenderer)
 
@@ -317,5 +320,24 @@ class VariablesViewSet(APIView):
 
         if len(variables) == 1:
             serialized = VariableSerializer(variables[0])
+
+        return Response(serialized.data)
+
+
+class UnitsViewSet(APIView):
+    renderer_classes = (JSONRenderer, YAMLRenderer, CSVRenderer)
+
+    def get(self, request, format=None):
+        get_kwargs = {
+            'unitsID': request.query_params.get('unitsID'),
+            'unitsType': request.query_params.get('unitsType'),
+            'unitsName': request.query_params.get('unitsName')
+        }
+
+        units = get_units(**get_kwargs)
+        serialized = UnitSerializer(units, many=True)
+
+        if len(units) == 1:
+            serialized = UnitSerializer(units[0])
 
         return Response(serialized.data)
