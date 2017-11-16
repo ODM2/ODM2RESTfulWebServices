@@ -31,6 +31,8 @@ tags:
     description: Variables in database
   - name: units
     description: Units in database
+  - name: organizations
+    description: Organizations in database
 schemes:
   - http
 consumes:
@@ -358,6 +360,26 @@ paths:
           in: query
           description: Units Type (Name). <br> 
                        See all available Units Types [here](http://vocabulary.odm2.org/unitstype/).
+          required: false
+          type: string
+      responses:
+        "200":
+          description: 200 Response
+  /organizations:
+    get:
+      tags:
+        - organizations
+      operationId: getOrganizations
+      summary: All ODM2 organizations retrieval
+      parameters:
+        - name: organizationID
+          in: query
+          description: Organization ID(s)
+          required: false
+          type: string
+        - name: organizationCode
+          in: query
+          description: Organization Code(s)
           required: false
           type: string
       responses:

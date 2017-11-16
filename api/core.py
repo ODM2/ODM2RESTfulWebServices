@@ -464,3 +464,25 @@ def get_units(**kwargs):
         )
 
     return units_list
+
+
+def get_organizations(**kwargs):
+    ids = kwargs.get('organizationID')
+    codes = kwargs.get('organizationCode')
+
+    if ids:
+        ids = [int(i) for i in ids.split(',')]
+    if codes:
+        codes = codes.split(',')
+
+    organizations = READ.getOrganizations(ids=ids,
+                                 codes=codes)
+
+    orgs_list = []
+    for org in organizations:
+        org_dct = get_vals(org)
+        orgs_list.append(
+            Organization(org_dct)
+        )
+
+    return orgs_list
