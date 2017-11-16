@@ -53,6 +53,52 @@ def db_check():
     finally:
         pass
 
+# Model creators ---
+def result_creator(res):
+    res_dct = get_vals(res)
+
+    act_obj = res.FeatureActionObj.ActionObj
+
+    # Get methods
+    m_dct = get_vals(act_obj.MethodObj)
+    m_dct.update({
+        'Organization': get_vals(act_obj.MethodObj.OrganizationObj)
+    })
+    method = Methods(m_dct)
+
+    a_dct = get_vals(res.FeatureActionObj.ActionObj)
+
+    a_dct.update({
+        'Method': method
+    })
+
+    action = Action(a_dct)
+
+    # Get Feature Action ----
+    feat_act_dct = get_vals(res.FeatureActionObj)
+    feat_act_dct.update({
+        'SamplingFeature': get_vals(res.FeatureActionObj.SamplingFeatureObj),
+        'Action': action
+    })
+    feat_act = FeatureAction(feat_act_dct)
+    # ------------------------
+
+    res_dct.update({
+        'FeatureAction': feat_act,
+        'ProcessingLevel': get_vals(res.ProcessingLevelObj),
+        'TaxonomicClassifier': None,
+        'Unit': get_vals(res.UnitsObj),
+        'Variable': get_vals(res.VariableObj)
+    })
+
+    if res.TaxonomicClassifierObj:
+        res_dct.update({
+            'TaxonomicClassifier': get_vals(res.TaxonomicClassifierObj)
+        })
+
+    return res_dct
+# ---
+
 
 def get_affiliations(**kwargs):
     db_check()
@@ -136,49 +182,8 @@ def get_results(**kwargs):
 
     Results_list = []
     for res in Results:
-        res_dct = get_vals(res)
-
-        act_obj = res.FeatureActionObj.ActionObj
-
-        # Get methods
-        m_dct = get_vals(act_obj.MethodObj)
-        m_dct.update({
-            'Organization': get_vals(act_obj.MethodObj.OrganizationObj)
-        })
-        method = Methods(m_dct)
-
-        a_dct = get_vals(res.FeatureActionObj.ActionObj)
-
-        a_dct.update({
-            'Method': method
-        })
-
-        action = Action(a_dct)
-
-        # Get Feature Action ----
-        feat_act_dct = get_vals(res.FeatureActionObj)
-        feat_act_dct.update({
-            'SamplingFeature': get_vals(res.FeatureActionObj.SamplingFeatureObj),
-            'Action': action
-        })
-        feat_act = FeatureAction(feat_act_dct)
-        # ------------------------
-
-        res_dct.update({
-            'FeatureAction': feat_act,
-            'ProcessingLevel': get_vals(res.ProcessingLevelObj),
-            'TaxonomicClassifier': None,
-            'Unit': get_vals(res.UnitsObj),
-            'Variable': get_vals(res.VariableObj)
-        })
-
-        if res.TaxonomicClassifierObj:
-            res_dct.update({
-                'TaxonomicClassifier': get_vals(res.TaxonomicClassifierObj)
-            })
-
         Results_list.append(
-            Result(res_dct)
+            Result(result_creator(res))
         )
 
     return Results_list
@@ -251,8 +256,7 @@ def get_samplingfeaturedatasets(**kwargs):
     dataSetResults = READ.getSamplingFeatureDatasets(ids=ids,
                                                  codes=codes,
                                                  uuids=uuids,
-                                                 dstype=ds_type
-                                                 )
+                                                 dstype=ds_type)
 
     dsr_list = []
     for dsr in dataSetResults:
@@ -260,45 +264,7 @@ def get_samplingfeaturedatasets(**kwargs):
 
         ds_dct = get_vals(dsr.DataSetObj)
 
-        res_dct = get_vals(dsr.ResultObj)
-
-        # Action ---
-        act_obj = dsr.ResultObj.FeatureActionObj.ActionObj
-        m_dct = get_vals(act_obj.MethodObj)
-        m_dct.update({
-            'Organization': get_vals(act_obj.MethodObj.OrganizationObj)
-        })
-        method = Methods(m_dct)
-
-        a_dct = get_vals(dsr.ResultObj.FeatureActionObj.ActionObj)
-
-        a_dct.update({
-            'Method': method
-        })
-
-        action = Action(a_dct)
-        # ------------------
-        # Feature Action ---
-        feat_act_dct = get_vals(dsr.ResultObj.FeatureActionObj)
-        feat_act_dct.update({
-            'SamplingFeature': get_vals(dsr.ResultObj.FeatureActionObj.SamplingFeatureObj),
-            'Action': action
-        })
-        feat_act = FeatureAction(feat_act_dct)
-        # ------------------------
-
-        res_dct.update({
-            'FeatureAction': feat_act,
-            'ProcessingLevel': get_vals(dsr.ResultObj.ProcessingLevelObj),
-            'TaxonomicClassifier': None,
-            'Unit': get_vals(dsr.ResultObj.UnitsObj),
-            'Variable': get_vals(dsr.ResultObj.VariableObj)
-        })
-
-        if dsr.ResultObj.TaxonomicClassifierObj:
-            res_dct.update({
-                'TaxonomicClassifier': get_vals(dsr.ResultObj.TaxonomicClassifierObj)
-            })
+        res_dct = result_creator(dsr.ResultObj)
 
         dsr_dct.update({
             'Result': res_dct,
@@ -330,6 +296,45 @@ def get_datasets(**kwargs):
         )
 
     return ds_list
+
+
+def get_datasetresults(**kwargs):
+    db_check()
+    ids = kwargs.get('datasetID')
+    codes = kwargs.get('datasetCode')
+    uuids = kwargs.get('datasetUUID')
+    if ids:
+        ids = [int(i) for i in kwargs.get('datasetID').split(',')]
+    if uuids:
+        uuids = kwargs.get('datasetUUID').split(',')
+    if codes:
+        codes = kwargs.get('datasetCode').split(',')
+
+    ds_type = kwargs.get('datasetType')
+
+    dataSetResults = READ.getDataSetsResults(ids=ids,
+                                             codes=codes,
+                                             uuids=uuids,
+                                             dstype=ds_type)
+
+    dsr_list = []
+    for dsr in dataSetResults:
+        dsr_dct = get_vals(dsr)
+
+        ds_dct = get_vals(dsr.DataSetObj)
+
+        res_dct = result_creator(dsr.ResultObj)
+
+        dsr_dct.update({
+            'Result': res_dct,
+            'DataSet': ds_dct
+        })
+
+        dsr_list.append(
+            DataSetsResults(dsr_dct)
+        )
+
+    return dsr_list
 
 
 def get_resultvalues(**kwargs):

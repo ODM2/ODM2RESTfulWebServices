@@ -33,6 +33,8 @@ tags:
     description: Units in database
   - name: organizations
     description: Organizations in database
+  - name: datasetresults
+    description: DatasetResults in database
 schemes:
   - http
 consumes:
@@ -380,6 +382,37 @@ paths:
         - name: organizationCode
           in: query
           description: Organization Code(s)
+          required: false
+          type: string
+      responses:
+        "200":
+          description: 200 Response
+  /datasetresults:
+    get:
+      tags:
+        - datasetresults
+      operationId: getDatasetResults
+      summary: All ODM2 Dataset Results retrieval
+      parameters:
+        - name: datasetID
+          in: query
+          description: Dataset ID(s) **Required (or Dataset UUID or Dataset Code)**
+          required: false
+          type: string
+        - name: datasetUUID
+          in: query
+          description: Dataset UUID(s) **Required (or Dataset ID or Dataset Code)**
+          required: false
+          type: string
+        - name: datasetCode
+          in: query
+          description: Dataset Code(s) **Required (or Dataset ID or Dataset UUID)**
+          required: false
+          type: string
+        - name: datasetType
+          in: query
+          description: Dataset Type (Name). <br> 
+                       See all available Dataset Types [here](http://vocabulary.odm2.org/datasettype/).
           required: false
           type: string
       responses:

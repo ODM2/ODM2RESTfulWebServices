@@ -29,7 +29,8 @@ from core import (
     get_actions,
     get_variables,
     get_units,
-    get_organizations
+    get_organizations,
+    get_datasetresults
 )
 
 from serializers import (
@@ -217,6 +218,27 @@ class DataSetsViewSet(APIView):
 
         return Response(serialized.data)
 
+
+class DatasetResultsViewSet(APIView):
+    renderer_classes = (JSONRenderer, YAMLRenderer, CSVRenderer)
+
+    def get(self, request, format=None):
+
+        get_kwargs = {
+            'datasetID': request.query_params.get('datasetID'),
+            'datasetCode': request.query_params.get('datasetCode'),
+            'datasetUUID': request.query_params.get('datasetUUID'),
+            'datasetType': request.query_params.get('datasetType'),
+            'results': False
+        }
+
+        dsr = get_datasetresults(**get_kwargs)
+        serialized = DataSetsResultsSerializer(dsr, many=True)
+
+        if len(dsr) == 1:
+            serialized = DataSetsResultsSerializer(dsr[0])
+
+        return Response(serialized.data)
 
 class ResultValuesViewSet(APIView):
 
