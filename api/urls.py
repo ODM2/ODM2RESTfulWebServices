@@ -22,7 +22,8 @@ from views import (
     VariablesViewSet,
     UnitsViewSet,
     OrganizationViewSet,
-    DatasetResultsViewSet
+    DatasetResultsViewSet,
+    DataSetsValuesViewSet
 )
 
 urlpatterns = [
@@ -54,7 +55,9 @@ urlpatterns = [
     # Organizations
     url(r'^organizations$', OrganizationViewSet.as_view(), name='organizations-list'),
     # Datasetresults
-    url(r'^datasetresults$', DatasetResultsViewSet.as_view(), name='datasetresults-list')
+    url(r'^datasetresults$', DatasetResultsViewSet.as_view(), name='datasetresults-list'),
+    # DataSetValues
+    url(r'^datasetvalues$', DataSetsValuesViewSet.as_view(), name='datasetvalues-list')
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns, allowed=['json', 'html', 'yaml', 'csv'])
