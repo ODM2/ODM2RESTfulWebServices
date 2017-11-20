@@ -68,7 +68,7 @@ field_mapping = {
         CLOB.__visit_name__: CharField,
         DECIMAL.__visit_name__: DecimalField,
         Date.__visit_name__: DateTimeField,
-        Variant.__visit_name__: CharField
+        Variant.__visit_name__: IntegerField
 }
 
 
@@ -92,7 +92,10 @@ def get_col(sqlalch_obj, serializer=False):
             field_cls = col_prop.columns[0].type.__class__
             if not field_nm.startswith('_'):
                 if serializer:
-                    d.append((field_nm, field_mapping[field_cls.__visit_name__]()))
+                    if 'datetime' in field_nm.lower() and 'utcoffset' not in field_nm.lower():
+                        d.append((field_nm, DateTimeField()))
+                    else:
+                        d.append((field_nm, field_mapping[field_cls.__visit_name__]()))
                 else:
                     d.append((field_nm, None))
 
