@@ -30,7 +30,8 @@ from core import (
     get_variables,
     get_units,
     get_organizations,
-    get_datasetresults
+    get_datasetresults,
+    get_datasetsvalues
 )
 
 from serializers import (
@@ -199,6 +200,53 @@ class SamplingFeaturesDataSetViewSet(APIView):
         return Response(serialized.data)
 
 
+class DataSetsValuesViewSet(APIView):
+
+    renderer_classes = (JSONRenderer, YAMLRenderer, CSVRenderer)
+
+    def get(self, request, format=None):
+
+        get_kwargs = {
+            'datasetID': request.query_params.get('datasetID'),
+            'datasetUUID': request.query_params.get('datasetUUID'),
+            'datasetCode': request.query_params.get('datasetCode'),
+            'datasetType': request.query_params.get('datasetType'),
+            'beginDate': request.query_params.get('beginDate'),
+            'endDate': request.query_params.get('endDate')
+        }
+
+        if get_kwargs['datasetID'] or get_kwargs['datasetCode'] or get_kwargs['datasetUUID']:
+            dsr_val, res_type = get_datasetsvalues(**get_kwargs)
+        else:
+            raise Exception('Must enter datasetID, datasetCode, or datasetUUID')
+
+        RVSerializer = None
+        if 'categorical' in res_type.lower():
+            RVSerializer = CategoricalResultValuesSerializer
+        elif 'measurement' in res_type.lower():
+            RVSerializer = MeasurementResultValuesSerializer
+        elif 'point' in res_type.lower():
+            RVSerializer = PointCoverageResultValuesSerializer
+        elif 'profile' in res_type.lower():
+            RVSerializer = ProfileResultValuesSerializer
+        elif 'section' in res_type.lower():
+            RVSerializer = SectionResultsSerializer
+        elif 'spectra' in res_type.lower():
+            RVSerializer = SpectraResultValuesSerializer
+        elif 'time' in res_type.lower():
+            RVSerializer = TimeSeriesResultValuesSerializer
+        elif 'trajectory' in res_type.lower():
+            RVSerializer = TrajectoryResultValuesSerializer
+        elif 'transect' in res_type.lower():
+            RVSerializer = TransectResultValuesSerializer
+        serialized = RVSerializer(dsr_val, many=True)
+
+        if len(dsr_val) == 1:
+            serialized = RVSerializer(dsr_val[0])
+
+        return Response(serialized.data)
+
+
 class DataSetsViewSet(APIView):
 
     renderer_classes = (JSONRenderer, YAMLRenderer, CSVRenderer)
@@ -239,6 +287,7 @@ class DatasetResultsViewSet(APIView):
             serialized = DataSetsResultsSerializer(dsr[0])
 
         return Response(serialized.data)
+
 
 class ResultValuesViewSet(APIView):
 
@@ -302,6 +351,7 @@ class MethodsViewSet(APIView):
             serialized = MethodSerializer(methods[0])
 
         return Response(serialized.data)
+
 
 class ActionsViewSet(APIView):
     renderer_classes = (JSONRenderer, YAMLRenderer, CSVRenderer)

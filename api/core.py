@@ -27,7 +27,7 @@ from models import (
     SamplingFeatures,
     DataSets,
     DataSetsResults,
-    Methods
+    Methods,
 )
 
 db_settings = {
@@ -298,6 +298,33 @@ def get_datasets(**kwargs):
     return ds_list
 
 
+def get_datasetsvalues(**kwargs):
+    db_check()
+    ids = kwargs.get('datasetID')
+    codes = kwargs.get('datasetCode')
+    uuids = kwargs.get('datasetUUID')
+    ds_type = kwargs.get('datasetType')
+    starttime = kwargs.get('beginDate')
+    endtime = kwargs.get('endDate')
+
+    if ids:
+        ids = [int(i) for i in kwargs.get('datasetID').split(',')]
+    if uuids:
+        uuids = kwargs.get('datasetUUID').split(',')
+    if codes:
+        codes = kwargs.get('datasetCode').split(',')
+
+    dataSetsValues = READ.getDataSetsValues(ids=ids,  # type: DataFrame
+                                            codes=codes,
+                                            uuids=uuids,
+                                            dstype=ds_type,)
+
+    res = READ.getResults(ids=ids)[0]
+    res_type = res.ResultTypeCV.lower()
+
+    return [r.to_dict() for idx, r in dataSetsValues.iterrows()], res_type
+
+
 def get_datasetresults(**kwargs):
     db_check()
     ids = kwargs.get('datasetID')
@@ -382,6 +409,7 @@ def get_methods(**kwargs):
         )
 
     return m_list
+
 
 def get_actions(**kwargs):
     # TODO: Get relationship to affiliations via ActionBy, currently not in API

@@ -35,6 +35,8 @@ tags:
     description: Organizations in database
   - name: datasetresults
     description: DatasetResults in database
+  - name: datasetvalues
+    description: DataSetValues in database
 schemes:
   - http
 consumes:
@@ -257,6 +259,37 @@ paths:
           description: Data Set Code(s)
           required: false
           type: string
+      responses:
+        "200":
+          description: 200 Response
+  /datasetvalues:
+    get:
+      tags:
+      - datasetvalues
+      operationId: getDataSetsValues
+      summary: ODM2 datasetvalues retrieval
+      parameters:
+      - name: datasetID
+        in: query
+        description: Dataset ID(s) **Required (or Dataset UUID or Dataset Code)**
+        required: false
+        type: string
+      - name: datasetUUID
+        in: query
+        description: Dataset UUID(s) **Required (or Dataset ID or Dataset Code)**
+        required: false
+        type: string
+      - name: datasetCode
+        in: query
+        description: Dataset Code(s) **Required (or Dataset ID or Dataset UUID)**
+        required: false
+        type: string
+      - name: datasetType
+        in: query
+        description: Dataset Type (Name). <br> 
+                     See all available Dataset Types [here](http://vocabulary.odm2.org/datasettype/).
+        required: false
+        type: string
       responses:
         "200":
           description: 200 Response
