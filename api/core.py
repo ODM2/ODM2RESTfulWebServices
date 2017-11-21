@@ -5,6 +5,8 @@ from __future__ import division
 
 from django.core.management import settings
 
+import pandas as pd
+
 from sqlalchemy.engine.url import URL
 
 from odm2api.ODMconnection import dbconnection
@@ -13,21 +15,30 @@ import odm2api.ODM2.models as odm2_models
 
 from utils import get_vals
 
-from models import (
-    Affiliation,
-    Action,
-    Organization,
-    People,
-    Result,
-    Variable,
-    Unit,
-    FeatureAction,
-    ProcessingLevel,
-    TaxonomicClassifier,
-    SamplingFeatures,
-    DataSets,
-    DataSetsResults,
-    Methods,
+from serializers import (
+    AffiliationSerializer,
+    PeopleSerializer,
+    ResultSerializer,
+    SamplingFeatureSerializer,
+    DataSetSerializer,
+    CategoricalResultValuesSerializer,
+    MeasurementResultValuesSerializer,
+    PointCoverageResultValuesSerializer,
+    ProfileResultValuesSerializer,
+    SectionResultsSerializer,
+    SpectraResultValuesSerializer,
+    TimeSeriesResultValuesSerializer,
+    TrajectoryResultValuesSerializer,
+    TransectResultValuesSerializer,
+    DataSetsResultsSerializer,
+    SitesSerializer,
+    SpecimensSerializer,
+    MethodSerializer,
+    ActionSerializer,
+    VariableSerializer,
+    UnitSerializer,
+    OrganizationSerializer
+
 )
 
 db_settings = {
@@ -53,6 +64,7 @@ def db_check():
     finally:
         pass
 
+
 # Model creators ---
 def result_creator(res):
     res_dct = get_vals(res)
@@ -64,27 +76,23 @@ def result_creator(res):
     m_dct.update({
         'Organization': get_vals(act_obj.MethodObj.OrganizationObj)
     })
-    method = Methods(m_dct)
 
     a_dct = get_vals(res.FeatureActionObj.ActionObj)
 
     a_dct.update({
-        'Method': method
+        'Method': m_dct
     })
-
-    action = Action(a_dct)
 
     # Get Feature Action ----
     feat_act_dct = get_vals(res.FeatureActionObj)
     feat_act_dct.update({
         'SamplingFeature': get_vals(res.FeatureActionObj.SamplingFeatureObj),
-        'Action': action
+        'Action': a_dct
     })
-    feat_act = FeatureAction(feat_act_dct)
     # ------------------------
 
     res_dct.update({
-        'FeatureAction': feat_act,
+        'FeatureAction': feat_act_dct,
         'ProcessingLevel': get_vals(res.ProcessingLevelObj),
         'TaxonomicClassifier': None,
         'Unit': get_vals(res.UnitsObj),
@@ -128,7 +136,7 @@ def get_affiliations(**kwargs):
             })
 
         Aff_list.append(
-            Affiliation(aff_dct)
+            AffiliationSerializer(aff_dct).data
         )
 
     return Aff_list
@@ -150,7 +158,7 @@ def get_people(**kwargs):
     for person in Ppl:
         ppl_dct = get_vals(person)
         Ppl_list.append(
-            People(ppl_dct)
+            PeopleSerializer(ppl_dct).data
         )
 
     return Ppl_list
@@ -182,8 +190,13 @@ def get_results(**kwargs):
 
     Results_list = []
     for res in Results:
+        Serializer = ResultSerializer(result_creator(res))
+        if res.FeatureActionObj.SamplingFeatureObj.SamplingFeatureTypeCV == 'Specimen':
+            Serializer.fields['FeatureAction'].fields['SamplingFeature'] = SpecimensSerializer()
+        if res.FeatureActionObj.SamplingFeatureObj.SamplingFeatureTypeCV == 'Site':
+            Serializer.fields['FeatureAction'].fields['SamplingFeature'] = SitesSerializer()
         Results_list.append(
-            Result(result_creator(res))
+            Serializer.data
         )
 
     return Results_list
@@ -218,24 +231,19 @@ def get_samplingfeatures(**kwargs):
                                                  results=res)
 
     sf_list = []
-    sp_list = []
-    si_list = []
     for sf in sampling_features:
         sf_dct = get_vals(sf)
+        serialized = SamplingFeatureSerializer(sf_dct).data
         if sf.SamplingFeatureTypeCV == 'Site':
-            si_list.append(
-                SamplingFeatures(sf_dct)
-            )
-        elif sf.SamplingFeatureTypeCV == 'Specimen':
-            sp_list.append(
-                SamplingFeatures(sf_dct)
-            )
-        else:
-            sf_list.append(
-                SamplingFeatures(sf_dct)
-            )
+            serialized = SitesSerializer(sf_dct).data
+        if sf.SamplingFeatureTypeCV == 'Specimen':
+            serialized = SpecimensSerializer(sf_dct).data
 
-    return sf_list, sp_list, si_list
+        sf_list.append(
+            serialized
+        )
+
+    return sf_list
 
 
 def get_samplingfeaturedatasets(**kwargs):
@@ -253,6 +261,7 @@ def get_samplingfeaturedatasets(**kwargs):
 
     ds_type = kwargs.get('dataSetType')
 
+    # TODO: Fix this Structure have changed!
     dataSetResults = READ.getSamplingFeatureDatasets(ids=ids,
                                                  codes=codes,
                                                  uuids=uuids,
@@ -272,7 +281,7 @@ def get_samplingfeaturedatasets(**kwargs):
         })
 
         dsr_list.append(
-            DataSetsResults(dsr_dct)
+            dsr_dct
         )
 
     return dsr_list
@@ -292,7 +301,7 @@ def get_datasets(**kwargs):
     for ds in datasets:
         ds_dct = get_vals(ds)
         ds_list.append(
-            DataSets(ds_dct)
+            DataSetSerializer(ds_dct).data
         )
 
     return ds_list
@@ -314,15 +323,39 @@ def get_datasetsvalues(**kwargs):
     if codes:
         codes = kwargs.get('datasetCode').split(',')
 
-    dataSetsValues = READ.getDataSetsValues(ids=ids,  # type: DataFrame
+    dataSetsValues = READ.getDataSetsValues(ids=ids,
                                             codes=codes,
                                             uuids=uuids,
-                                            dstype=ds_type,)
+                                            dstype=ds_type)
 
-    res = READ.getResults(ids=ids)[0]
-    res_type = res.ResultTypeCV.lower()
+    dsr_val = []
+    if isinstance(dataSetsValues, pd.DataFrame):
+        res = READ.getResults(ids=list(dataSetsValues.resultid.values))[0]
+        res_type = res.ResultTypeCV.lower()
 
-    return [r.to_dict() for idx, r in dataSetsValues.iterrows()], res_type
+        RVSerializer = None
+        if 'category' in res_type.lower():
+            RVSerializer = CategoricalResultValuesSerializer
+        elif 'measurement' in res_type.lower():
+            RVSerializer = MeasurementResultValuesSerializer
+        elif 'point' in res_type.lower():
+            RVSerializer = PointCoverageResultValuesSerializer
+        elif 'profile' in res_type.lower():
+            RVSerializer = ProfileResultValuesSerializer
+        elif 'section' in res_type.lower():
+            RVSerializer = SectionResultsSerializer
+        elif 'spectra' in res_type.lower():
+            RVSerializer = SpectraResultValuesSerializer
+        elif 'time' in res_type.lower():
+            RVSerializer = TimeSeriesResultValuesSerializer
+        elif 'trajectory' in res_type.lower():
+            RVSerializer = TrajectoryResultValuesSerializer
+        elif 'transect' in res_type.lower():
+            RVSerializer = TransectResultValuesSerializer
+
+        dsr_val = [RVSerializer(r.to_dict()).data for idx, r in dataSetsValues.iterrows()]
+
+    return dsr_val
 
 
 def get_datasetresults(**kwargs):
@@ -358,7 +391,7 @@ def get_datasetresults(**kwargs):
         })
 
         dsr_list.append(
-            DataSetsResults(dsr_dct)
+            DataSetsResultsSerializer(dsr_dct).data
         )
 
     return dsr_list
@@ -379,10 +412,35 @@ def get_resultvalues(**kwargs):
     result_values = READ.getResultValues(resultids=ids,
                                          starttime=starttime,
                                          endtime=endtime)
-    res = READ.getResults(ids=ids)[0]
-    res_type = res.ResultTypeCV.lower()
 
-    return [r.to_dict() for idx, r in result_values.iterrows()], res_type
+    res_val = []
+    if isinstance(result_values, pd.DataFrame):
+        res = READ.getResults(ids=[ids[0]])[0]
+        res_type = res.ResultTypeCV
+
+        RVSerializer = None
+        if 'category' in res_type.lower():
+            RVSerializer = CategoricalResultValuesSerializer
+        elif 'measurement' in res_type.lower():
+            RVSerializer = MeasurementResultValuesSerializer
+        elif 'point' in res_type.lower():
+            RVSerializer = PointCoverageResultValuesSerializer
+        elif 'profile' in res_type.lower():
+            RVSerializer = ProfileResultValuesSerializer
+        elif 'section' in res_type.lower():
+            RVSerializer = SectionResultsSerializer
+        elif 'spectra' in res_type.lower():
+            RVSerializer = SpectraResultValuesSerializer
+        elif 'time' in res_type.lower():
+            RVSerializer = TimeSeriesResultValuesSerializer
+        elif 'trajectory' in res_type.lower():
+            RVSerializer = TrajectoryResultValuesSerializer
+        elif 'transect' in res_type.lower():
+            RVSerializer = TransectResultValuesSerializer
+
+        res_val = [RVSerializer(r.to_dict()).data for idx, r in result_values.iterrows()]
+
+    return res_val
 
 
 def get_methods(**kwargs):
@@ -405,7 +463,7 @@ def get_methods(**kwargs):
             'Organization': get_vals(m.OrganizationObj)
         })
         m_list.append(
-            Methods(m_dct)
+            MethodSerializer(m_dct).data
         )
 
     return m_list
@@ -433,13 +491,14 @@ def get_actions(**kwargs):
         m_dct.update({
             'Organization': get_vals(a.MethodObj.OrganizationObj)
         })
-        method = Methods(m_dct)
 
         a_dct.update({
-            'Method': method
+            'Method': m_dct
         })
 
-        act_list.append(a_dct)
+        act_list.append(
+            ActionSerializer(a_dct).data
+        )
 
     return act_list
 
@@ -471,7 +530,7 @@ def get_variables(**kwargs):
     for var in varibles:
         var_dct = get_vals(var)
         vars_list.append(
-            Variable(var_dct)
+            VariableSerializer(var_dct).data
         )
 
     return vars_list
@@ -493,7 +552,7 @@ def get_units(**kwargs):
     for u in units:
         units_dct = get_vals(u)
         units_list.append(
-            Unit(units_dct)
+            UnitSerializer(units_dct).data
         )
 
     return units_list
@@ -515,7 +574,7 @@ def get_organizations(**kwargs):
     for org in organizations:
         org_dct = get_vals(org)
         orgs_list.append(
-            Organization(org_dct)
+            OrganizationSerializer(org_dct).data
         )
 
     return orgs_list
