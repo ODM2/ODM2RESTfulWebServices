@@ -123,7 +123,7 @@ paths:
           description: Result Type (Name). <br>
                        See all available Result Types [here](http://vocabulary.odm2.org/resulttype/).
           required: false
-          type: integer
+          type: string
         - name: actionID
           in: query
           description: Action ID

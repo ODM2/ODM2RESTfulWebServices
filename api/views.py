@@ -1,21 +1,15 @@
 # -*- coding: utf-8 -*-
+from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
-from __future__ import division
 
-from rest_framework.renderers import (JSONRenderer, CoreJSONRenderer)
 from rest_framework.parsers import JSONParser
-from rest_framework_yaml.renderers import YAMLRenderer
+from rest_framework.renderers import (JSONRenderer)
+from rest_framework.response import Response
+from rest_framework.views import APIView
 from rest_framework_csv.renderers import CSVRenderer
 from rest_framework_yaml.parsers import YAMLParser
-from rest_framework.views import APIView
-from rest_framework.response import Response
-
-from rest_framework.permissions import AllowAny
-from rest_framework.response import Response
-from rest_framework.schemas import SchemaGenerator
-from rest_framework.views import APIView
-
+from rest_framework_yaml.renderers import YAMLRenderer
 
 from core import (
     get_affiliations,
@@ -33,13 +27,7 @@ from core import (
     get_datasetresults,
     get_datasetsvalues
 )
-
 from serializers import (
-    AffiliationSerializer,
-    PeopleSerializer,
-    ResultSerializer,
-    SamplingFeatureSerializer,
-    DataSetSerializer,
     CategoricalResultValuesSerializer,
     MeasurementResultValuesSerializer,
     PointCoverageResultValuesSerializer,
@@ -49,14 +37,7 @@ from serializers import (
     TimeSeriesResultValuesSerializer,
     TrajectoryResultValuesSerializer,
     TransectResultValuesSerializer,
-    DataSetsResultsSerializer,
-    SitesSerializer,
-    SpecimensSerializer,
-    MethodSerializer,
-    ActionSerializer,
-    VariableSerializer,
-    UnitSerializer,
-    OrganizationSerializer
+    DataSetsResultsSerializer
 
 )
 
@@ -78,12 +59,8 @@ class AffiliationsViewSet(APIView):
         }
 
         affiliations = get_affiliations(**get_kwargs)
-        serialized = AffiliationSerializer(affiliations, many=True)
 
-        if len(affiliations) == 1:
-            serialized = AffiliationSerializer(affiliations[0])
-
-        return Response(serialized.data)
+        return Response(affiliations)
 
 
 class PeopleViewSet(APIView):
@@ -99,12 +76,8 @@ class PeopleViewSet(APIView):
         }
 
         people = get_people(**get_kwargs)
-        serialized = PeopleSerializer(people, many=True)
 
-        if len(people) == 1:
-            serialized = PeopleSerializer(people[0])
-
-        return Response(serialized.data)
+        return Response(people)
 
 
 class ResultsViewSet(APIView):
@@ -125,11 +98,11 @@ class ResultsViewSet(APIView):
         }
 
         results = get_results(**get_kwargs)
-        serialized = ResultSerializer(results, many=True)
+        # serialized = ResultSerializer(results, many=True)
 
-        if len(results) == 1:
-            serialized = ResultSerializer(results[0])
-        return Response(serialized.data)
+        # if len(results) == 1:
+        #     serialized = ResultSerializer(results[0])
+        return Response(results)
 
 
 class SamplingFeaturesViewSet(APIView):
@@ -152,23 +125,9 @@ class SamplingFeaturesViewSet(APIView):
                 'results': results
             })
 
-        sf_serialized, sp_serialized, si_serialized = [], [], []
-        sf_list, sp_list, si_list = get_samplingfeatures(**get_kwargs)
+        sf_list = get_samplingfeatures(**get_kwargs)
 
-        if sf_list:
-            sf_serialized = SamplingFeatureSerializer(sf_list, many=True).data
-        if sp_list:
-            sp_serialized = SpecimensSerializer(sp_list, many=True).data
-        if si_list:
-            si_serialized = SitesSerializer(si_list, many=True).data
-
-        sf_all = sf_serialized + sp_serialized + si_serialized
-
-
-        if len(sf_all) == 1:
-            sf_all = sf_all[0]
-
-        return Response(sf_all)
+        return Response(sf_list)
 
 
 class SamplingFeaturesDataSetViewSet(APIView):
@@ -216,35 +175,11 @@ class DataSetsValuesViewSet(APIView):
         }
 
         if get_kwargs['datasetID'] or get_kwargs['datasetCode'] or get_kwargs['datasetUUID']:
-            dsr_val, res_type = get_datasetsvalues(**get_kwargs)
+            dsr_val = get_datasetsvalues(**get_kwargs)
         else:
             raise Exception('Must enter datasetID, datasetCode, or datasetUUID')
 
-        RVSerializer = None
-        if 'categorical' in res_type.lower():
-            RVSerializer = CategoricalResultValuesSerializer
-        elif 'measurement' in res_type.lower():
-            RVSerializer = MeasurementResultValuesSerializer
-        elif 'point' in res_type.lower():
-            RVSerializer = PointCoverageResultValuesSerializer
-        elif 'profile' in res_type.lower():
-            RVSerializer = ProfileResultValuesSerializer
-        elif 'section' in res_type.lower():
-            RVSerializer = SectionResultsSerializer
-        elif 'spectra' in res_type.lower():
-            RVSerializer = SpectraResultValuesSerializer
-        elif 'time' in res_type.lower():
-            RVSerializer = TimeSeriesResultValuesSerializer
-        elif 'trajectory' in res_type.lower():
-            RVSerializer = TrajectoryResultValuesSerializer
-        elif 'transect' in res_type.lower():
-            RVSerializer = TransectResultValuesSerializer
-        serialized = RVSerializer(dsr_val, many=True)
-
-        if len(dsr_val) == 1:
-            serialized = RVSerializer(dsr_val[0])
-
-        return Response(serialized.data)
+        return Response(dsr_val)
 
 
 class DataSetsViewSet(APIView):
@@ -258,13 +193,9 @@ class DataSetsViewSet(APIView):
             'datasetUUID': request.query_params.get('datasetUUID')
         }
 
-        ds = get_datasets(**get_kwargs)
-        serialized = DataSetSerializer(ds, many=True)
+        datasets = get_datasets(**get_kwargs)
 
-        if len(ds) == 1:
-            serialized = DataSetSerializer(ds[0])
-
-        return Response(serialized.data)
+        return Response(datasets)
 
 
 class DatasetResultsViewSet(APIView):
@@ -281,12 +212,8 @@ class DatasetResultsViewSet(APIView):
         }
 
         dsr = get_datasetresults(**get_kwargs)
-        serialized = DataSetsResultsSerializer(dsr, many=True)
 
-        if len(dsr) == 1:
-            serialized = DataSetsResultsSerializer(dsr[0])
-
-        return Response(serialized.data)
+        return Response(dsr)
 
 
 class ResultValuesViewSet(APIView):
@@ -302,35 +229,12 @@ class ResultValuesViewSet(APIView):
         }
 
         if get_kwargs['resultID']:
-            res_val, res_type = get_resultvalues(**get_kwargs)
+            res_val = get_resultvalues(**get_kwargs)
         else:
             raise Exception('Must enter resultID')
 
-        RVSerializer = None
-        if 'categorical' in res_type.lower():
-            RVSerializer = CategoricalResultValuesSerializer
-        elif 'measurement' in res_type.lower():
-            RVSerializer = MeasurementResultValuesSerializer
-        elif 'point' in res_type.lower():
-            RVSerializer = PointCoverageResultValuesSerializer
-        elif 'profile' in res_type.lower():
-            RVSerializer = ProfileResultValuesSerializer
-        elif 'section' in res_type.lower():
-            RVSerializer = SectionResultsSerializer
-        elif 'spectra' in res_type.lower():
-            RVSerializer = SpectraResultValuesSerializer
-        elif 'time' in res_type.lower():
-            RVSerializer = TimeSeriesResultValuesSerializer
-        elif 'trajectory' in res_type.lower():
-            RVSerializer = TrajectoryResultValuesSerializer
-        elif 'transect' in res_type.lower():
-            RVSerializer = TransectResultValuesSerializer
-        serialized = RVSerializer(res_val, many=True)
 
-        if len(res_val) == 1:
-            serialized = RVSerializer(res_val[0])
-
-        return Response(serialized.data)
+        return Response(res_val)
 
 
 class MethodsViewSet(APIView):
@@ -345,12 +249,8 @@ class MethodsViewSet(APIView):
         }
 
         methods = get_methods(**get_kwargs)
-        serialized = MethodSerializer(methods, many=True)
 
-        if len(methods) == 1:
-            serialized = MethodSerializer(methods[0])
-
-        return Response(serialized.data)
+        return Response(methods)
 
 
 class ActionsViewSet(APIView):
@@ -364,12 +264,8 @@ class ActionsViewSet(APIView):
         }
 
         actions = get_actions(**get_kwargs)
-        serialized = ActionSerializer(actions, many=True)
 
-        if len(actions) == 1:
-            serialized = ActionSerializer(actions[0])
-
-        return Response(serialized.data)
+        return Response(actions)
 
 
 class VariablesViewSet(APIView):
@@ -390,12 +286,8 @@ class VariablesViewSet(APIView):
             })
 
         variables = get_variables(**get_kwargs)
-        serialized = VariableSerializer(variables, many=True)
 
-        if len(variables) == 1:
-            serialized = VariableSerializer(variables[0])
-
-        return Response(serialized.data)
+        return Response(variables)
 
 
 class UnitsViewSet(APIView):
@@ -409,12 +301,8 @@ class UnitsViewSet(APIView):
         }
 
         units = get_units(**get_kwargs)
-        serialized = UnitSerializer(units, many=True)
 
-        if len(units) == 1:
-            serialized = UnitSerializer(units[0])
-
-        return Response(serialized.data)
+        return Response(units)
 
 
 class OrganizationViewSet(APIView):
@@ -427,9 +315,5 @@ class OrganizationViewSet(APIView):
         }
 
         organizations = get_organizations(**get_kwargs)
-        serialized = OrganizationSerializer(organizations, many=True)
 
-        if len(organizations) == 1:
-            serialized = OrganizationSerializer(organizations[0])
-
-        return Response(serialized.data)
+        return Response(organizations)
