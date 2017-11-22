@@ -38,7 +38,9 @@ from serializers import (
     VariableSerializer,
     UnitSerializer,
     OrganizationSerializer,
-    SamplingFeatureDatasetSerializer
+    SamplingFeatureDatasetSerializer,
+    SpecimensDatasetSerializer,
+    SitesDatasetSerializer
 
 )
 
@@ -289,8 +291,10 @@ def get_samplingfeaturedatasets(**kwargs):
     for dsr in dataSetResults:
         SFDSerializer = SamplingFeatureDatasetSerializer(samplingfeaturedatasets_creator(dsr))
         if dsr.SamplingFeatureTypeCV == 'Specimen':
+            SFDSerializer = SpecimensDatasetSerializer(samplingfeaturedatasets_creator(dsr))
             SFDSerializer.fields['Datasets'].child.fields['Results'].child.fields['FeatureAction'].fields['SamplingFeature'] = SpecimensSerializer()  # noqa
         if dsr.SamplingFeatureTypeCV == 'Site':
+            SFDSerializer = SitesDatasetSerializer(samplingfeaturedatasets_creator(dsr))
             SFDSerializer.fields['Datasets'].child.fields['Results'].child.fields['FeatureAction'].fields['SamplingFeature'] = SitesSerializer()  # noqa
         dsr_list.append(
             SFDSerializer.data
