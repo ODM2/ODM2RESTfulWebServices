@@ -294,6 +294,7 @@ DataSetResSerializer = type(
     (Serializer,),
     DataSetRes_dct
 )
+
 SamplingFeaturesDS_dct = get_sertype_dict(odm2_mod.SamplingFeatures)
 SamplingFeaturesDS_dct.update({
     'Datasets': DataSetResSerializer(many=True)
@@ -303,46 +304,28 @@ SamplingFeatureDatasetSerializer = type(
     (Serializer,),
     SamplingFeaturesDS_dct
 )
-
-
-# --- SitesDatasets Serializers ---
-DataSetRes_dct = get_sertype_dict(odm2_mod.DataSets)
-DataSetRes_dct.update({
-    'Results': ResultSerializer(many=True)
-})
-DataSetResSerializer = type(
-    str('DataSetResSerializer'),
-    (Serializer,),
-    DataSetRes_dct
-)
-SamplingFeaturesDS_dct = get_sertype_dict(odm2_mod.Sites)
-SamplingFeaturesDS_dct.update({
+# --- FORSITES --
+SitesDatasets_dct = get_sertype_dict(odm2_mod.Sites)
+SitesDatasets_dct.update({
     'Datasets': DataSetResSerializer(many=True)
 })
 SitesDatasetSerializer = type(
     str('SitesDatasetSerializer'),
     (Serializer,),
-    SamplingFeaturesDS_dct
+    SitesDatasets_dct
 )
 
 
-# --- SpecimensDatasets Serializers ---
-DataSetRes_dct = get_sertype_dict(odm2_mod.DataSets)
-DataSetRes_dct.update({
-    'Results': ResultSerializer(many=True)
-})
-DataSetResSerializer = type(
-    str('DataSetResSerializer'),
-    (Serializer,),
-    DataSetRes_dct
-)
-SamplingFeaturesDS_dct = get_sertype_dict(odm2_mod.Specimens)
-SamplingFeaturesDS_dct.update({
+# --- FOR SPECIMENS ---
+SpecimensDatasets_dct = get_sertype_dict(odm2_mod.Specimens)
+SpecimensDatasets_dct.update({
     'Datasets': DataSetResSerializer(many=True)
 })
 SpecimensDatasetSerializer = type(
     str('SpecimensDatasetSerializer'),
     (Serializer,),
-    SamplingFeaturesDS_dct
+    SpecimensDatasets_dct
 )
+
+# --------------------------------
 
