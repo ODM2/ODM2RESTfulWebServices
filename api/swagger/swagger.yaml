@@ -3,8 +3,8 @@ info:
   title: ODM2 REST API
   version: v1
   contact: 
-    email: landungs@uw.edu
-    name: Landung Setiawan
+    email: johnsmith@example.com
+    name: John Smith
   description: This is a development version for ODM2 REST API
 host: 127.0.0.1:8000
 basePath: /v1
@@ -37,6 +37,8 @@ tags:
     description: DatasetResults in database
   - name: datasetvalues
     description: DataSetValues in database
+  - name: processinglevels
+    description: ProcessingLevels in database
 schemes:
   - http
 consumes:
@@ -446,6 +448,26 @@ paths:
           in: query
           description: Dataset Type (Name). <br> 
                        See all available Dataset Types [here](http://vocabulary.odm2.org/datasettype/).
+          required: false
+          type: string
+      responses:
+        "200":
+          description: 200 Response
+  /processinglevels:
+    get:
+      tags:
+        - processinglevels
+      operationId: getProcessingLevels
+      summary: All ODM2 Processing Levels retrieval
+      parameters:
+        - name: processingLevelID
+          in: query
+          description: Processing Level ID(s)
+          required: false
+          type: string
+        - name: processingLevelCode
+          in: query
+          description: Processing Level Code(s)
           required: false
           type: string
       responses:

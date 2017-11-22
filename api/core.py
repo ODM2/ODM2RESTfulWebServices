@@ -25,6 +25,7 @@ from serializers import (
     MeasurementResultValuesSerializer,
     PointCoverageResultValuesSerializer,
     ProfileResultValuesSerializer,
+    ProcessingLevelSerializer,
     SectionResultsSerializer,
     SpectraResultValuesSerializer,
     TimeSeriesResultValuesSerializer,
@@ -584,7 +585,7 @@ def get_organizations(**kwargs):
         codes = codes.split(',')
 
     organizations = READ.getOrganizations(ids=ids,
-                                 codes=codes)
+                                          codes=codes)
 
     orgs_list = []
     for org in organizations:
@@ -594,3 +595,25 @@ def get_organizations(**kwargs):
         )
 
     return orgs_list
+
+
+def get_processinglevels(**kwargs):
+    ids = kwargs.get('processingLevelID')
+    codes = kwargs.get('processingLevelCode')
+
+    if ids:
+        ids = [int(i) for i in ids.split(',')]
+    if codes:
+        codes = codes.split(',')
+
+    proclevels = READ.getProcessingLevels(ids=ids,
+                                          codes=codes)
+
+    pl_list = []
+    for pl in proclevels:
+        pl_dct = get_vals(pl)
+        pl_list.append(
+            ProcessingLevelSerializer(pl_dct).data
+        )
+
+    return pl_list

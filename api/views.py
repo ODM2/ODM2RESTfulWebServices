@@ -25,7 +25,8 @@ from core import (
     get_units,
     get_organizations,
     get_datasetresults,
-    get_datasetsvalues
+    get_datasetsvalues,
+    get_processinglevels
 )
 from serializers import (
     CategoricalResultValuesSerializer,
@@ -313,3 +314,17 @@ class OrganizationViewSet(APIView):
         organizations = get_organizations(**get_kwargs)
 
         return Response(organizations)
+
+
+class ProcessingLevelsViewSet(APIView):
+    renderer_classes = (JSONRenderer, YAMLRenderer, CSVRenderer)
+
+    def get(self, request, format=None):
+        get_kwargs = {
+            'processingLevelID': request.query_params.get('processingLevelID'),
+            'processingLevelCode': request.query_params.get('processingLevelCode')
+        }
+
+        processinglevels = get_processinglevels(**get_kwargs)
+
+        return Response(processinglevels)

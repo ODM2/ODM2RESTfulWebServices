@@ -23,7 +23,8 @@ from views import (
     UnitsViewSet,
     OrganizationViewSet,
     DatasetResultsViewSet,
-    DataSetsValuesViewSet
+    DataSetsValuesViewSet,
+    ProcessingLevelsViewSet
 )
 
 urlpatterns = [
@@ -57,7 +58,9 @@ urlpatterns = [
     # Datasetresults
     url(r'^datasetresults$', DatasetResultsViewSet.as_view(), name='datasetresults-list'),
     # DataSetValues
-    url(r'^datasetvalues$', DataSetsValuesViewSet.as_view(), name='datasetvalues-list')
+    url(r'^datasetvalues$', DataSetsValuesViewSet.as_view(), name='datasetvalues-list'),
+    # ProcessingLevels
+    url(r'^processinglevels', ProcessingLevelsViewSet.as_view(), name='processinglevels-list')
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns, allowed=['json', 'html', 'yaml', 'csv'])
