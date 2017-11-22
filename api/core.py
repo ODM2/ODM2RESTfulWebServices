@@ -37,7 +37,10 @@ from serializers import (
     ActionSerializer,
     VariableSerializer,
     UnitSerializer,
-    OrganizationSerializer
+    OrganizationSerializer,
+    SamplingFeatureDatasetSerializer,
+    SpecimensDatasetSerializer,
+    SitesDatasetSerializer
 
 )
 
@@ -105,6 +108,24 @@ def result_creator(res):
         })
 
     return res_dct
+
+
+def samplingfeaturedatasets_creator(sfd):
+    ds = sfd.datasets.keys()
+    all_ds = []
+    for d in ds:
+        ds_dct = get_vals(d)
+        ds_dct.update({
+            u'Results': [result_creator(r) for r in sfd.datasets[d]]
+        })
+        all_ds.append(ds_dct)
+    sf = READ.getSamplingFeatures([sfd.SamplingFeatureID])[0]
+    sf_dct = get_vals(sf)
+    sf_dct.update({
+        u'Datasets': all_ds,
+    })
+
+    return sf_dct
 # ---
 
 
@@ -261,27 +282,22 @@ def get_samplingfeaturedatasets(**kwargs):
 
     ds_type = kwargs.get('dataSetType')
 
-    # TODO: Fix this Structure have changed!
     dataSetResults = READ.getSamplingFeatureDatasets(ids=ids,
-                                                 codes=codes,
-                                                 uuids=uuids,
-                                                 dstype=ds_type)
+                                                     codes=codes,
+                                                     uuids=uuids,
+                                                     dstype=ds_type)
 
     dsr_list = []
     for dsr in dataSetResults:
-        dsr_dct = get_vals(dsr)
-
-        ds_dct = get_vals(dsr.DataSetObj)
-
-        res_dct = result_creator(dsr.ResultObj)
-
-        dsr_dct.update({
-            'Result': res_dct,
-            'DataSet': ds_dct
-        })
-
+        SFDSerializer = SamplingFeatureDatasetSerializer(samplingfeaturedatasets_creator(dsr))
+        if dsr.SamplingFeatureTypeCV == 'Specimen':
+            SFDSerializer = SpecimensDatasetSerializer(samplingfeaturedatasets_creator(dsr))
+            SFDSerializer.fields['Datasets'].child.fields['Results'].child.fields['FeatureAction'].fields['SamplingFeature'] = SpecimensSerializer()  # noqa
+        if dsr.SamplingFeatureTypeCV == 'Site':
+            SFDSerializer = SitesDatasetSerializer(samplingfeaturedatasets_creator(dsr))
+            SFDSerializer.fields['Datasets'].child.fields['Results'].child.fields['FeatureAction'].fields['SamplingFeature'] = SitesSerializer()  # noqa
         dsr_list.append(
-            dsr_dct
+            SFDSerializer.data
         )
 
     return dsr_list

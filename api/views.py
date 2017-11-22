@@ -151,12 +151,8 @@ class SamplingFeaturesDataSetViewSet(APIView):
             })
 
         sfs = get_samplingfeaturedatasets(**get_kwargs)
-        serialized = DataSetsResultsSerializer(sfs, many=True)
 
-        if len(sfs) == 1:
-            serialized = DataSetsResultsSerializer(sfs[0])
-
-        return Response(serialized.data)
+        return Response(sfs)
 
 
 class DataSetsValuesViewSet(APIView):
