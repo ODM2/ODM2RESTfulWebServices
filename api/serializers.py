@@ -282,3 +282,25 @@ TransectResultValuesSerializer = type(
     (Serializer,),
     TransectResultValues_dct
 )
+
+
+# --- SamplingFeatureDatasets Serializers ---
+DataSetRes_dct = get_sertype_dict(odm2_mod.DataSets)
+DataSetRes_dct.update({
+    'Results': ResultSerializer(many=True)
+})
+DataSetResSerializer = type(
+    str('DataSetResSerializer'),
+    (Serializer,),
+    DataSetRes_dct
+)
+SamplingFeaturesDS_dct = get_sertype_dict(odm2_mod.SamplingFeatures)
+SamplingFeaturesDS_dct.update({
+    'Datasets': DataSetResSerializer(many=True)
+})
+SamplingFeatureDatasetSerializer = type(
+    str('SamplingFeatureDatasetSerializer'),
+    (Serializer,),
+    SamplingFeaturesDS_dct
+)
+
