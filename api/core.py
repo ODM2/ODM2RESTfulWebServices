@@ -407,8 +407,14 @@ def get_datasetresults(**kwargs):
             'DataSet': ds_dct
         })
 
+        Serializer = DataSetsResultsSerializer(dsr_dct)
+        if dsr.ResultObj.FeatureActionObj.SamplingFeatureObj.SamplingFeatureTypeCV == 'Specimen':
+            Serializer.fields['Result'].fields['FeatureAction'].fields['SamplingFeature'] = SpecimensSerializer()
+        if dsr.ResultObj.FeatureActionObj.SamplingFeatureObj.SamplingFeatureTypeCV == 'Site':
+            Serializer.fields['Result'].fields['FeatureAction'].fields['SamplingFeature'] = SitesSerializer()
+
         dsr_list.append(
-            DataSetsResultsSerializer(dsr_dct).data
+            Serializer.data
         )
 
     return dsr_list
