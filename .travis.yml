@@ -1,0 +1,48 @@
+language: python
+
+sudo: false
+
+dist: trusty
+
+services:
+  - postgresql
+
+addons:
+  postgresql: "9.5"
+  apt:
+    packages:
+      - postgresql-9.5-postgis-2.3
+
+matrix:
+  fast_finish: true
+  include:
+  - python: 2.7
+    env: TEST_TARGET=default
+  - python: 2.7
+    env: TEST_TARGET=coding_standards
+  allow_failures:
+  - python: 2.7
+    env: TEST_TARGET=coding_standards
+
+before_install:
+  - ./ci-helpers/postgres_setup.sh
+  - wget http://bit.ly/miniconda -O miniconda.sh
+  - bash miniconda.sh -b -p $HOME/miniconda
+  - export PATH="$HOME/miniconda/bin:$PATH"
+  - conda update conda --yes
+  - conda config --set show_channel_urls true
+  - conda config --add channels conda-forge --force
+  - conda config --add channels odm2 --force
+  - conda create --yes -n TEST python=$TRAVIS_PYTHON_VERSION --file requirements.txt
+  - source activate TEST
+  - if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
+      conda install --yes configparser ;
+    fi
+  # Coding standards.
+  - conda install --channel conda-forge --yes flake8-print flake8-quotes flake8-import-order flake8-builtins flake8-comprehensions flake8-mutable
+
+script:
+  - if [[ $TEST_TARGET == 'coding_standards' ]]; then
+      flake8 --max-line-length=105 api;
+      flake8 --max-line-length=105 odm2rest;
+    fi

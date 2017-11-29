@@ -6,7 +6,7 @@ dependencies:
 - python=2.7
 - geoalchemy-odm2
 - django
-- djangorestframework
+- djangorestframework==3.6.4
 - sqlalchemy
 - psycopg2
 - pyodbc
