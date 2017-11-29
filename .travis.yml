@@ -63,7 +63,7 @@ before_install:
 
 script:
   - if [[ $TEST_TARGET == 'default' ]]; then
-      python ./manage.py test api;
+      python $TRAVIS_BUILD_DIR/manage.py test api;
     fi
   - if [[ $TEST_TARGET == 'coding_standards' ]]; then
       flake8 --max-line-length=105 api;
