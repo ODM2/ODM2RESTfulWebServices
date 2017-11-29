@@ -4,6 +4,16 @@ sudo: false
 
 dist: trusty
 
+cache:
+  directories:
+    - $HOME/miniconda
+
+# Removing the directory will remove the env but leave the cached packages
+# at $HOME/miniconda/pkgs. That is a win-win because when re-creating the
+# env we will download only the new packages.
+before_cache:
+  - rm -rf $HOME/miniconda/envs/TEST
+
 services:
   - postgresql
 
@@ -46,7 +56,7 @@ before_install:
 
 script:
   - if [[ $TEST_TARGET == 'default' ]]; then
-      python manage.py test api;
+      python lsetiawan/ODM2RESTfulWebServices/manage.py test api;
     fi
   - if [[ $TEST_TARGET == 'coding_standards' ]]; then
       flake8 --max-line-length=105 api;
