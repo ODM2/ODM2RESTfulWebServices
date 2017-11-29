@@ -4,10 +4,7 @@
 
 A Python RESTful web service inteface for accessing data in an ODM2 database via Django rest swagger APIs.
 
-NOTE: Currently this repository is under heavy development, a working version is not guaranteed at any point.
-
-For current stable version, please refer to the
-[odm2rest_legacy branch](https://github.com/ODM2/ODM2RESTfulWebServices/tree/odm2rest_legacy).
+NOTE: Currently this repository is under heavy development, a working version is not guaranteed at any point. We will start creating tagged releases soon; once available, please use the latest tagged release for stability.
 
 ## Development Installation
 
@@ -43,6 +40,11 @@ For current stable version, please refer to the
    $ swagger project edit # This will open a new browser
    ```
 
-### Credits
+
+## Legacy prototype version
+
+The first version of the ODM2 RESTful API was developed in late 2015 and early 2016 as a prototype. That legacy code base is no longer used, and the current code base was developed from scratch (though guided by some lessons learned). The legacy code has been archived at the [odm2rest_legacy branch](https://github.com/ODM2/ODM2RESTfulWebServices/tree/odm2rest_legacy). See also relevant discussions on that branch and subsequent architectural decisions at [issue 11](https://github.com/ODM2/ODM2RESTfulWebServices/issues/11).
+
+## Credits
 
 This work was supported by National Science Foundation Grants [EAR-1224638](http://www.nsf.gov/awardsearch/showAward?AWD_ID=1224638) and [ACI-1339834](http://www.nsf.gov/awardsearch/showAward?AWD_ID=1339834). Any opinions, findings, and conclusions or recommendations expressed in this material are those of the author(s) and do not necessarily reflect the views of the National Science Foundation. 
