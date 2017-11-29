@@ -1,5 +1,7 @@
 # ODM2 RESTful Web Services
 
+[![Build status](https://travis-ci.org/ODM2/ODM2RESTfulWebServices.svg?branch=master)](https://travis-ci.org/ODM2/ODM2RESTfulWebServices)
+
 A Python RESTful web service inteface for accessing data in an ODM2 database via Django rest swagger APIs.
 
 NOTE: Currently this repository is under heavy development, a working version is not guaranteed at any point.
