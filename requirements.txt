@@ -7,6 +7,6 @@ pyyaml
 numpy
 pandas
 ipykernel
-djangorestframework-csv
-djangorestframework-xml
-djangorestframework-yaml
+# djangorestframework-csv
+# djangorestframework-xml
+# djangorestframework-yaml
