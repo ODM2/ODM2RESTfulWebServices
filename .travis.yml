@@ -45,6 +45,9 @@ before_install:
   - conda install --channel conda-forge --yes flake8-print flake8-quotes flake8-import-order flake8-builtins flake8-comprehensions flake8-mutable
 
 script:
+  - if [[ $TEST_TARGET == 'default' ]]; then
+      python manage.py test api;
+    fi
   - if [[ $TEST_TARGET == 'coding_standards' ]]; then
       flake8 --max-line-length=105 api;
       flake8 --max-line-length=105 odm2rest;

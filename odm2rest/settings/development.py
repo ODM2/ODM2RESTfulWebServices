@@ -17,10 +17,10 @@ SWAGGER_SETTINGS['BASE_DOMAIN'] = '127.0.0.1:8000'
 
 # SQLAlchemy settings
 ODM2DATABASE = {
-    'engine': 'db engine',
+    'engine': 'postgresql',
     'address': 'localhost',
     'port': 5432,
-    'db': 'db name',
-    'user': 'username',
-    'password': 'mypassword'
+    'db': 'odm2',
+    'user': 'postgres',
+    'password': 'passwd'
 }
