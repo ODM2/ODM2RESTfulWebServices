@@ -35,10 +35,12 @@ before_install:
   - conda config --add channels odm2 --force
   - conda create --yes -n TEST python=$TRAVIS_PYTHON_VERSION --file requirements.txt
   - source activate TEST
+  # Use development branch of odm2api
+  - git clone https://github.com/ODM2/ODM2PythonAPI.git $HOME/odm2api
+  - cd $HOME/odm2api
+  - git checkout -b development remotes/origin/development
   - pip install djangorestframework-csv djangorestframework-xml djangorestframework-yaml
-  - if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
-      conda install --yes configparser ;
-    fi
+  - pip install -e $HOME/odm2api
   # Coding standards.
   - conda install --channel conda-forge --yes flake8-print flake8-quotes flake8-import-order flake8-builtins flake8-comprehensions flake8-mutable
 
