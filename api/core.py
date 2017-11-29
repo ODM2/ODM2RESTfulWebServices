@@ -77,8 +77,13 @@ def result_creator(res):
 
     # Get methods
     m_dct = get_vals(act_obj.MethodObj)
+
+    # Get Organization
+    orgs_dct = None
+    if act_obj.MethodObj.OrganizationObj:
+        orgs_dct = get_vals(act_obj.MethodObj.OrganizationObj)
     m_dct.update({
-        'Organization': get_vals(act_obj.MethodObj.OrganizationObj)
+        'Organization': orgs_dct
     })
 
     a_dct = get_vals(res.FeatureActionObj.ActionObj)
@@ -95,18 +100,18 @@ def result_creator(res):
     })
     # ------------------------
 
+    # Get taxonomic classifier
+    taxo_dct = None
+    if res.TaxonomicClassifierObj:
+        taxo_dct = get_vals(res.TaxonomicClassifierObj)
+
     res_dct.update({
         'FeatureAction': feat_act_dct,
         'ProcessingLevel': get_vals(res.ProcessingLevelObj),
-        'TaxonomicClassifier': None,
+        'TaxonomicClassifier': taxo_dct,
         'Unit': get_vals(res.UnitsObj),
         'Variable': get_vals(res.VariableObj)
     })
-
-    if res.TaxonomicClassifierObj:
-        res_dct.update({
-            'TaxonomicClassifier': get_vals(res.TaxonomicClassifierObj)
-        })
 
     return res_dct
 
@@ -148,14 +153,15 @@ def get_affiliations(**kwargs):
 
     for aff in Affs:
         aff_dct = get_vals(aff)
+
+        orgs_dct = None
+        if aff.OrganizationObj:
+            orgs_dct = get_vals(aff.OrganizationObj)
+
         aff_dct.update({
             'Person':get_vals(aff.PersonObj),
-            'Organization': None
+            'Organization': orgs_dct
         })
-        if aff.OrganizationObj:
-            aff_dct.update({
-                'Organization': get_vals(aff.OrganizationObj)
-            })
 
         Aff_list.append(
             AffiliationSerializer(aff_dct).data
@@ -482,8 +488,13 @@ def get_methods(**kwargs):
     m_list = []
     for m in methods:
         m_dct = get_vals(m)
+
+        orgs_dct = None
+        if m.OrganizationObj:
+            orgs_dct = get_vals(m.OrganizationObj)
+
         m_dct.update({
-            'Organization': get_vals(m.OrganizationObj)
+            'Organization': orgs_dct
         })
         m_list.append(
             MethodSerializer(m_dct).data
@@ -511,8 +522,13 @@ def get_actions(**kwargs):
 
         # Get methods
         m_dct = get_vals(a.MethodObj)
+
+        orgs_dct = None
+        if a.MethodObj.OrganizationObj:
+            orgs_dct = get_vals(a.MethodObj.OrganizationObj)
+
         m_dct.update({
-            'Organization': get_vals(a.MethodObj.OrganizationObj)
+            'Organization': orgs_dct
         })
 
         a_dct.update({
