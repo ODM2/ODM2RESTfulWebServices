@@ -31,9 +31,7 @@ before_install:
   - export PATH="$HOME/miniconda/bin:$PATH"
   - conda update conda --yes
   - conda config --set show_channel_urls true
-  - conda config --add channels conda-forge --force
-  - conda config --add channels odm2 --force
-  - conda create --yes -n TEST python=$TRAVIS_PYTHON_VERSION --file requirements.txt
+  - conda create --yes -n TEST python=$TRAVIS_PYTHON_VERSION --file environment.yml
   - source activate TEST
   - if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
       conda install --yes configparser ;
