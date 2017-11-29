@@ -36,8 +36,15 @@ matrix:
 
 before_install:
   - ./ci-helpers/postgres_setup.sh
-  - wget http://bit.ly/miniconda -O miniconda.sh
-  - bash miniconda.sh -b -p $HOME/miniconda
+  - |
+    URL="http://bit.ly/miniconda"
+    echo ""
+    if [ ! -f $HOME/miniconda/bin/conda ] ; then
+      echo "Fresh miniconda installation."
+      wget $URL -O miniconda.sh
+      rm -rf $HOME/miniconda
+      bash miniconda.sh -b -p $HOME/miniconda
+    fi
   - export PATH="$HOME/miniconda/bin:$PATH"
   - conda update conda --yes
   - conda config --set show_channel_urls true
@@ -56,7 +63,7 @@ before_install:
 
 script:
   - if [[ $TEST_TARGET == 'default' ]]; then
-      python lsetiawan/ODM2RESTfulWebServices/manage.py test api;
+      python ./manage.py test api;
     fi
   - if [[ $TEST_TARGET == 'coding_standards' ]]; then
       flake8 --max-line-length=105 api;
