@@ -118,17 +118,22 @@ def result_creator(res):
 
 def samplingfeaturedatasets_creator(sfd):
     ds = sfd.datasets.keys()
+    related = sfd.related_features
     all_ds = []
+    # all_related = []
     for d in ds:
         ds_dct = get_vals(d)
         ds_dct.update({
             u'Results': [result_creator(r) for r in sfd.datasets[d]]
         })
         all_ds.append(ds_dct)
+    # related_dct = get_vals(r)
+    # all_related.append(related_dct)
     sf = READ.getSamplingFeatures([sfd.SamplingFeatureID])[0]
     sf_dct = get_vals(sf)
     sf_dct.update({
         u'Datasets': all_ds,
+        u'Related_features': related
     })
 
     return sf_dct
@@ -286,13 +291,15 @@ def get_samplingfeaturedatasets(**kwargs):
     if kwargs.get('samplingFeatureCode'):
         codes = kwargs.get('samplingFeatureCode').split(',')
 
+    sf_type = kwargs.get('samplingFeatureType')
 
     ds_type = kwargs.get('dataSetType')
 
     dataSetResults = READ.getSamplingFeatureDatasets(ids=ids,
                                                      codes=codes,
                                                      uuids=uuids,
-                                                     dstype=ds_type)
+                                                     dstype=ds_type,
+                                                     type=sf_type)
 
     dsr_list = []
     for dsr in dataSetResults:
