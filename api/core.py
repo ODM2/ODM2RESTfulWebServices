@@ -363,6 +363,7 @@ def get_datasetsvalues(**kwargs):
                                             dstype=ds_type)
 
     dsr_val = []
+  
     if isinstance(dataSetsValues, pd.DataFrame):
         res = READ.getResults(ids=list(dataSetsValues.resultid.values))[0]
         res_type = res.ResultTypeCV.lower()
