@@ -311,7 +311,6 @@ def get_samplingfeaturedatasets(**kwargs):
             SFDSerializer.fields['Datasets'].child.fields['Results'].child.fields['FeatureAction'].fields['SamplingFeature'] = SpecimensSerializer()  # noqa
             if dsr.related_features.SamplingFeatureTypeCV == 'Site':
                 SFDSerializer.fields['related_features'] = SitesSerializer()
-            print(SFDSerializer.fields['related_features'])
         if dsr.SamplingFeatureTypeCV == 'Site':
             SFDSerializer = SitesDatasetSerializer(samplingfeaturedatasets_creator(dsr))
             SFDSerializer.fields['Datasets'].child.fields['Results'].child.fields['FeatureAction'].fields['SamplingFeature'] = SitesSerializer()  # noqa
