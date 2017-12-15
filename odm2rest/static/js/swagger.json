@@ -4,8 +4,8 @@
     "version": "v1",
     "description": "This is a development version for ODM2 REST API",
     "contact": {
-      "email": "landungs@uw.edu",
-      "name": "Landung Setiawan"
+      "email": "johnsmith@example.com",
+      "name": "John Smith"
     }
   },
   "paths": {
@@ -176,14 +176,14 @@
         },
         "parameters": [
           {
-            "description": "SamplingFeature ID(s) **Required (or SamplingfeatureUUID)**",
+            "description": "SamplingFeature ID(s) **Required (or SamplingfeatureUUID or SamplingFeatureType)**",
             "required": false,
             "type": "string",
             "name": "samplingFeatureID",
             "in": "query"
           },
           {
-            "description": "SamplingFeature UUID(s) **Required (or SamplingFeatureID)**",
+            "description": "SamplingFeature UUID(s) **Required (or SamplingFeatureID or SamplingFeatureType)**",
             "required": false,
             "type": "string",
             "name": "samplingFeatureUUID",
@@ -193,7 +193,14 @@
             "description": "SamplingFeature Code(s)",
             "required": false,
             "type": "string",
-            "name": "SamplingFeatureCode",
+            "name": "samplingFeatureCode",
+            "in": "query"
+          },
+          {
+            "description": "SamplingFeature Type **Required (or SamplingfeatureUUID or SamplingfeatureID)**",
+            "required": false,
+            "type": "string",
+            "name": "samplingFeatureType",
             "in": "query"
           },
           {
@@ -235,7 +242,7 @@
           },
           {
             "required": false,
-            "type": "integer",
+            "type": "string",
             "description": "Result Type (Name). <br> See all available Result Types [here](http://vocabulary.odm2.org/resulttype/).",
             "in": "query",
             "name": "resultType"
@@ -563,6 +570,36 @@
         "operationId": "getResultValuesByResultID"
       }
     },
+    "/processinglevels": {
+      "get": {
+        "tags": [
+          "processinglevels"
+        ],
+        "summary": "All ODM2 Processing Levels retrieval",
+        "responses": {
+          "200": {
+            "description": "200 Response"
+          }
+        },
+        "parameters": [
+          {
+            "required": false,
+            "type": "string",
+            "description": "Processing Level ID(s)",
+            "in": "query",
+            "name": "processingLevelID"
+          },
+          {
+            "required": false,
+            "type": "string",
+            "description": "Processing Level Code(s)",
+            "in": "query",
+            "name": "processingLevelCode"
+          }
+        ],
+        "operationId": "getProcessingLevels"
+      }
+    },
     "/organizations": {
       "get": {
         "tags": [
@@ -653,6 +690,10 @@
     {
       "name": "datasetvalues",
       "description": "DataSetValues in database"
+    },
+    {
+      "name": "processinglevels",
+      "description": "ProcessingLevels in database"
     }
   ],
   "basePath": "/v1",

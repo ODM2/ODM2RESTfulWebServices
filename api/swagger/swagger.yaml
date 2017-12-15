@@ -187,17 +187,22 @@ paths:
       summary: Get ODM2 Datasets for given set of SamplingFeatures
       parameters:
         - name: samplingFeatureID
-          description: SamplingFeature ID(s) **Required (or SamplingfeatureUUID)**
+          description: SamplingFeature ID(s) **Required (or SamplingfeatureUUID or SamplingFeatureType)**
           required: false
           in: query
           type: string
         - name: samplingFeatureUUID
-          description: SamplingFeature UUID(s) **Required (or SamplingFeatureID)**
+          description: SamplingFeature UUID(s) **Required (or SamplingFeatureID or SamplingFeatureType)**
           required: false
           in: query
           type: string
-        - name: SamplingFeatureCode
+        - name: samplingFeatureCode
           description: SamplingFeature Code(s)
+          required: false
+          in: query
+          type: string
+        - name: samplingFeatureType 
+          description: SamplingFeature Type **Required (or SamplingfeatureUUID or SamplingfeatureID)**
           required: false
           in: query
           type: string

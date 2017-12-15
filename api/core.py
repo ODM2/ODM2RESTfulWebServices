@@ -41,7 +41,8 @@ from serializers import (
     OrganizationSerializer,
     SamplingFeatureDatasetSerializer,
     SpecimensDatasetSerializer,
-    SitesDatasetSerializer
+    SitesDatasetSerializer,
+    RelatedFeatureSerializer
 
 )
 
@@ -118,17 +119,23 @@ def result_creator(res):
 
 def samplingfeaturedatasets_creator(sfd):
     ds = sfd.datasets.keys()
+    related = sfd.related_features
     all_ds = []
+    # all_related = []
     for d in ds:
         ds_dct = get_vals(d)
         ds_dct.update({
             u'Results': [result_creator(r) for r in sfd.datasets[d]]
         })
         all_ds.append(ds_dct)
+    # related_dct = get_vals(r)
+    # all_related.append(related_dct)
     sf = READ.getSamplingFeatures([sfd.SamplingFeatureID])[0]
     sf_dct = get_vals(sf)
+    related_vals = get_vals(related)
     sf_dct.update({
         u'Datasets': all_ds,
+        u'related_features': related_vals
     })
 
     return sf_dct
@@ -286,13 +293,15 @@ def get_samplingfeaturedatasets(**kwargs):
     if kwargs.get('samplingFeatureCode'):
         codes = kwargs.get('samplingFeatureCode').split(',')
 
+    sf_type = kwargs.get('samplingFeatureType')
 
     ds_type = kwargs.get('dataSetType')
 
     dataSetResults = READ.getSamplingFeatureDatasets(ids=ids,
                                                      codes=codes,
                                                      uuids=uuids,
-                                                     dstype=ds_type)
+                                                     dstype=ds_type,
+                                                     sftype=sf_type)
 
     dsr_list = []
     for dsr in dataSetResults:
@@ -300,6 +309,8 @@ def get_samplingfeaturedatasets(**kwargs):
         if dsr.SamplingFeatureTypeCV == 'Specimen':
             SFDSerializer = SpecimensDatasetSerializer(samplingfeaturedatasets_creator(dsr))
             SFDSerializer.fields['Datasets'].child.fields['Results'].child.fields['FeatureAction'].fields['SamplingFeature'] = SpecimensSerializer()  # noqa
+            if dsr.related_features.SamplingFeatureTypeCV == 'Site':
+                SFDSerializer.fields['related_features'] = SitesSerializer()
         if dsr.SamplingFeatureTypeCV == 'Site':
             SFDSerializer = SitesDatasetSerializer(samplingfeaturedatasets_creator(dsr))
             SFDSerializer.fields['Datasets'].child.fields['Results'].child.fields['FeatureAction'].fields['SamplingFeature'] = SitesSerializer()  # noqa
@@ -352,6 +363,7 @@ def get_datasetsvalues(**kwargs):
                                             dstype=ds_type)
 
     dsr_val = []
+  
     if isinstance(dataSetsValues, pd.DataFrame):
         res = READ.getResults(ids=list(dataSetsValues.resultid.values))[0]
         res_type = res.ResultTypeCV.lower()
