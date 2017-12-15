@@ -72,7 +72,7 @@
     
 
    
-##Configure Gunicorn:
+## Configure Gunicorn:
 
 1. Install Gunicorn in to your conda env.
 
@@ -112,7 +112,7 @@
     $ sudo journalctl -u gunicorn
     ```
     
-##Configure NGINX:
+## Configure NGINX:
 1. Create your project in /etc/nginx/sites-available/
 
     ```bash
