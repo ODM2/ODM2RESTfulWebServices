@@ -141,6 +141,7 @@ class SamplingFeaturesDataSetViewSet(APIView):
             'samplingFeatureID': request.query_params.get('samplingFeatureID'),
             'samplingFeatureCode': request.query_params.get('samplingFeatureCode'),
             'samplingFeatureUUID': request.query_params.get('samplingFeatureUUID'),
+            'samplingFeatureType': request.query_params.get('samplingFeatureType'),
             'datasetType': request.query_params.get('datasetType'),
             'results': False
         }

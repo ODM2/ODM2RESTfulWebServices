@@ -31,6 +31,14 @@ def get_sertype_dict(odm2_model):
 
     return dct
 
+# --- RelatedFeatures Serializer ---
+RelatedFeatures_dct = get_sertype_dict(odm2_mod.RelatedFeatures)
+RelatedFeatureSerializer = type(
+    str('RelatedFeatureSerializer'),
+    (Serializer,),
+    RelatedFeatures_dct
+)
+
 
 # --- SamplingFeatures Serializer ---
 SamplingFeatures_dct = get_sertype_dict(odm2_mod.SamplingFeatures)
@@ -297,7 +305,7 @@ DataSetResSerializer = type(
 
 SamplingFeaturesDS_dct = get_sertype_dict(odm2_mod.SamplingFeatures)
 SamplingFeaturesDS_dct.update({
-    'Datasets': DataSetResSerializer(many=True)
+    'Datasets': DataSetResSerializer(many=True),
 })
 SamplingFeatureDatasetSerializer = type(
     str('SamplingFeatureDatasetSerializer'),
@@ -319,7 +327,9 @@ SitesDatasetSerializer = type(
 # --- FOR SPECIMENS ---
 SpecimensDatasets_dct = get_sertype_dict(odm2_mod.Specimens)
 SpecimensDatasets_dct.update({
-    'Datasets': DataSetResSerializer(many=True)
+    'Datasets': DataSetResSerializer(many=True),
+    'related_features': SamplingFeatureSerializer()
+
 })
 SpecimensDatasetSerializer = type(
     str('SpecimensDatasetSerializer'),
