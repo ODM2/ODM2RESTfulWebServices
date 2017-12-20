@@ -1,0 +1,254 @@
+{
+  "definitions": {},
+  "$schema": "http://json-schema.org/draft-06/schema#",
+  "$id": "/schemas/actions.json",
+  "type": "object",
+  "properties": {
+    "ActionID": {
+      "$id": "/properties/ActionID",
+      "type": "integer",
+      "title": "The Actionid Schema.",
+      "description": "An explanation about the purpose of this instance.",
+      "default": 0,
+      "examples": [
+        1
+      ]
+    },
+    "ActionTypeCV": {
+      "$id": "/properties/ActionTypeCV",
+      "type": "string",
+      "title": "The Actiontypecv Schema.",
+      "description": "An explanation about the purpose of this instance.",
+      "default": "",
+      "examples": [
+        "Specimen collection"
+      ]
+    },
+    "MethodID": {
+      "$id": "/properties/MethodID",
+      "type": "integer",
+      "title": "The Methodid Schema.",
+      "description": "An explanation about the purpose of this instance.",
+      "default": 0,
+      "examples": [
+        22
+      ]
+    },
+    "BeginDateTime": {
+      "$id": "/properties/BeginDateTime",
+      "type": "string",
+      "title": "The Begindatetime Schema.",
+      "description": "An explanation about the purpose of this instance.",
+      "default": "",
+      "examples": [
+        "2014-09-01T11:31:12"
+      ]
+    },
+    "BeginDateTimeUTCOffset": {
+      "$id": "/properties/BeginDateTimeUTCOffset",
+      "type": "integer",
+      "title": "The Begindatetimeutcoffset Schema.",
+      "description": "An explanation about the purpose of this instance.",
+      "default": 0,
+      "examples": [
+        -6
+      ]
+    },
+    "EndDateTime": {
+      "$id": "/properties/EndDateTime",
+      "type": ["string", "null"],
+      "title": "The Enddatetime Schema.",
+      "description": "An explanation about the purpose of this instance.",
+      "default": null,
+      "examples": [
+        "2014-09-01T11:31:12"
+      ]
+    },
+    "EndDateTimeUTCOffset": {
+      "$id": "/properties/EndDateTimeUTCOffset",
+      "type": ["string", "null"],
+      "title": "The Enddatetimeutcoffset Schema.",
+      "description": "An explanation about the purpose of this instance.",
+      "default": null,
+      "examples": [
+        -6
+      ]
+    },
+    "ActionDescription": {
+      "$id": "/properties/ActionDescription",
+      "type": ["string", "null"],
+      "title": "The Actiondescription Schema.",
+      "description": "An explanation about the purpose of this instance.",
+      "default": null,
+      "examples": [
+        "Collect sample from ground"
+      ]
+    },
+    "ActionFileURL": {
+      "$id": "/properties/ActionFileURL",
+      "type": ["string", "null"],
+      "title": "The Actionfilelink Schema.",
+      "description": "An explanation about the purpose of this instance.",
+      "default": null,
+      "format": "uri",
+      "examples": [
+        "http://example.com"
+      ]
+    },
+    "Method": {
+      "$id": "/properties/Method",
+      "type": "object",
+      "properties": {
+        "MethodID": {
+          "$id": "/properties/Method/properties/MethodID",
+          "type": "integer",
+          "title": "The Methodid Schema.",
+          "description": "An explanation about the purpose of this instance.",
+          "default": 0,
+          "examples": [
+            22
+          ]
+        },
+        "MethodTypeCV": {
+          "$id": "/properties/Method/properties/MethodTypeCV",
+          "type": "string",
+          "title": "The Methodtypecv Schema.",
+          "description": "An explanation about the purpose of this instance.",
+          "default": "",
+          "examples": [
+            "Specimen collection"
+          ]
+        },
+        "MethodCode": {
+          "$id": "/properties/Method/properties/MethodCode",
+          "type": "string",
+          "title": "The Methodcode Schema.",
+          "description": "An explanation about the purpose of this instance.",
+          "default": "",
+          "examples": [
+            "GRB_TN_TP"
+          ]
+        },
+        "MethodName": {
+          "$id": "/properties/Method/properties/MethodName",
+          "type": "string",
+          "title": "The Methodname Schema.",
+          "description": "An explanation about the purpose of this instance.",
+          "default": "",
+          "examples": [
+            "Grab TN TP"
+          ]
+        },
+        "MethodDescription": {
+          "$id": "/properties/Method/properties/MethodDescription",
+          "type": ["string", "null"],
+          "title": "The Methoddescription Schema.",
+          "description": "An explanation about the purpose of this instance.",
+          "default": null,
+          "examples": [
+            "Grab samples collected in the field with acid-washed bottles for TN and TP analysis."
+          ]
+        },
+        "MethodLink": {
+          "$id": "/properties/Method/properties/MethodLink",
+          "type": ["string", "null"],
+          "title": "The Methodlink Schema.",
+          "description": "An explanation about the purpose of this instance.",
+          "default": null,
+          "examples": [
+            "http://example.com"
+          ]
+        },
+        "OrganizationID": {
+          "$id": "/properties/Method/properties/OrganizationID",
+          "type": ["integer", "null"],
+          "title": "The Organizationid Schema.",
+          "description": "An explanation about the purpose of this instance.",
+          "default": null,
+          "examples": [
+            1
+          ]
+        },
+        "Organization": {
+          "$id": "/properties/Method/properties/Organization",
+          "type": "object",
+          "properties": {
+            "OrganizationID": {
+              "$id": "/properties/Method/properties/Organization/properties/OrganizationID",
+              "type": "integer",
+              "title": "The Organizationid Schema.",
+              "description": "An explanation about the purpose of this instance.",
+              "default": 0,
+              "examples": [
+                1
+              ]
+            },
+            "OrganizationTypeCV": {
+              "$id": "/properties/Method/properties/Organization/properties/OrganizationTypeCV",
+              "type": "string",
+              "title": "The Organizationtypecv Schema.",
+              "description": "An explanation about the purpose of this instance.",
+              "default": "",
+              "examples": [
+                "University"
+              ]
+            },
+            "OrganizationCode": {
+              "$id": "/properties/Method/properties/Organization/properties/OrganizationCode",
+              "type": "string",
+              "title": "The Organizationcode Schema.",
+              "description": "An explanation about the purpose of this instance.",
+              "default": "",
+              "examples": [
+                "USU"
+              ]
+            },
+            "OrganizationName": {
+              "$id": "/properties/Method/properties/Organization/properties/OrganizationName",
+              "type": "string",
+              "title": "The Organizationname Schema.",
+              "description": "An explanation about the purpose of this instance.",
+              "default": "",
+              "examples": [
+                "Utah State University"
+              ]
+            },
+            "OrganizationDescription": {
+              "$id": "/properties/Method/properties/Organization/properties/OrganizationDescription",
+              "type": ["string", "null"],
+              "title": "The Organizationdescription Schema.",
+              "description": "An explanation about the purpose of this instance.",
+              "default": null,
+              "examples": [
+                "The best organization ever"
+              ]
+            },
+            "OrganizationLink": {
+              "$id": "/properties/Method/properties/Organization/properties/OrganizationLink",
+              "type": ["string", "null"],
+              "title": "The Organizationlink Schema.",
+              "description": "An explanation about the purpose of this instance.",
+              "default": null,
+              "examples": [
+                "http://www.usu.edu"
+              ]
+            },
+            "ParentOrganizationID": {
+              "$id": "/properties/Method/properties/Organization/properties/ParentOrganizationID",
+              "type": ["integer", "null"],
+              "title": "The Parentorganizationid Schema.",
+              "description": "An explanation about the purpose of this instance.",
+              "default": null,
+              "examples": [
+                1
+              ]
+            }
+          },
+          "required": ["OrganizationID", "OrganizationTypeCV", "OrganizationCode", "OrganizationName"]
+        }
+      },
+      "required": ["MethodID", "MethodTypeCV", "MethodCode", "MethodName"]
+    }
+  },
+  "required": ["ActionID", "ActionTypeCV", "MethodID", "BeginDateTime", "BeginDateTimeUTCOffset"]
+}
