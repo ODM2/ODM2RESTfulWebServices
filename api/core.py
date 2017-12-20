@@ -132,7 +132,11 @@ def samplingfeaturedatasets_creator(sfd):
     # all_related.append(related_dct)
     sf = READ.getSamplingFeatures([sfd.SamplingFeatureID])[0]
     sf_dct = get_vals(sf)
-    related_vals = get_vals(related)
+
+    related_vals = None
+    if related:
+        related_vals = get_vals(related)
+
     sf_dct.update({
         u'Datasets': all_ds,
         u'related_features': related_vals
