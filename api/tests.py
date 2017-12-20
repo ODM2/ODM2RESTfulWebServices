@@ -1,6 +1,13 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
+import json
+import os
+
+from django.conf import settings
+
+from jsonschema import (validate, FormatChecker)
+
 from rest_framework import status
 from rest_framework.test import (APIRequestFactory,
                                  APITestCase)
@@ -130,8 +137,12 @@ class ActionsViewTests(APITestCase):
                                data={'actionID': 1})
         response = view(requests)
 
+        schema = json.load(open(os.path.join(settings.JSON_SCHEMA, 'actions.json')))
+
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertGreater(len(response.data), 0)
+        validate(response.data[0], schema, format_checker=FormatChecker())
+
 
 
 class MethodViewTests(APITestCase):

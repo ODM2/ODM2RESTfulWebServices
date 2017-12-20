@@ -7,6 +7,9 @@ pyyaml
 numpy
 pandas
 ipykernel
+jsonschema
+strict-rfc3339
 # djangorestframework-csv
 # djangorestframework-xml
 # djangorestframework-yaml
+# rfc3987

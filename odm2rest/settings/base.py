@@ -180,6 +180,9 @@ ODM2DATABASE = {
 }
 
 
+JSON_SCHEMA = os.path.join(os.path.dirname(BASE_DIR), 'api', 'schemas')
+
+
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "static"),
 ]
