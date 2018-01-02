@@ -58,7 +58,7 @@ ROOT_URLCONF = 'odm2rest.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, '../../odm2_rest_api/templates')],
+        'DIRS': [os.path.join(os.path.dirname(BASE_DIR), 'odm2_rest_api/templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
