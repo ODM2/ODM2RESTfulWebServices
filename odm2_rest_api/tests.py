@@ -28,6 +28,7 @@ from odm2_rest_api.views import (PeopleViewSet,
                                  UnitsViewSet,
                                  VariablesViewSet)
 from odm2_rest_api import API_VERSION
+from odm2_rest_api.settings import ODM2_REST_API
 
 FACTORY = APIRequestFactory()
 
@@ -137,7 +138,7 @@ class ActionsViewTests(APITestCase):
                                data={'actionID': 1})
         response = view(requests)
 
-        schema = json.load(open(os.path.join(settings.JSON_SCHEMA, 'actions.json')))
+        schema = json.load(open(os.path.join(ODM2_REST_API['SCHEMA_DIR'], 'actions.json')))
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertGreater(len(response.data), 0)
