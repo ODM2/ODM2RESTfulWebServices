@@ -132,7 +132,7 @@ def get_vals(sqlalch_obj):
 
 def swagger_convert():
     """
-    This functions converts the api/swagger/swagger.yaml to swagger.json for Swagger UI
+    This functions converts the odm2_rest_api/swagger/swagger.yaml to swagger.json for Swagger UI
 
     Returns:
         None

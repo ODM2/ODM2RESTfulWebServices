@@ -28,7 +28,7 @@ from views import (
 )
 
 urlpatterns = [
-    url(r'^docs/$', TemplateView.as_view(template_name='swagger.html')),
+    url(r'^docs/$', TemplateView.as_view(template_name='odm2_rest_api/swagger.html')),
     # Affiliations
     url(r'^affiliations$', AffiliationsViewSet.as_view(), name='affiliations-list'),
     # People

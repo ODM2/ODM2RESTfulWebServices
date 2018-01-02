@@ -59,17 +59,6 @@ SESSION_FACTORY = dbconnection.createConnectionFromString(str(URL(**db_settings)
 READ = ReadODM2(SESSION_FACTORY)
 
 
-def db_check():
-    db_session = SESSION_FACTORY.getSession()
-    try:
-        db_session.query(odm2_models.SamplingFeatures).first()
-    except:
-        print('Rolling Back...')
-        db_session.rollback()
-    finally:
-        pass
-
-
 # Model creators ---
 def result_creator(res):
     res_dct = get_vals(res)
@@ -147,7 +136,6 @@ def samplingfeaturedatasets_creator(sfd):
 
 
 def get_affiliations(**kwargs):
-    db_check()
     ids = None
     if kwargs.get('affiliationID'):
         ids = [int(i) for i in kwargs.get('affiliationID').split(',')]
@@ -182,7 +170,6 @@ def get_affiliations(**kwargs):
 
 
 def get_people(**kwargs):
-    db_check()
     ids = None
     if kwargs.get('peopleID'):
         ids = [int(i) for i in kwargs.get('peopleID').split(',')]
@@ -204,7 +191,6 @@ def get_people(**kwargs):
 
 
 def get_results(**kwargs):
-    db_check()
     ids = None
     uuids = None
     if kwargs.get('resultID'):
@@ -242,7 +228,6 @@ def get_results(**kwargs):
 
 
 def get_samplingfeatures(**kwargs):
-    db_check()
     ids = None
     codes = None
     uuids = None
@@ -286,7 +271,6 @@ def get_samplingfeatures(**kwargs):
 
 
 def get_samplingfeaturedatasets(**kwargs):
-    db_check()
     ids = None
     codes = None
     uuids = None
@@ -346,7 +330,6 @@ def get_datasets(**kwargs):
 
 
 def get_datasetsvalues(**kwargs):
-    db_check()
     ids = kwargs.get('datasetID')
     codes = kwargs.get('datasetCode')
     uuids = kwargs.get('datasetUUID')
@@ -398,7 +381,6 @@ def get_datasetsvalues(**kwargs):
 
 
 def get_datasetresults(**kwargs):
-    db_check()
     ids = kwargs.get('datasetID')
     codes = kwargs.get('datasetCode')
     uuids = kwargs.get('datasetUUID')
@@ -558,7 +540,6 @@ def get_actions(**kwargs):
     return act_list
 
 def get_variables(**kwargs):
-    db_check()
     ids = kwargs.get('variableID')
     codes = kwargs.get('variableCode')
     sitecode = kwargs.get('siteCode')
@@ -591,7 +572,6 @@ def get_variables(**kwargs):
     return vars_list
 
 def get_units(**kwargs):
-    db_check()
     ids = kwargs.get('unitsID')
     name = kwargs.get('unitsName')
     unitstype = kwargs.get('unitsType')

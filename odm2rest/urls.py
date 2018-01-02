@@ -17,12 +17,12 @@ from django.conf.urls import (include, url)
 from django.contrib import admin
 from django.views.generic import RedirectView
 
-from api.utils import swagger_convert
-from api import API_VERSION
+from odm2_rest_api.utils import swagger_convert
+from odm2_rest_api import API_VERSION
 swagger_convert()
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
-    url(r'^{}/'.format(API_VERSION), include('api.urls', namespace='{}'.format(API_VERSION))),
+    url(r'^{}/'.format(API_VERSION), include('odm2_rest_api.urls', namespace='{}'.format(API_VERSION))),
     url(r'^', RedirectView.as_view(url='/v1/docs/', pattern_name='docs', permanent=False))
 ]

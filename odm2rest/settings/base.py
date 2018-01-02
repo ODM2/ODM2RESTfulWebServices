@@ -40,7 +40,7 @@ INSTALLED_APPS = [
     # External apps
     'rest_framework',
     # Internal apps
-    'api'
+    'odm2_rest_api'
 ]
 
 MIDDLEWARE = [
@@ -58,7 +58,7 @@ ROOT_URLCONF = 'odm2rest.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'templates')],
+        'DIRS': [os.path.join(BASE_DIR, '../../odm2_rest_api/templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -122,6 +122,13 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.11/howto/static-files/
 
 STATIC_URL = '/static/'
+STATICFILES_FINDERS = [
+    'django.contrib.staticfiles.finders.FileSystemFinder',
+    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+]
+STATICFILES_DIRS = [
+    os.path.join(os.path.dirname(BASE_DIR), 'odm2_rest_api', 'static/odm2_rest_api'),
+]
 
 
 # REST FRAMEWORK SETTINGS
@@ -180,9 +187,4 @@ ODM2DATABASE = {
 }
 
 
-JSON_SCHEMA = os.path.join(os.path.dirname(BASE_DIR), 'api', 'schemas')
-
-
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, "static"),
-]
+JSON_SCHEMA = os.path.join(os.path.dirname(BASE_DIR), 'odm2_rest_api', 'schemas')
