@@ -1,6 +1,8 @@
 import os
 from django.conf import settings
 
+# TODO: Make the reading of configuration smarter, checking for actual values, else defaults
+
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 DEFAULTS = {
