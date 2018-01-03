@@ -22,5 +22,5 @@ ODM2DATABASE = {
     'port': 5432,
     'db': 'odm2',
     'user': 'postgres',
-    'password': 'passwd'
+    'password': 'password'
 }

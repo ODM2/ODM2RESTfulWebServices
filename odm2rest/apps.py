@@ -5,4 +5,4 @@ from django.apps import AppConfig
 
 
 class ApiConfig(AppConfig):
-    name = 'odm2_rest_api'
+    name = 'odm2rest'

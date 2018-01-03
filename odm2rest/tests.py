@@ -12,23 +12,23 @@ from rest_framework import status
 from rest_framework.test import (APIRequestFactory,
                                  APITestCase)
 
-from odm2_rest_api.views import (PeopleViewSet,
-                                 ActionsViewSet,
-                                 AffiliationsViewSet,
-                                 ResultsViewSet,
-                                 ResultValuesViewSet,
-                                 SamplingFeaturesDataSetViewSet,
-                                 SamplingFeaturesViewSet,
-                                 DataSetsViewSet,
-                                 DatasetResultsViewSet,
-                                 DataSetsValuesViewSet,
-                                 MethodsViewSet,
-                                 OrganizationViewSet,
-                                 ProcessingLevelsViewSet,
-                                 UnitsViewSet,
-                                 VariablesViewSet)
-from odm2_rest_api import API_VERSION
-from odm2_rest_api.settings import ODM2_REST_API
+from odm2rest.views import (PeopleViewSet,
+                            ActionsViewSet,
+                            AffiliationsViewSet,
+                            ResultsViewSet,
+                            ResultValuesViewSet,
+                            SamplingFeaturesDataSetViewSet,
+                            SamplingFeaturesViewSet,
+                            DataSetsViewSet,
+                            DatasetResultsViewSet,
+                            DataSetsValuesViewSet,
+                            MethodsViewSet,
+                            OrganizationViewSet,
+                            ProcessingLevelsViewSet,
+                            UnitsViewSet,
+                            VariablesViewSet)
+from odm2rest import API_VERSION
+from odm2rest.settings import ODM2_REST_API
 
 FACTORY = APIRequestFactory()
 

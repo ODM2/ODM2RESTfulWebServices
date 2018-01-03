@@ -58,7 +58,7 @@ settings.REST_FRAMEWORK = {
        'rest_framework_yaml.parsers.YAMLParser',
        'rest_framework_csv.parsers.CSVParser',
     ),
-    # 'DEFAULT_CONTENT_NEGOTIATION_CLASS': 'odm2rest.negotiation.IgnoreClientContentNegotiation',
+    # 'DEFAULT_CONTENT_NEGOTIATION_CLASS': 'odm2example.negotiation.IgnoreClientContentNegotiation',
     # specifying the renderers
     'DEFAULT_RENDERER_CLASSES': (
         'rest_framework.renderers.JSONRenderer',

@@ -38,7 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     # Internal apps
-    'odm2_rest_api'
+    'odm2rest'
 ]
 
 MIDDLEWARE = [
@@ -51,7 +51,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'odm2rest.urls'
+ROOT_URLCONF = 'examples.odm2example.urls'
 
 TEMPLATES = [
     {
@@ -69,7 +69,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'odm2rest.wsgi.application'
+WSGI_APPLICATION = 'odm2example.wsgi.application'
 
 
 # Database

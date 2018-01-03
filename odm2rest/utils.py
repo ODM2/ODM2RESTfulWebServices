@@ -49,7 +49,7 @@ from odm2api.ODM2.models import (
     DateTimeType
 )
 
-from odm2_rest_api.settings import ODM2_REST_API
+from odm2rest.settings import ODM2_REST_API
 
 field_mapping = {
         Integer.__visit_name__: IntegerField,
@@ -135,7 +135,7 @@ def get_vals(sqlalch_obj):
 
 def swagger_convert():
     """
-    This functions converts the odm2_rest_api/swagger/swagger.yaml to swagger.json for Swagger UI
+    This functions converts the odm2example/swagger/swagger.yaml to swagger.json for Swagger UI
 
     Returns:
         None

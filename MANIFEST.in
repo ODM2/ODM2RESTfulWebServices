@@ -1,0 +1,4 @@
+include LICENSE
+include README.md
+recursive-include odm2_rest_api/static *
+recursive-include odm2_rest_api/templates *
