@@ -1,4 +1,6 @@
 include LICENSE
 include README.md
-recursive-include odm2_rest_api/static *
-recursive-include odm2_rest_api/templates *
+recursive-include odm2rest/static *
+recursive-include odm2rest/templates *
+recursive-include odm2rest/swagger *
+recursive-include odm2rest/schemas *
