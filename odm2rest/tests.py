@@ -12,22 +12,23 @@ from rest_framework import status
 from rest_framework.test import (APIRequestFactory,
                                  APITestCase)
 
-from api.views import (PeopleViewSet,
-                       ActionsViewSet,
-                       AffiliationsViewSet,
-                       ResultsViewSet,
-                       ResultValuesViewSet,
-                       SamplingFeaturesDataSetViewSet,
-                       SamplingFeaturesViewSet,
-                       DataSetsViewSet,
-                       DatasetResultsViewSet,
-                       DataSetsValuesViewSet,
-                       MethodsViewSet,
-                       OrganizationViewSet,
-                       ProcessingLevelsViewSet,
-                       UnitsViewSet,
-                       VariablesViewSet)
-from api import API_VERSION
+from odm2rest.views import (PeopleViewSet,
+                            ActionsViewSet,
+                            AffiliationsViewSet,
+                            ResultsViewSet,
+                            ResultValuesViewSet,
+                            SamplingFeaturesDataSetViewSet,
+                            SamplingFeaturesViewSet,
+                            DataSetsViewSet,
+                            DatasetResultsViewSet,
+                            DataSetsValuesViewSet,
+                            MethodsViewSet,
+                            OrganizationViewSet,
+                            ProcessingLevelsViewSet,
+                            UnitsViewSet,
+                            VariablesViewSet)
+from odm2rest import API_VERSION
+from odm2rest.settings import ODM2_REST_API
 
 FACTORY = APIRequestFactory()
 
@@ -137,7 +138,7 @@ class ActionsViewTests(APITestCase):
                                data={'actionID': 1})
         response = view(requests)
 
-        schema = json.load(open(os.path.join(settings.JSON_SCHEMA, 'actions.json')))
+        schema = json.load(open(os.path.join(ODM2_REST_API['SCHEMA_DIR'], 'actions.json')))
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertGreater(len(response.data), 0)

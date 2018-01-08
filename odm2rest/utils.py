@@ -8,6 +8,7 @@ import yaml
 import json
 
 from django.conf import settings
+from django.templatetags.static import static
 
 from collections import OrderedDict
 
@@ -47,6 +48,8 @@ from odm2api.ODM2.models import (
     BigIntegerType,
     DateTimeType
 )
+
+from odm2rest.settings import ODM2_REST_API
 
 field_mapping = {
         Integer.__visit_name__: IntegerField,
@@ -132,7 +135,7 @@ def get_vals(sqlalch_obj):
 
 def swagger_convert():
     """
-    This functions converts the api/swagger/swagger.yaml to swagger.json for Swagger UI
+    This functions converts the odm2example/swagger/swagger.yaml to swagger.json for Swagger UI
 
     Returns:
         None
@@ -140,7 +143,7 @@ def swagger_convert():
     with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'swagger', 'swagger.yaml')) as f:
         yaml_data = yaml.load(f)
         yaml_data['host'] = settings.SWAGGER_SETTINGS['BASE_DOMAIN']
-        with open(os.path.join(settings.STATICFILES_DIRS[0], 'js', 'swagger.json'), 'w') as json_file:
+        with open(os.path.join(ODM2_REST_API['STATIC_DIR'], 'js/swagger.json'), 'w') as json_file:
             json_file.write(json.dumps(yaml_data, sort_keys=False, indent=2, separators=(',', ': ')))
             # print(json.dumps(yaml_data, sort_keys=False, indent=2, separators=(',', ': ')))
 

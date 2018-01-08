@@ -7,6 +7,7 @@
 package.json
 node_modules
 .cache
-
+*.egg-info
+dist/
 
 

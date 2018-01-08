@@ -37,10 +37,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    # External apps
-    'rest_framework',
     # Internal apps
-    'api'
+    'odm2rest'
 ]
 
 MIDDLEWARE = [
@@ -53,12 +51,12 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'odm2rest.urls'
+ROOT_URLCONF = 'examples.odm2example.urls'
 
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'templates')],
+        'DIRS': [],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -71,7 +69,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'odm2rest.wsgi.application'
+WSGI_APPLICATION = 'odm2example.wsgi.application'
 
 
 # Database
@@ -123,34 +121,6 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
-
-# REST FRAMEWORK SETTINGS
-REST_FRAMEWORK = {
-    'DEFAULT_VERSIONING_CLASS': 'rest_framework.versioning.NamespaceVersioning',
-    'DEFAULT_PERMISSION_CLASSES': ('rest_framework.permissions.AllowAny',),
-    # 'DEFAULT_PERMISSION_CLASSES': ('rest_framework.permissions.IsAdminUser',),
-    # 'VIEW_DESCRIPTION_FUNCTION': 'rest_framework_swagger.views.get_restructuredtext',
-    'DEFAULT_PARSER_CLASSES': (
-       'rest_framework.parsers.JSONParser',
-       'rest_framework_yaml.parsers.YAMLParser',
-       'rest_framework_csv.parsers.CSVParser',
-    ),
-    # 'DEFAULT_CONTENT_NEGOTIATION_CLASS': 'odm2rest.negotiation.IgnoreClientContentNegotiation',
-    # specifying the renderers
-    'DEFAULT_RENDERER_CLASSES': (
-        'rest_framework.renderers.JSONRenderer',
-        'rest_framework_csv.renderers.CSVRenderer',
-        'rest_framework_yaml.renderers.YAMLRenderer',
-        # 'rest_framework_xml.renderers.XMLRenderer',
-        'rest_framework.renderers.BrowsableAPIRenderer',
-    ),
-    # 'PAGINATE_BY': 10,                 # Default to 10
-    # 'PAGINATE_BY_PARAM': 'page_size',  # Allow client to override, using `?page_size=xxx`.
-    # 'MAX_PAGINATE_BY': 100             # Maximum limit allowed when using `?page_size=xxx`.
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 100,
-}
-
 SWAGGER_SETTINGS = {
     'SECURITY_DEFINITIONS': {
         'basic': {
@@ -168,21 +138,3 @@ SWAGGER_SETTINGS = {
     # else only need domain name
     'BASE_DOMAIN': '127.0.0.1:8000'
 }
-
-# SQLAlchemy settings
-ODM2DATABASE = {
-    'engine': 'db engine',
-    'address': 'localhost',
-    'port': 5432,
-    'db': 'db name',
-    'user': 'username',
-    'password': 'mypassword'
-}
-
-
-JSON_SCHEMA = os.path.join(os.path.dirname(BASE_DIR), 'api', 'schemas')
-
-
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, "static"),
-]
