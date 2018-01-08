@@ -65,10 +65,11 @@ before_install:
 install:
   - cd $TRAVIS_BUILD_DIR
   - python setup.py sdist && version=$(python setup.py --version) && pushd dist  && pip install odm2rest-${version}.tar.gz && popd
+  - cd $TRAVIS_BUILD_DIR/examples
 
 script:
   - if [[ $TEST_TARGET == 'default' ]]; then
-      python examples/manage.py test odm2rest;
+      python manage.py test odm2rest;
     fi
   - if [[ $TEST_TARGET == 'coding_standards' ]]; then
       flake8 --max-line-length=105 odm2rest;
