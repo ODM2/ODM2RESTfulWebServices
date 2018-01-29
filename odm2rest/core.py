@@ -347,7 +347,8 @@ def get_datasetsvalues(**kwargs):
     dataSetsValues = READ.getDataSetsValues(ids=ids,
                                             codes=codes,
                                             uuids=uuids,
-                                            dstype=ds_type)
+                                            dstype=ds_type,
+                                            lowercols=False)
 
     dsr_val = []
   
@@ -438,7 +439,8 @@ def get_resultvalues(**kwargs):
 
     result_values = READ.getResultValues(resultids=ids,
                                          starttime=starttime,
-                                         endtime=endtime)
+                                         endtime=endtime,
+                                         lowercols=False)
 
     res_val = []
     if isinstance(result_values, pd.DataFrame):
