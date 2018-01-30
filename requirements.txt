@@ -9,7 +9,7 @@ pandas
 ipykernel
 jsonschema
 strict-rfc3339
-# djangorestframework-csv
-# djangorestframework-xml
-# djangorestframework-yaml
-# rfc3987
+odm2api==0.7.*
+djangorestframework-csv
+djangorestframework-xml
+djangorestframework-yaml
