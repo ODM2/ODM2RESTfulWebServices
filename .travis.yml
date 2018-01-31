@@ -50,10 +50,8 @@ before_install:
   - conda config --set show_channel_urls true
   - conda config --add channels conda-forge --force
   - conda config --add channels odm2 --force
-  - conda create --yes -n TEST python=$TRAVIS_PYTHON_VERSION --file requirements.txt
+  - conda create --yes -n TEST python=$TRAVIS_PYTHON_VERSION --file requirements.txt --file requirements-dev.txt
   - source activate TEST
-  # Coding standards.
-  - conda install --channel conda-forge --yes flake8-print flake8-quotes flake8-import-order flake8-builtins flake8-comprehensions flake8-mutable
 
 # Test source distribution.
 install:

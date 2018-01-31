@@ -1,4 +1,4 @@
-django
+django==1.11
 djangorestframework==3.6.4
 sqlalchemy
 psycopg2
@@ -9,7 +9,7 @@ pandas
 ipykernel
 jsonschema
 strict-rfc3339
-odm2api==0.7.*
+odm2api==0.7
 djangorestframework-csv
 djangorestframework-xml
 djangorestframework-yaml
