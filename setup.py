@@ -5,11 +5,14 @@ odm2rest
 A Python RESTful web service inteface for accessing data in an
 ODM2 database via Django rest swagger APIs.
 """
+
 from __future__ import (absolute_import, division, print_function)
 
 import os
 
 from setuptools import find_packages, setup
+
+import versioneer
 
 here = os.path.abspath(os.path.dirname(__file__))
 
@@ -26,7 +29,7 @@ os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 
 setup(
     name='odm2rest',
-    version='0.1',
+    version=versioneer.get_version(),
     packages=find_packages(),
     include_package_data=True,
     license='BSD License',
