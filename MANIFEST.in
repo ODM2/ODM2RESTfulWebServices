@@ -8,4 +8,4 @@ recursive-include odm2rest/swagger *
 recursive-include odm2rest/schemas *
 
 include versioneer.py
-include odm2api/_version.py
+include odm2rest/_version.py
